@@ -116,3 +116,15 @@ class Sch:
             if l.startswith(f'(text "{old}"'):
                 self.lines[k] = l.replace(f'(text "{old}"', f'(text "{new}"', 1); return
         raise KeyError(old)
+
+def _add_prop(self, ref, name, value):
+    """Add (or replace) a hidden property on a symbol."""
+    k, _, _ = self.find(ref)
+    l = self.lines[k]
+    if f'(property "{name}" ' in l:
+        self.lines[k] = re.sub(rf'\(property "{name}" "[^"]*"', f'(property "{name}" "{value}"', l, count=1); return
+    x, y = re.search(r'\(symbol \(lib_id "[^"]+"\) \(at ([-\d.]+) ([-\d.]+)', l).groups()
+    prop = f'(property "{name}" "{value}" (at {x} {y} 0) (effects (font (size 1.27 1.27)) (hide yes))) '
+    i = l.find('(pin ')
+    self.lines[k] = l[:i] + prop + l[i:]
+Sch.add_prop = _add_prop

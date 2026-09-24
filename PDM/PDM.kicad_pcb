@@ -151,6 +151,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "89ad0009-11cd-4e2b-b076-276d111b32cf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC1206FR-07470RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "20c315f6-7ae0-4667-8de9-e7860ce54041")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/08121a4b-c09c-4364-8109-b60b1b5344e9")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -297,6 +319,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9903a750-59e6-4091-a51a-7c143fce4c06")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "98c35bd5-060b-42a9-b3d1-1ddc37b35c90")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -449,6 +493,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f9bb3c72-77cc-4490-92f2-f0dc477a2982")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f978dfe2-1584-4511-a7ff-7ac7449cbc37")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ef1589a5-3513-4872-8f48-68310a95bac6")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -587,6 +653,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "96978d16-7c02-443d-be86-32767be96b8f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e6a00398-5385-429d-8f2f-17446facb74f")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -956,6 +1044,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Littelfuse"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "887ce96c-6b66-424a-86a1-1183cf4104d3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "1812L050/33MR"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "13ec3122-985f-4fcf-97b8-2d315976ac0d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ff2328d0-6141-49d1-a79e-0842610dd6c2")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -1094,6 +1204,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Diodes Inc."
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9a321f44-7b8e-4b7e-b729-8005b908ece0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SMAZ18-13-F"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9bda9184-60ef-419b-8790-fad179f1467a")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -1371,6 +1503,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71086df8-3417-4c98-90a4-a449bfa94a5e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2901AVQDRQ1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d7a1646a-eff0-4678-a15b-661705ddd51f")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -1781,6 +1935,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8163ccdb-202a-4f0c-aff5-9a9c9bbd866f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d13b85d7-c616-44ac-b552-276973e05591")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/59e6b104-cbf4-424f-8824-753da465f6ac")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -1930,6 +2106,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d3379462-57f7-4ecc-a5e9-b20fc7db87d7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a6884545-b4c3-4aa9-a974-773a3880a27d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/7b83837d-77bc-4801-8e2d-007816c23c37")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -2076,6 +2274,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "733c6120-d7bf-4b4a-8cfa-c842f40d39e4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "-"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f39d1ba-f399-433a-a682-f07d7c1ccbae")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -2271,6 +2491,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "265b04f7-e0df-4f6b-9570-d7547dcfb01a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fcd9a3f6-0470-4b44-adee-e7133d5e5c5b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4bc97191-6253-4e34-b33d-47842d1495d6")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -2417,6 +2659,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ee61198f-14c8-4af0-8e5a-3231a3755fd2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "10cf3ac6-1c3c-4833-819b-04284d034a5e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -2618,6 +2882,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "507d5943-66e8-4dc1-8f82-b3fe11bb3ca5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ef1cceed-c44e-4764-be85-c525cabd4ba4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ba61e324-4c25-4b36-a730-11e1a4aaf21c")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -2767,6 +3053,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f898cefc-8807-4eaa-b856-5be5010c6f0d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e763c0f9-7dae-4612-a9b7-617563f92db9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/6b869456-8440-4c16-91db-7f55f7fadf7d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -2905,6 +3213,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5292786a-175d-4c2b-88b9-ac5c2b12dd54")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "eaea77ed-4aa2-4801-a288-ee53a095ceb3")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -3274,6 +3604,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "950217e3-8f1c-4922-9cff-eaac0f629feb")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5288404c-f267-442b-9896-2e63181c7c56")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/6330b183-14b2-4d84-b664-0e4ccc7fda39")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -3420,6 +3772,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6e43b21-7b9a-4a17-8a61-536b6edcd7e8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "abc23975-9d49-4462-a913-17835c997d85")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -3572,6 +3946,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c27f10b-26f8-4d97-a28a-f298fcf1f995")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aa87d9a4-f4e5-4352-b535-d9b14028bbbf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/3deec459-b7e2-464d-a9f8-43f8302bb667")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -3718,6 +4114,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ed5f27b0-8044-49cd-80ac-a6c6ded882a9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "da68d610-f364-41b9-926c-e6e0c452bcdf")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -3870,6 +4288,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "414c0786-bcef-4a3d-ac71-db13baf82477")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f02bfdfa-b9a0-4c06-8162-0161c6e6988c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/d1910600-974b-444c-bc9c-db4b7a3f0219")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -4016,6 +4456,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "17d04766-5d20-47a4-bc22-5c6faf522939")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2901AVQDRQ1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "86d6d474-7954-4acf-84a8-0e3a45d5d4f4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -4426,6 +4888,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f7ee262c-7c78-4a3d-8d48-6b6df96b737b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f3839b7-bab8-4561-9025-b7c88f7204f6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/28160e42-18dc-458e-862b-4811aa0c049d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -4562,6 +5046,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Amphenol FCI"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7d172307-e370-4c2e-a4c9-bf30b361f814")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "HCCPHPE24BKA90F"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3d13013b-9b6c-49b5-907a-01618cc1f972")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -5044,6 +5550,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "17c838b2-83a9-4f79-a484-c83fc70029ef")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "63957383-c8a8-4db4-986f-d68a6973463a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a5a7aa92-76bd-4aa5-b0a9-81df1422b91a")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -5190,6 +5718,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc96ccdd-4dfe-4ea4-b1b6-b88064d20dcf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5ad3a65a-b2af-4c0b-b0f0-9700e087af3f")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -5342,6 +5892,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2334d419-7cc5-4ebd-9124-aac0f5426efc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e6d5639d-9c6a-4ea4-abae-d581b3a11c71")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/8403bc3e-ee3b-4daa-819d-427248f1178a")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -5491,6 +6063,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dc0f511b-86a2-4a6b-b234-bd0b074efb31")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ffbe58ad-d63e-4c2e-b8c1-a3063ddc90a5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/d4bd44a5-6480-478e-aaf5-5838caf3dbd1")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -5637,6 +6231,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e708cfe3-256b-47c4-a1ff-99ffbb9043ca")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e780f584-e91e-4170-9a32-6005f08e17de")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -5838,6 +6454,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "829d8306-8499-48f3-bc8c-5a3892545162")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "31398b18-560c-4258-89dc-53855db21707")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/b9211eff-016c-4ddb-8eea-d5447258c0b3")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -5987,6 +6625,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "834c81a2-7a43-40c8-a357-cf0b15883f16")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bb185cd0-dfc6-4ae4-90a3-dd0b9998b2c6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/1c04fa5e-3e8e-4d26-b55d-4657391970ad")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -6133,6 +6793,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "74e3b5b2-c1ad-4711-8c40-c3a1f19367ad")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1e71bd07-945b-4e20-b890-e4666510a98c")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -6504,6 +7186,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ced73e18-7b65-419d-9ac0-fbec7581cfd4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9dbc0b7f-a2dd-442a-b4a8-7e9c8881b5ad")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ee699ca0-34f0-41d5-82d6-2ae01bd096ec")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -6653,6 +7357,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "db15be4a-dbfb-4367-8d01-d2cacf51bdea")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "52d41346-314a-4055-8a26-d8f853d5fb0b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/720f68f5-5895-43fc-9b96-2f2b9b2d771d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -6799,6 +7525,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4ba2e3b3-f655-4ae1-bd47-fe8cc26daa68")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f1f4aed4-29fc-48b7-bcdd-4b79481c551f")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -7000,6 +7748,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b015263a-4f1a-4d97-b7e8-e08035d090f3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "11925ef6-edfa-41c9-af86-f200d3118f8e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/b185384d-052e-4aa1-8419-a09f2d5b023e")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -7149,6 +7919,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "089ff3d8-2769-4d2f-8d83-9c82fe6d659d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba0331e7-0d47-4b93-8278-d0c5c75e6b19")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ba029bda-7ad3-4464-9c64-39e5c1e63666")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -7295,6 +8087,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d5cdfe99-83e9-4e14-a574-b3d50cd399ce")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAV99,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2a10966c-511c-4597-9370-35b2eb7faa5e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -7667,6 +8481,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ffc96134-6b0f-41c5-bc6d-3b43a6572650")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0768K1L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a492a801-4cc2-427b-97a0-98db53159822")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/9d3ec250-6b85-41b0-a09e-b9545e563a7f")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -7813,6 +8649,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Panasonic"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c0532862-27a3-43d2-b87d-58ba4f998967")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "EEE-FK1H470P"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d7273313-83e5-4e70-a6f7-c8e9fdf7c6d4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -8254,6 +9112,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3914fb6d-2fbe-4663-a621-b2d4a3bd9bb4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2901AVQDRQ1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b8d75480-7c66-4ee4-90e4-5940d3a11808")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/421fa8fa-dd1a-4969-9d82-5b8cc6452185")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -8653,6 +9533,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7a51a318-f4f0-4fef-a4e0-576677c4b1ac")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9071647a-e891-47ea-b094-bd625920760c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a8c2de54-768e-4a0e-950c-7017d6b99d94")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -9019,6 +9921,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "52a8dbca-a554-4664-90ec-f39cecc3d959")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "86a861f5-76e6-48fa-9164-3be0cdacd354")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a5631db4-c52d-4e84-98f2-2f20c67dc248")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -9157,6 +10081,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b92b150f-f115-443c-befb-ccd102f004ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BSP75NH6327XTSA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df79f112-90fd-4329-b429-482b41df9202")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -9425,6 +10371,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c515d2c4-cfc3-4de6-8243-134b2b754d92")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f9692d9a-6609-45af-af06-796426100c38")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/5e7b3949-4145-442f-9aff-6640f8544d58")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -9571,6 +10539,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "07819386-60a8-4a89-8d6d-5cabcae670e7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c5da7ef0-ee7d-479f-9bf4-cd095ec90eeb")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -9723,6 +10713,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7dd0f243-077f-416c-9b49-cbf3d6b805ea")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7ca81fa0-182e-47bc-a813-0ef17c78ee7c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a2f09f0c-2270-46be-b4b7-7d737143c56b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -9869,6 +10881,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b9fd2e1a-2657-4326-8c0b-045f686ad15f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d5cbc3af-731e-41f4-a83a-d82b90c3f27b")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -10021,6 +11055,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bb80092b-3cab-487c-a521-756e85f1317b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "45710d56-3e8e-4be6-abc6-857ac66ebc7a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/5e495372-6d10-49ce-8927-bbd860a5b7eb")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -10167,6 +11223,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6424f83f-4b4c-40c8-aa14-1f98d739d8b0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "231ca30a-006a-4372-8e6a-af2c6668722c")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -10319,6 +11397,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "58b539a9-9d44-4f88-be4a-300e468f77de")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "12fc76d1-049c-4728-88da-59cb49bd55be")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/7720439a-b5eb-42b1-83fb-bf2586b9dd80")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -10465,6 +11565,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6cfaab96-cfe7-41ed-ac05-925085113237")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2a8c9cbe-06a0-484a-8263-03acf3daeedc")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -10836,6 +11958,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c17dbad6-067f-43a7-834f-ced2c684aec0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "72f54ee5-064e-4475-8d1c-a2eed99d8e3e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/c7193085-2aea-4992-b2fa-40504ea84cf4")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -11204,6 +12348,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7f0bc887-58f3-4f1c-8435-ce1c1ce77870")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "50bcbbb2-7d89-4209-934e-a67c2c0eb179")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/0eea66ba-b039-44ed-87c3-652b2f3ec0d6")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -11402,6 +12568,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1d763063-4866-4ea3-b546-c94fdf6db13a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b79fe6a2-0b3f-4f75-af5a-00978286b5b9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4fdc748d-0d84-4fa0-a12d-64a49482b992")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -11548,6 +12736,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cccb5fc3-bad8-4ccf-a7da-dbc84d8792e5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6173c6a3-c0cc-4a6c-a972-a77e75808c56")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -11700,6 +12910,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a664fd20-8519-42e2-8dce-6d1db490e38b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d15f39ba-2128-416a-b04e-d735c5b0401f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/bbfa1691-90e6-46b8-b0be-1c18cb281b28")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -11846,6 +13078,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "44ae46d1-8176-4f0f-82ec-fba22282e559")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7c491f98-61c9-4ee6-8dc1-61d9568a1e95")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -11998,6 +13252,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "770abfac-090a-45c4-a56c-b657e0721ce6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9ebd6aa0-d3cc-4891-81a1-924598a20367")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/b55d74d6-7a0f-4ab9-8de3-c86e310dd571")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -12147,6 +13423,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b50ecdf6-bb51-48c7-b855-2e159373a188")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "645a5f9f-ed33-4df0-81ae-1b6d144f0789")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/3fda50eb-9de6-4a02-b7f5-8400312836f0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -12293,6 +13591,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "75c03bf1-e581-4c5a-8792-3c415417efdd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "74HC86D-Q100J"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6afd4013-c86e-4410-bc53-b9c81349358f")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -12703,6 +14023,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "87bbea1b-db5c-4f30-b4e4-7558453b94fc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b337972a-e031-4859-99e8-7fdcd0104c5c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/01ad12b1-9812-4d13-96b8-81a0c02808ef")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -12852,6 +14194,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f93680b6-4f15-476e-bab1-d3cb0ec8dd79")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8a89c009-a555-42ad-b6f1-a237b825df02")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/8391ac41-6e86-473f-91db-5e5e71b5eb5b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -12998,6 +14362,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "47f4fae5-bc75-4a7b-b47e-addf8deaa9d3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8a63450b-4b28-4dfc-a4e7-7d0107e7cacc")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -13199,6 +14585,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b7fb776-5032-46cc-82cc-1426487cef2e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "500dfd02-e187-439e-b84e-aed4f756679c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/0514ed61-5ebc-4bf5-b4de-9a6341598de3")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -13345,6 +14753,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ef0ee0e9-0fa6-4909-acf7-91ac0fde35ea")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a69d32b9-dea8-4c15-831d-7334795870e7")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -13546,6 +14976,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8d8f1ec5-ffda-46e5-9342-470bd2262d6b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "83dbcf71-560c-4693-af8e-80559ee64f97")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/5d2edc1b-56e9-47f3-b6ea-ce2b9a027085")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -13692,6 +15144,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4a12532-e058-4cfb-be5b-6444de1dc3c9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc859401-841c-4e08-941e-453db5ef74d8")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -13844,6 +15318,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67979ce0-c1fa-4706-b762-48f6ef9c626c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "56fe4490-6db5-4325-847d-4f42a914e0a9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/25e3cd19-24ac-49ee-b88b-c0ccc96b6e38")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -13982,6 +15478,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1b81c9db-cc11-4ab7-a547-692b6f16f00f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9f7c8135-be4f-4562-8a5f-f118fe882886")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -14351,6 +15869,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71319c3a-883a-4478-8d5a-b26d0629c822")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cfdc53cc-cd5c-4cc4-9ee0-737fe3d70c04")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/06dbe37f-012e-4ac8-ad8a-965ed027d864")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -14500,6 +16040,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "21065367-49d1-47ca-8f0f-401ac703e429")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ec92b6cc-8a06-4518-ab41-bef6ea86b2f1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/6a0dbef7-f7b0-43d8-8f06-c9fd5a6128bd")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -14646,6 +16208,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "377112f3-87c2-4cae-8544-d1e4fcaf8a21")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2901AVQDRQ1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "07023742-9a7b-446d-88cc-247413717043")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -15056,6 +16640,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6ca25bdb-96e4-423a-a14f-3f7d8cf54040")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f5bf57cb-7155-4cb0-b539-191088ad6ac2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/081d9008-df6d-4244-8820-db9783999ccb")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -15205,6 +16811,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "21495239-3fef-4ab9-bf11-9da4f6897369")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0401a1da-8ec6-406b-94bc-9cf997423097")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/91584276-0502-48ab-8489-d342034c88d8")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -15351,6 +16979,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f2159e3a-04bb-49cd-985f-58d1fef8a60e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "57c6c3ed-cd4b-41fb-8e20-ddda316ff6c8")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -15722,6 +17372,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fd347905-041b-46ea-9de8-3e6d1c7397a7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07100KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "daabaa6c-1f2a-44f7-a104-4aadb7d98b78")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/cc86525a-f927-4c63-b24a-eae03fa0470f")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -15868,6 +17540,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a08f7f1a-456f-471b-b93f-e5b5278bbccd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aed1f5be-317c-40c1-b6bd-6790d16e4d28")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -16020,6 +17714,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fca49a05-6830-475f-a3cd-fac03adae421")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "90707846-4e13-47a7-b17d-afe4783c6b9b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4d31e774-bc98-42cf-a48d-5241dfb818e0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -16169,6 +17885,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7eacb884-93de-4326-846a-fcb156db2d9f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c4d9b8e5-27cf-469f-a0d4-38c8e597e41b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/05f86ac1-d6cd-4f82-a57c-20da5794651f")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -16307,6 +18045,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a2fa0805-411f-4b53-8202-54d0ff89de2d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f51aaa10-37ae-45ef-b942-3781d5dc3d7b")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -16676,6 +18436,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8ee37e10-d411-4bf7-9ad9-3e89db6ee182")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "191e40dd-f0ac-4a03-accd-eed97ab15f42")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/55273675-ae45-44c7-8c2e-db9ab658bc4d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -16825,6 +18607,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6d46ef4-bb7d-4134-b7f6-9e2fb642770f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f0c03c9b-ee28-47dc-9cf4-b8a3e872fe6a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/70e36dee-5b2b-4348-8239-f2c234add6e5")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -16963,6 +18767,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Littelfuse"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "efde7d3d-f4e0-483e-b3c9-6e6ad01b125d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SMBJ33A"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aaad5751-c701-40da-b6cf-181e45a06cbd")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -17243,6 +19069,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f1a2d8c3-45bd-4f11-b5b7-8a6b52147576")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "98649a64-2372-43c0-8446-d5bb150dd8aa")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/1506a16c-7120-4723-bb7e-7b5fa00f173b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -17392,6 +19240,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f6d269a-bbf9-4e61-9a21-41d4f7b21793")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "443ebe33-55ed-462a-8d9d-9e3687c43222")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/1aa41c02-b553-428f-8aa7-0ed46385a012")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -17538,6 +19408,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4706930b-bc56-43b4-a0f9-31667061e479")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3145a8f4-5637-45c8-a960-50570838f8cb")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -17739,6 +19631,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "979cd22c-59e3-411a-abba-a4a8b5ad203e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bf8628df-69d2-428a-8886-4965cbd9371a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/1fd01f80-640f-4822-95fa-458773917577")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -17885,6 +19799,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "KEMET"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a99877f2-9acc-4806-9d3a-f090b5e9a87f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "T491B226K010AT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "22338c78-cfa8-4ac3-94f0-73ebe5e9b3eb")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -18083,6 +20019,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "41f53e43-bc8e-4a95-84ba-ecd7d6460672")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAV99,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c0501881-ed34-49db-aff1-cff202bb03bc")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -18455,6 +20413,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d547e97b-e8d2-4eda-8a35-69284266529f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0735K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "70f9a818-3079-4e5e-bd34-8aa396839829")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/140b4451-0b11-4c30-a334-e0202de48372")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -18601,6 +20581,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1cbc4f1e-cdae-4e07-ab4e-2cde1da4a87f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1d42030a-b9be-4480-8d12-18ca689d7da9")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -18753,6 +20755,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "39495984-ace3-447d-b62b-bbb33716287f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "89645a16-d5d6-4dff-b7f4-4180139c4dc7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/2efe9a94-b92c-467e-8863-dcc07cb10321")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -18899,6 +20923,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "20c6c5f6-800a-4a7a-8f7c-9b7843411916")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a2e43d47-3c97-4006-8e17-b33b23f2a076")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -19051,6 +21097,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b3c57678-7fa3-4856-94c3-15d9fe9454dc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d59a3a8c-c21d-46fa-8671-7022420bd86b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/8f1d7615-eb4d-4283-9335-9520bd191509")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -19197,6 +21265,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "64f3a310-7f40-4e8c-902d-c0a599e83d99")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BSS84,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "44de8012-4a6f-4903-801c-9869e76b5822")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -19569,6 +21659,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d0b2fe7b-1eb6-4405-9b03-c8425b887000")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1660f3db-557c-4129-9d97-d1bc24ca6117")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a274dfa3-4e72-45ab-9e55-d1c1753c1c4b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -19673,7 +21785,7 @@
 				)
 			)
 		)
-		(property "Value" "22u/50V"
+		(property "Value" "47u/50V"
 			(at 0 5.2 0)
 			(layer "F.Fab")
 			(uuid "198fe16c-1421-468d-bff6-867bc6905080")
@@ -19715,6 +21827,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Panasonic"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "745e33b4-a8a6-4922-9bad-73484a985100")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "EEE-FK1H470P"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "69a758fb-5c94-4df9-b3a2-f1e2978320d2")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -20156,6 +22290,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "121d792f-a763-4744-947f-41365debb3bf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e0f6957c-ed00-47e4-89e3-1336989324b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/84b7ee05-9a3c-45fa-90a8-406adfa8183f")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -20305,6 +22461,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c619700-384f-4805-948e-3ce9b73c6f29")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c894b600-3d81-41fe-aa74-b057ca4af7c4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/749d4052-d75d-434e-98b8-90aad9d4d4c6")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -20451,6 +22629,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4358ddbb-de8b-46ae-b650-8ae4eabba692")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2901AVQDRQ1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4c568e1-e47a-4890-8311-4c1550810357")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -20861,6 +23061,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "43e5fef1-8e62-4b06-aaad-aaa8d7b36b86")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "943c138c-ac2f-4cfd-9750-4a5cf9dd579b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ec6c3c89-b277-41ca-a4ea-c706f4ae1ee9")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -21010,6 +23232,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "97d5fe28-3e30-4a76-ad56-e5dd4f3fb1e9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0722KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "269e6674-5f62-45d6-851b-697dc4cb99e0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/3ed908e7-a78a-48f0-ba98-ceab9d702f38")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -21156,6 +23400,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "96ce9e83-5f2b-4a08-b1f8-e799e80a11be")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bf6a9245-27a0-4ed8-b21b-83127917f3ce")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -21357,6 +23623,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "080349bb-bde6-434d-9fe1-b5bb7fe50d10")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5a90e732-932d-4b32-8042-0eef34500091")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4277c113-7c87-4891-acba-37518d7f6a56")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -21503,6 +23791,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f54b2654-71ae-413e-9571-f2afb34b4455")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aa2590bf-4ade-48a0-9e47-cf90d09d00ae")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -21874,6 +24184,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6dc74e2-1052-42a9-b289-94529818bc65")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fb7af550-32bd-4aa4-ad49-50e8456d4c7e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4481215d-e783-4c49-b460-329c3e6fd3af")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -22020,6 +24352,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d437e239-19ff-4ddf-a5a7-106bd34f2be7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a535b2bd-4723-4ded-b183-a55e3bba2754")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -22221,6 +24575,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a064b0e0-da34-4332-981a-25a55d268ade")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e5f2263a-b678-4c4a-9c83-38e3264f71dc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/519aaa9f-c9d4-4af7-afc3-b4718d17afec")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -22370,6 +24746,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "313fbc58-d832-4e73-a5e5-8b1a0e769cd6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c93822b-24fa-4656-9355-7b9bd80ec77c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/8e673679-8c54-4d5b-a638-97850794563a")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -22516,6 +24914,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df2fe208-0db2-4762-94bf-4e03d9ac89d0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5cac852f-ff3c-4cee-9c44-3171fc8ce6d1")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -22706,6 +25126,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b9d6d766-1d59-4a17-a555-2d151ba126ca")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f8776ee-d72c-422c-b34e-e1d53e4160cd")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -23072,6 +25514,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "17451382-10cb-4747-a20d-0650d47cdcbf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAV99,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "07805a20-7be1-4984-bdd6-f05ce50b1f5e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -23444,6 +25908,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e772d459-ab15-4623-a48b-996ebdb54575")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "882c1991-7042-4cc6-bd27-dcd1abb36862")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/f4ea4a86-b14c-4929-b7f4-0d04503af32e")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -23590,6 +26076,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e092ae80-1173-4f7d-a65f-fbfe2561d3c1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "44bd769f-f4b3-4ea9-bcce-ee63c59e0abb")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -23788,6 +26296,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "18aa02a5-37b2-499c-b030-6bdf34fc423f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3e374da8-7b17-4930-a2b6-ff42fa97d621")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -24159,6 +26689,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67b4eb88-6f74-42a5-a4a2-d554c33c65d5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5c9c1a78-b763-48e9-b96b-546d3a9e5d4d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/25662567-ffb8-4cfa-ab21-977d111ca570")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -24305,6 +26857,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c242ad8-d076-4967-8229-76cd73e3e49b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df9ebe83-188f-47ce-8a0b-ec04067ea9b6")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -24457,6 +27031,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "208cfdc2-0e3c-4979-b360-cff6a19145bd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6792f795-523d-43f2-a84f-532b7a1a2568")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4f151384-205e-4207-a9af-303f1d9a3f73")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -24603,6 +27199,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9c33d530-084b-4808-b438-a6c93a14e0b4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07300KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "550f4f16-4e5f-42c0-bd02-85b23c766a5e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -24755,6 +27373,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ec264fbb-2ba5-4aa6-8d35-dd32afe2bcd7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "797d4522-ad9b-491d-b2a5-cfb3f81640ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/31749fb3-7fd1-4646-b74b-01101c50aab2")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -24901,6 +27541,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "62de683c-ac1a-4375-aa76-8a8cb3f06860")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "056a58b2-290b-4e45-ab86-5484c51867db")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -25053,6 +27715,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7ba94b1e-1906-444e-bf09-a28bb4c9a9f1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f9f32137-4ae9-48e8-a9b4-41c62654b3d5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/5fc7dbcc-ac19-4ca6-8391-72f4383a8efc")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -25199,6 +27883,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "89616d2d-1bf0-45ed-b814-1fbdb7bf583c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07100KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "baeaf614-1ddb-4673-91e3-2746f0497699")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -25351,6 +28057,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b70d0792-2fe9-45b7-bd6a-b8a27d929a5f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07100KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4548629-f96b-455f-95ec-c6999ba68550")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/932a3b7e-cf09-4f33-8479-cde84f35ee61")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -25497,6 +28225,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3eef837f-1f5d-47fe-b5cf-393a74a17b2d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aaa6c2c2-1294-4a1a-acaa-1315f978ea60")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -25868,6 +28618,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "19df148a-a0c4-4aa8-9d16-9a9b045f897d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1ee7f299-b39f-49c4-923a-7aaea1408035")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/586cb2c3-b186-4d11-bf53-1e6567fa5d5f")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -26014,6 +28786,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f5e86f3a-3677-4524-9716-ffb9a921b369")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080RS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3c3237cd-9f7a-4a9e-9d86-1520d3e8d28d")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -26212,6 +29006,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c93daf66-2ed9-4157-9898-0aae1cfe1a20")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1e97a205-0f77-462b-8b52-99c56042f687")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -26583,6 +29399,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "397a8458-77a6-4a7c-b48a-008296fdb1d0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B105KBFNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "880dda6b-911d-417b-a249-0921860d853f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ce0aa58d-8097-4dfc-a87a-f90b24dcc1c1")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -26732,6 +29570,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3b71a29d-f1ec-44ff-b8a3-896daa6c6ca0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c513da3-c3c3-4276-9a6e-12fa5388a97d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/01feb282-cb8f-45f0-95ea-8326e363a9e2")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -26878,6 +29738,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4586973-722a-4b6a-94e2-dfb1a5f189fd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4e224dab-8d72-47b7-bc9e-c18cd2afa389")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -27076,6 +29958,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51602d36-98f1-4695-ab1b-789d05f9446e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d879dd30-5899-4640-80f0-0b2569f03982")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -27447,6 +30351,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "851943e5-3441-4ab4-be39-7beb80e0f48b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e29b01b1-0991-4334-b2bb-c83ff6b5d036")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4cdeec3a-a515-4e89-8e59-5c93ea9385d2")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -27593,6 +30519,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c27a5780-45df-4e36-8e9b-c7c2d3e1ba76")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "48e8d204-288a-41cb-b51b-219258e676d6")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -27745,6 +30693,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c47a7513-6f94-40e2-89ae-ca8a59e22342")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3578a491-a8f6-4a81-9565-1281bfcd694f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/f6584c4d-b06c-4966-96aa-0bdd9b222d6d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -27894,6 +30864,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ad1fa21d-cb00-4bf4-99e4-625f4b731410")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1abf6688-9845-4d9f-9440-3a3781d09e86")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/2d91afdc-618a-4a75-96d1-d9500cac9d22")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -28040,6 +31032,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "84ba3306-fd96-4b64-b2b3-55bffcf1edab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAV99,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "72d4db30-374d-4fd4-a589-98244f49f90b")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -28412,6 +31426,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8ec821d4-381c-45b9-86aa-e10a95e89b01")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a6858b38-df4d-461b-893c-74901c7b58a8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/f31b9415-6e8d-4e5e-84f7-3b633091ac6b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -28780,6 +31816,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f885536b-0c8d-4311-9cbb-a4643fe8c4a5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9fdd88b9-d504-467d-8729-f7f114c32819")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/f1bb7591-55b1-4222-89e1-e500bab2d226")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -28926,6 +31984,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0c881244-da11-4eff-b2ab-a239a98d3a10")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ade1c041-288f-47a1-be81-6a842175968a")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -29184,6 +32264,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7c508cb5-9600-4102-b9e1-a0ac739e32fa")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "61300311121"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "61190b1b-0de3-4c26-97ca-8597306430d5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/bc0190c5-f7fc-4f84-ba90-cb9f081e9104")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -29423,6 +32525,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "91f68cb3-4ae7-4889-9c96-743ed267bb28")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c888a22-c9ee-45c8-a6af-01ff06467459")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/31ecfaed-4539-4493-8b3d-65b45c1b1abb")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -29572,6 +32696,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "11b2e456-a824-4cf3-bcb9-cf39d14bd4f2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747RL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "774e7756-868e-4f90-aa7c-548c0c4510df")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/31311da5-0e9e-4ce1-b3df-381b521c58af")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -29718,6 +32864,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f624eabb-3122-4412-9623-561b473a88cf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc616ba1-2fae-4694-a685-6b70001e338e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -30089,6 +33257,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fb9b7932-d8b5-4a73-87b8-d079110fec6e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "eb4d59a1-6c37-4286-851b-4b3c084645ab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a5e611fb-b484-4bfb-ad0c-f8b55ae36361")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -30238,6 +33428,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "38d51145-3d90-4c26-acbc-ca92bf0a2bfe")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07100KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "790e2808-ec96-4fa3-beaf-9b6886f88465")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/e96a4a63-6e69-4e1b-a382-e6eb4583d7e9")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -30384,6 +33596,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "050f8871-279e-4080-b8a7-2ef1ccf9688d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "74HC86D-Q100J"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "058cfa19-a43f-4ec4-a2fe-4c6ef24e7eb9")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -30794,6 +34028,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2fae3a0c-355f-4466-b205-3b65fe81b0ab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f82145c9-febc-46aa-b079-25a0c0a84b3e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/7d4aaba9-736f-48dc-bf8f-486743cc0887")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -30940,6 +34196,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "45f93de4-ce20-4776-a8a8-5aa536fbbbab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b385392b-b5bb-4911-b094-6a03cfcfb098")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -31311,6 +34589,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67245f3e-669b-45af-a0ee-e88caaf73f97")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cb3faa3b-ddf8-4f38-8f46-ff1f3a2f58df")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/b5a3847e-dd35-44c8-a7a1-082cd6679d63")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -31563,6 +34863,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "527a9817-2dd3-4848-a144-96cad9ca6cba")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "585993b9-5710-42b2-8880-83ea4b98daa4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -31934,6 +35256,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "472dd1a8-4195-40e9-bfdc-1f489721f9bc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0766K5L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d85781e7-243e-4a85-8921-d9d9e8115ede")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/65945a59-67cd-4a72-aa84-660288b737e0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -32083,6 +35427,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "209d1ee2-efb8-411b-9d82-31e343b41e1a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d76ce007-d774-430b-88ff-93ea60b48994")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/bc0da9c8-8404-45b6-90e4-be2d7ff9c439")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -32229,6 +35595,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1504ab79-5d6a-4736-b624-00823f694a96")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAV99,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9e411314-7440-49ee-bace-59a11d9ba599")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -32601,6 +35989,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "94818a8e-a259-4f11-94ef-e3ec17cde497")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "af7a7a5f-1e8b-4798-9993-f5aa5bf1b94c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/b03ef675-1098-40ec-93fc-7fbead9bdab0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -32750,6 +36160,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6c7f52a2-2946-4858-94a6-48d239a55594")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5fac97a1-f536-498c-b0b3-cad484554f10")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a70c16d5-1ee3-4f0d-a3b6-384e977f22ad")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -32896,6 +36328,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fed9679d-98a4-44f5-a273-e0f9e5c78799")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b903d09d-1a20-4215-8304-f9571b01544e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -33267,6 +36721,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "caee13b6-1479-4e58-9d59-faebd4b587b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fe51bee2-2119-4774-9fb3-8e4922910128")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ca84b6d6-403c-45d6-b5aa-5566b20272e1")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -33635,6 +37111,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b68e267c-5e78-4ac0-82fe-0c8d00c04cd7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f05394f6-b710-484d-96b3-b8860a11e5e0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/75a0e511-24c3-4053-8f20-abe8d64b84c3")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -33784,6 +37282,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6229184f-6666-4f93-bb6c-d0e49ce1411f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3bd1183e-f492-4567-ae3f-6325eee7675b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/78098fbf-87d7-4430-abc5-704b235e925b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -33930,6 +37450,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3c9079fd-d9e3-4c2e-aefd-0f3b619a2fee")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "42093f2c-068c-4ec9-bbe9-25a446ff9c80")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -34131,6 +37673,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7fd7b928-779f-4263-8565-8120350ef51e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-07100KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "48881838-c100-4b0f-ad4f-21f5c79c22a7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a07ea905-9633-4616-8540-047e933f569e")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -34277,6 +37841,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Murata"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7a409da4-8445-4695-9813-111c9c7a4254")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "GCM21BR72A224KA37L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25a64b04-55fa-4d9b-a294-d8836ed68d02")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -34429,6 +38015,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5f0b8531-2b49-4403-a95d-0626640eb039")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d91eab04-cc4d-4871-beab-08c44d5a5844")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/22b231ab-44b0-425f-97f6-903b18f9fec0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -34578,6 +38186,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1c1a9a1e-39d3-4f8e-ba53-2c2e7a7605f7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6dee8a26-ed1b-4f73-8ba9-9a66a1f8daaa")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a9045e2c-69da-4efa-826b-46cf6522b4a6")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -34716,6 +38346,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Vishay"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9b896a19-03bf-42a1-a0c7-df5ddb8a7506")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SS34-E3/61T"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f350a31f-e241-4273-a38a-75f9d86e4a8d")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -34996,6 +38648,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "99b0be0e-9adb-42f2-844a-940dee44215d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40e57042-a6d2-43da-8434-2dfdc9f4a85c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/cd5c3f2f-e6c1-4eb2-a2b2-8f171ad88392")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -35142,6 +38816,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f7bb27fb-c3d8-455a-8ca9-64a44567a700")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc33aa8c-db5b-4f80-a5be-e83f135524e3")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -35294,6 +38990,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "18701c70-e3f4-4e01-908d-9a3edfd43833")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0d577dd1-0711-4bf8-9822-f1d3c34dfb6b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/e7c739da-b336-4d53-8fb5-243aa7a00abb")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -35440,6 +39158,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f378baa0-cf32-446b-8cc6-1c6e668b6c11")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "53ad4630-3d57-4d76-b12b-90d7db11f6a1")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -35592,6 +39332,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b9d24033-2ff4-43a0-a9d4-41dc64efcc79")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b07fc536-a546-4c55-ba82-495fb2b218e1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/d2747c8a-0098-44d8-afbb-167dd6e0a720")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -35738,6 +39500,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "151c2d87-e5e0-4a45-8fb5-ed6d03ebaef1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c8afe0f5-4064-48e6-ab5b-51dea0f5835a")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -35890,6 +39674,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "180d1ecb-009b-43a0-9fdc-e2ce9bdf3272")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "189aeff6-b7ae-4d09-a17f-cc99d1c0ca3f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ca78e91d-db41-4366-8e9e-7d2e9a23ab36")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -36036,6 +39842,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7f21a873-6e4c-47a6-95ef-998ccb6a08f5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "970ced3d-c06e-48c8-8047-0bf7a4d0ade5")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -36407,6 +40235,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ceb4e600-81de-4e41-ba17-cbbd62096b6c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b989cb5c-3177-4582-b60c-9af7c2107f83")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/44fabc60-b684-4666-9014-7352a585faf0")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -36553,6 +40403,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0e94e13d-e2ba-4289-bb87-3b26f5d6fc2c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "af821da3-9ed2-4162-9f4b-b3f9e234198b")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -36705,6 +40577,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "996ad24c-4b1d-4f4a-b73f-4de8039cef3d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3f20af68-6b13-4c58-ae0f-37fbd933faab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/ebd10dc3-3c32-42f0-8901-75b55d378f53")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -36851,6 +40745,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "24e243d0-000f-47be-86c8-117bcadc3384")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cc9582ee-2ce0-4a4d-8bdd-bdd20508ea62")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -37003,6 +40919,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc3fc3c7-d087-45c3-bdf1-dc45779d2f24")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a1eb47ec-6afb-45e8-8957-741e9fbcf964")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/09f64c26-0cbd-4343-87d2-ff037d528b0c")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -37141,6 +41079,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "65431935-9763-4473-96ad-cd8ca91217e6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2937IMP-5.0/NOPB"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "746abb7c-ca61-4623-8b4f-6a547a28e834")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -37409,6 +41369,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ac56b0a0-3fce-409a-9ef4-5f666c2ebede")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "96c8dff2-7b56-4e1f-bbd5-51c7227aa580")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/64573f2b-90c6-4949-84e8-35f66fd1726d")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -37547,6 +41529,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c111a464-96a4-487d-9026-b26ac8e71aac")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dd41883a-a46b-4dcd-a259-d7c88d6aa7f1")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -37916,6 +41920,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cdcf84c6-5cf9-42aa-b04b-f2d13d7a9667")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c9122390-fbf3-426a-b696-c0c495312468")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/cc009794-e022-4a7d-bd6e-3d59d7e8e6f8")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -38062,6 +42088,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "32bb6dcc-9f9b-4027-8c9e-0a85650cdc20")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d934e08f-632a-4363-80a2-1eb8753e426b")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -38214,6 +42262,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "070cab45-4e82-40c8-a20a-c1462a1e83a3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fa143510-71a7-4e92-afb7-ed616311a3eb")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/572f89ec-b017-43c8-b943-3596a78b7c56")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -38360,6 +42430,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "079e38db-660e-489e-8e71-fcd838702404")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "61300311121"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a185d48e-a69f-4783-920c-e9955bca309d")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -38602,6 +42694,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "57f53d6f-19e5-4d04-a9db-7fa7b65edb3f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2b579697-2b1c-4025-a8ce-18fb25340e55")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/5e7f5337-76f2-41ab-bf21-b5cbd50c5845")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -38748,6 +42862,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "57d780a3-6e69-4341-9b36-706a0f8dd7a4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "77fcd7e4-7e25-4137-80b4-393d0b63c06c")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -38946,6 +43082,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "44a14b77-6877-4357-ba35-37f1723703fe")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0b840889-cbd9-4ac9-8478-51b2b4c4c2c3")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -39204,6 +43362,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "859d141e-bc61-4bc2-bc80-3278bd6db517")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c045fe68-3374-4926-9b4a-af0162b2968b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/209efa8e-0ab4-47c6-afd0-1ef83b304f38")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -39350,6 +43530,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a5412766-a776-4aa4-b3b4-0ce420d06a32")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cee25ff9-98b7-40fe-aa9a-df64a7dbd4d4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -39502,6 +43704,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8499a2cf-1818-41e1-9f29-e88edc41b83f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B473KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4ca303db-af1b-4016-94b8-5b523c258ebd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a64ad6e8-7580-4515-bdf1-cfb675f76b74")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -39651,6 +43875,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "363bd764-b8af-42ec-b761-78abe90e3087")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2ced47d0-a6b8-461b-b754-2d44f12642fd")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/0786e7d8-165d-47da-b1dc-e823878b3a89")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -39797,6 +44043,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6a44c414-f421-44f9-b3e1-81194ee08be8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "61300311121"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7923ff47-96fc-4cf7-a4c8-77a7d74b7f71")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -40039,6 +44307,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3162e641-d944-4634-b372-f0f4312a587d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "99f56173-2a8d-4be3-8b60-cb9b410549ac")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/cffc503e-650b-45bc-a08b-27612110627b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -40185,6 +44475,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cebfb40e-f9fc-4866-b0da-8b3e91d3af73")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7bcff7a0-73a1-476e-832e-7e837ac8e23d")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -40556,6 +44868,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25f19fca-9a49-4bb6-9c11-1e82600f570b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "de554368-21c1-4012-bba9-e4a0a02792e1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/72432d36-f831-4da8-93b6-404c3a46c558")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -40924,6 +45258,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f34681ab-6dc9-417f-9862-153945b3b085")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "88e12768-d791-46b7-9ac4-4e36c16ed9b9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/e679fbae-1b57-4e65-bb74-45e692021ffd")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -41070,6 +45426,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6b5793cd-6082-420e-8466-d88d8a1d8fc4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "48cb3a1b-0b3f-415c-a771-f84b6d8362f9")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -41222,6 +45600,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "273cf614-10ca-4ffd-95d0-1e0060df9bc7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cec2a60b-36c0-4ed5-a63d-af2a79d4a749")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/f98a2450-ee0a-40c1-ba97-dc40bb778d8b")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -41368,6 +45768,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc1d5295-c268-4e07-954b-30b4b116b67d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "150080GS75000"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "81723a08-1a2c-45b9-8d9d-32819e81bca9")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -41675,6 +46097,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7369eb4d-c07d-4c44-9ee1-c3a184c44b19")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071ML"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3b217daa-d391-49c6-bf79-89391714763d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/12766d5f-8b40-4ed5-8d63-713cc25cefb1")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -41821,6 +46265,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "37cf3a2c-4f19-44ab-a62e-f26b8c3cfc4a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6eac230f-caa7-48c1-8eea-793474a8c6b4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -41973,6 +46439,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bcc57172-c31e-4baf-9481-ea21517e7f21")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "394ecc26-5ed3-47d0-8576-992185854c40")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/100fd0df-1f73-4f38-b0a5-75b9388b6727")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -42122,6 +46610,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "967b85a9-56ef-463a-b202-f4364c5f423d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "089b871d-bcec-412b-9cbd-dd082b8638da")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/2a56adc7-661c-4e04-b45d-db870faed878")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -42260,6 +46770,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Infineon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c31e1454-391f-4e8f-aa5f-03e49297775c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BTS70021EPPXUMA1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "508fa5e3-8fcc-4b5e-b97c-e283f97141e3")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -42629,6 +47161,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "78c7d057-b4b1-4ac2-9d82-fc6a65817c31")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5e461d02-cacd-4783-8cdb-2b8a211bc504")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/d5326cc8-cc37-467d-bd5c-76bad78aa502")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -42775,6 +47329,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dfdd2ae0-027a-499c-a958-641941606a7c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8e2cee14-4e75-468e-a179-60839f12cd34")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -43146,6 +47722,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dde52296-35b1-4750-9039-e8ff80d339b0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9c21e4ee-e867-4c16-b289-b1ea6715af8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/0fa64e39-c0ce-46ba-82e0-a451ea03306e")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -43292,6 +47890,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9238895c-a5c4-428c-a134-82e89f0324f4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba7db79b-c085-4595-a815-57a3182213f4")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -43444,6 +48064,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ca41b29e-936b-4573-8625-70bc46afcbdc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B334KBFNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3401a1f2-2d27-46ca-9e05-9cab57bdf7cc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/279a560d-eab4-4bf3-9abf-d705afbe319a")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -43593,6 +48235,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4575f346-62e3-4ba6-9568-de03399bbbea")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e088e0ba-1155-4562-81fa-e14e5654cb35")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/45b657a6-2c25-41a9-8a19-9856a7dd37df")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -43739,6 +48403,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28be4779-1506-4ad5-bcca-c70eb4c9f9ea")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c429ba7c-0777-4468-9309-8bf16ae7d8ff")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -44110,6 +48796,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bd4b040f-0bbc-4c68-9264-f8951a576e13")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b8bc1652-bdd3-408d-846f-9abca5f8f059")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/4544e98c-41bb-413e-9ad6-611b280910c8")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -44256,6 +48964,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2807789d-9922-4fe4-93b0-3a12020ce37e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B104KBCNNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a6514922-6b47-4441-9e8a-19c93ec8cd96")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -44408,6 +49138,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f3b7c22f-3001-47a2-b606-826862795e88")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-073K9L"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "752603ed-5e19-4df2-bb03-346ba37adde5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/714dec02-9f03-41e0-8f0f-eea1dd2bbe07")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -44554,6 +49306,28 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7e536cec-cdc3-4692-a697-cc2c8eba9a8a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KOQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "42f684b5-84d6-48a7-a50d-e2cb4b433cf3")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -44706,6 +49480,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c1c9952-4472-44c1-bc2c-8b00b87e7e71")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea15aecd-4727-4194-abd5-c08bef177f4d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/a0b83d06-6028-48e1-9d4d-741eef7e8176")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -44855,6 +49651,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yageo"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "461a37cc-aec4-4eea-aad4-4a27c343df26")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dec70457-8916-4907-bd90-e7e7f74878c2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/6a856e69-1711-45e2-ac46-5ef024d8c883")
 		(sheetname "/")
 		(sheetfile "PDM.kicad_sch")
@@ -44993,6 +49811,28 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Littelfuse"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b3a98c0c-6465-403f-a72d-2e2238e40e1f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SMCJ33A"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "511ef2e4-f4f6-49f5-8c55-4e1fc289699e")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
