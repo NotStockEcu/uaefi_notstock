@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "PDM")(type "KiCad")(uri "${KIPRJMOD}/PDM.pretty")(options "")(descr "PDM project footprints"))
+)
