@@ -1,0 +1,4 @@
+(version 1)
+# Freerouting necks tracks down between the 0.65 mm pitch pins of the BTS7002 / SOIC parts
+(rule "neckdown"
+  (constraint track_width (min 0.15mm)))
