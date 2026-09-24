@@ -73,7 +73,7 @@ for ref in comps:
     n = int(re.sub(r'\D', '', ref)); k = re.sub(r'\d', '', ref)
     if k == 'C' and 31 <= n <= 59 and (n - 31) % 4 == 0: put(f'ch{(n - 31) // 4 + 1}', ref); continue
     if k == 'C' and 25 <= n <= 28: put(f'cmpU{n - 20}', ref); continue
-    if ref in ('U1', 'U2', 'L1', 'D2', 'D3', 'R1', 'R2') or (k == 'C' and 2 <= n <= 12): put('power', ref); continue
+    if ref in ('U1', 'D2', 'D3', 'F1', 'R96', 'D45', 'C62', 'R97') or (k == 'C' and 2 <= n <= 8): put('power', ref); continue
     if ref in ('U3', 'JP1', 'JP2', 'JP3') or (k == 'R' and 3 <= n <= 12) or (k == 'C' and 13 <= n <= 17) or (k == 'D' and 4 <= n <= 8):
         put('inputs', ref); continue
     put('logic', ref)
@@ -183,6 +183,9 @@ zone('/VBAT', ('I2',), (m, m, W - m, PLANE_Y), 5, name='VBAT')                 #
 zone('/VBAT', ('F', 'B'), (reg['vbat'][0], m, reg['vbat'][2], reg['vbat'][3]), 5, name='VBAT_STUD')
 zone('/VBAT', ('B',), (m, 48, W - m, PLANE_Y), 5, name='VBAT_B')               # under the channel blocks
 zone('/GND', ('I1',), (m, m, W - m, PLANE_Y), 5, 'thermal', 'GND')
+# In1 strip between the OUT8 and OUT1 copper, down to the J1 signal columns: ties J1 B3/C3 (GND) to the GND plane.
+# It is a GND plane for the router too, so no signal may cut it.
+zone('/GND', ('I1',), (col[5] + rs + .45, PLANE_Y - 3, col[3] + rs + .1, H - 1.5), 9, 'thermal', 'GND_TIE')
 zone('/GND', ('F', 'B'), (m, m, W - m, H - m), 0, 'thermal', 'GND_FILL')
 zone('/GND', ('I1', 'I2'), (m, PLANE_Y, W - m, H - m), 0, 'thermal', 'GND_FILL')
 

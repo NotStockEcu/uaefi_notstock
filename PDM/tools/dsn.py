@@ -9,7 +9,7 @@ def cls(name, w, clr, vd, vdr, prio):
 cls('Supply', 0.6, 0.2, 0.6, 0.3, 1)
 cls('HighCurrent', 1.5, 0.2, 0.6, 0.3, 0)
 ns.ClearNetclassPatternAssignments()
-for p in ['/VKEY', '/VKEY_RAW', '/+5V', '/+5V_DISP', '/SW5', '/GND', '/LAMP', '/PGND*', '/VCC5']:
+for p in ['/VKEY', '/VKEY_RAW', '/+5V', '/+12V_DISP', '/VCOMP', '/GND', '/LAMP', '/PGND*']:
     ns.SetNetclassPatternAssignment(p, 'Supply')
 for p in ['/VBAT', '/OUT*']:
     ns.SetNetclassPatternAssignment(p, 'HighCurrent')
