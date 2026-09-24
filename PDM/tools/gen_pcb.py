@@ -204,5 +204,9 @@ zone('/GND', ('I1', 'I2'), (m, PLANE_Y, W - m, H - m), 0, 'thermal', 'GND_FILL')
 
 board.SetFileName('/prj/PDM.kicad_pcb')
 pcbnew.SaveBoard('/prj/PDM.kicad_pcb', board)
+# KiCad has no 3D model for PG-TSDSO-14-22: use the project one (tools/bts_3d.py)
+txt = open('/prj/PDM.kicad_pcb').read().replace('${KICAD10_3DMODEL_DIR}/Package_SO.3dshapes/Infineon_PG-TSDSO-14-22.step',
+                                                  '${KIPRJMOD}/3d/Infineon_PG-TSDSO-14-22.step')
+open('/prj/PDM.kicad_pcb', 'w').write(txt)
 print('groups', {g: len(r) for g, r in groups.items()})
 print('overflow', overflow)
