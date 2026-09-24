@@ -4,13 +4,15 @@
 #   kicad-cli sch export netlist -o /prj/pdm.net PDM.kicad_sch
 #   python3 tools/gen_pcb.py
 #   python3 tools/dsn.py            -> PDM.dsn (net classes, In2 = VBAT kept free of signals)
-#   java -jar freerouting-2.4.1-executable.jar --gui.enabled=false -de PDM.dsn -do PDM.ses -mp 12   (needs Java 25)
+#   java -jar freerouting-2.4.1-executable.jar --gui.enabled=false -de PDM.dsn -do PDM.ses -mp 16 --router.optimizer.enabled=false   (needs Java 25)
 #   python3 tools/ses.py            -> imports the routes, refills zones
+#   python3 tools/stitch.py         -> GND stitching vias
+#   python3 tools/join.py           -> closes leftover gaps with DRC-checked links (needs a t/ copy of the project)
 import re, pcbnew
 exec(open('/prj/tools/net.py').read())
 
 MM = pcbnew.FromMM
-W, H = 124.0, 106.0
+W, H = 124.0, 116.0
 X0, Y0 = 100.0, 50.0            # board top-left in page coords
 STD = '/usr/share/kicad/footprints'
 
@@ -49,7 +51,7 @@ for ref, c in comps.items():
 #   J1 col 8/7/6 (left): OUT4 A7+A8, OUT5 B8, OUT6 C8, OUT7 B7+C7, OUT8 A6+B6;  col 1/2 (right): OUT1 A, OUT2 B, OUT3 C
 order = [7, 5, 6, 4, 8, 1, 2, 3]
 bx = {ch: 9.5 + 15 * i for i, ch in enumerate(order)}
-BTS_Y = 74.5                                      # BTS rotated 270: control pins up, OUT pins 8-14 down, EP = VBAT
+BTS_Y = 84.5                                      # BTS rotated 270: control pins up, OUT pins 8-14 down, EP = VBAT
 TOP = BTS_Y + 2.1                                 # output copper starts just below the OUT pins
 PLANE_Y = BTS_Y + 1.7                             # VBAT / GND planes end here, below are the outputs
 Hc = H - 15.9                                     # J1 row A (PCB edge is 7.5 mm below row C)
@@ -60,6 +62,9 @@ PEGL = (X1 - 32.775, Hc + 6.3, 2.2, 5.0)          # NPTH pegs (x, y, w, h)
 PEGR = (X1 + 7.825, Hc + 7.05, 2.2, 3.5)
 
 chre = re.compile(r'^/(OUT|PGND|IS|DEN|PIN|LG|FLT|OVL)(\d)(_F|_N)?$')
+# per channel: OUT EMC cap C32+4k, LED resistor R37+8k and green LED D13+4k go onto the edge of the output copper
+edge = {ch: (f'C{32 + 4 * (ch - 1)}', f'R{37 + 8 * (ch - 1)}', f'D{13 + 4 * (ch - 1)}') for ch in range(1, 9)}
+edge_parts = {r for v in edge.values() for r in v}
 groups = {}
 def put(g, r): groups.setdefault(g, []).append(r)
 cmp_pair = {'U5': (1, 2), 'U6': (3, 4), 'U7': (5, 6), 'U8': (7, 8)}
@@ -69,6 +74,7 @@ for ref in comps:
     if ref in cmp_pair: put('cmp' + ref, ref); continue
     if re.fullmatch(r'U1[0-7]', ref): continue
     chs = {int(m.group(2)) for (r, p), n in pin2net.items() if r == ref for m in [chre.match(n)] if m}
+    if ref in edge_parts: continue
     if len(chs) == 1: put(f'ch{chs.pop()}', ref); continue
     n = int(re.sub(r'\D', '', ref)); k = re.sub(r'\d', '', ref)
     if k == 'C' and 31 <= n <= 59 and (n - 31) % 4 == 0: put(f'ch{(n - 31) // 4 + 1}', ref); continue
@@ -78,10 +84,10 @@ for ref in comps:
         put('inputs', ref); continue
     put('logic', ref)
 
-reg = {'logic': (8, 2, 40, 39), 'vbat': (42, 2, 82, 17), 'inputs': (42, 18.5, 82, 39), 'power': (84, 2, W - 8, 39)}
-for ch, x in bx.items(): reg[f'ch{ch}'] = (x - 7.2, 50, x + 7.2, 70.4)
+reg = {'logic': (8, 2, 40, 43), 'vbat': (42, 2, 82, 17), 'inputs': (42, 18.5, 82, 43), 'power': (84, 2, W - 8, 43)}
+for ch, x in bx.items(): reg[f'ch{ch}'] = (x - 7.2, 55.5, x + 7.2, BTS_Y - 4.1)
 cmp_x = {'U8': 9.5, 'U7': 32, 'U6': 62, 'U5': 92}
-for u, x in cmp_x.items(): reg['cmp' + u] = (x - 8, 39.8, x + 8, 49.6)
+for u, x in cmp_x.items(): reg['cmp' + u] = (x - 8, 44.5, x + 8, 54.6)
 
 def bbox(fp):
     cy = fp.GetCourtyard(pcbnew.F_CrtYd)
@@ -95,7 +101,7 @@ overflow = []
 def pack(g, refs):
     x0, y0, x1, y1 = reg[g]
     items = sorted(refs, key=lambda r: (-(bbox(fps[r]).GetWidth() * bbox(fps[r]).GetHeight()), r))
-    cx, cy, rowh, gap = x0, y0, 0, 1.0
+    cx, cy, rowh, gap = x0, y0, 0, 1.3
     for r in items:
         fp = fps[r]; place_at(fp, 0, 0)
         b = bbox(fp); w, h = b.GetWidth() / 1e6, b.GetHeight() / 1e6
@@ -106,6 +112,12 @@ def pack(g, refs):
 
 place_at(fps['J1'], X1, Hc)
 for ch, x in bx.items(): place_at(fps[f'U{9 + ch}'], x, BTS_Y, 270)
+EY = BTS_Y + 5.3                                  # just below the OUT pins, on the output copper edge
+for ch, x in bx.items():
+    c, r, d = edge[ch]
+    place_at(fps[c], x + 3.5, EY)                 # pad1 (OUTx) inside the copper, pad2 (GND) outside
+    place_at(fps[r], x - 3.5, EY, 180)            # pad1 (OUTx) inside, pad2 (LGx) outside
+    place_at(fps[d], x - 5.6, EY + 2.2)           # LED fully outside the copper: anode next to R, cathode on GND fill
 vx = (reg['vbat'][0] + reg['vbat'][2]) / 2
 place_at(fps['J2'], vx, 9.5); place_at(fps['D1'], vx - 13, 9.5, 90); place_at(fps['C1'], vx + 13, 9.5)
 for g, refs in groups.items():
@@ -171,6 +183,7 @@ for ch, x in bx.items():
     for i in range(5):
         for j in range(6):
             if i == 2 and j == 0: continue          # BTS pin 11 (NC) sits right above
+            if i in (0, 4) and abs(TOP + 1.2 + 1.2 * j - (BTS_Y + 5.3)) < 1.3: continue   # under the edge cap / LED resistor pads
             v = pcbnew.PCB_VIA(board); v.SetPosition(pcbnew.VECTOR2I(MM(X0 + x - 2.4 + 1.2 * i), MM(Y0 + TOP + 1.2 + 1.2 * j)))
             v.SetWidth(MM(0.6)); v.SetDrill(MM(0.3)); v.SetNet(netinfo[f'/OUT{ch}']); v.SetIsFree(False); board.Add(v)
 prio = 10                                         # overlapping zones need distinct priorities
@@ -181,7 +194,7 @@ for net, (layers, rects) in out.items():
 m = 0.5
 zone('/VBAT', ('I2',), (m, m, W - m, PLANE_Y), 5, name='VBAT')                 # VBAT plane stud -> BTS tabs
 zone('/VBAT', ('F', 'B'), (reg['vbat'][0], m, reg['vbat'][2], reg['vbat'][3]), 5, name='VBAT_STUD')
-zone('/VBAT', ('B',), (m, 48, W - m, PLANE_Y), 5, name='VBAT_B')               # under the channel blocks
+zone('/VBAT', ('B',), (m, 55, W - m, PLANE_Y), 5, name='VBAT_B')               # under the channel blocks
 zone('/GND', ('I1',), (m, m, W - m, PLANE_Y), 5, 'thermal', 'GND')
 # In1 strip between the OUT8 and OUT1 copper, down to the J1 signal columns: ties J1 B3/C3 (GND) to the GND plane.
 # It is a GND plane for the router too, so no signal may cut it.

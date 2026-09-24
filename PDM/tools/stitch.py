@@ -3,7 +3,7 @@ import pcbnew, math
 MM = pcbnew.FromMM
 b = pcbnew.LoadBoard('/prj/PDM.kicad_pcb')
 gnd = b.FindNet('/GND'); R_VIA, CLR = 0.3, 0.35
-X0, Y0, W, PLANE_Y = 100.0, 50.0, 124.0, 76.2
+bb = b.GetBoardEdgesBoundingBox(); X0, Y0, W, HH = bb.GetX() / 1e6, bb.GetY() / 1e6, bb.GetWidth() / 1e6, bb.GetHeight() / 1e6
 segs, pts, boxes = [], [], []
 for t in b.GetTracks():
     if t.GetNetCode() == gnd.GetNetCode() and t.Type() != pcbnew.PCB_VIA_T: continue
@@ -28,10 +28,11 @@ def free(x, y):
     return True
 n = 0
 y = Y0 + 3
-while y < Y0 + PLANE_Y - 2:
+outz = [z for z in b.Zones() if z.GetNetCode() != gnd.GetNetCode()]
+while y < Y0 + HH - 3:
     x = X0 + 3
     while x < X0 + W - 3:
-        if free(x, y):
+        if free(x, y) and not any(z.Outline().Contains(pcbnew.VECTOR2I(MM(x), MM(y))) and (z.GetZoneName().startswith('OUT') or z.GetLayer() in (pcbnew.F_Cu, pcbnew.B_Cu)) for z in outz):
             v = pcbnew.PCB_VIA(b); v.SetPosition(pcbnew.VECTOR2I(MM(x), MM(y))); v.SetWidth(MM(0.6)); v.SetDrill(MM(0.3)); v.SetNet(gnd)
             b.Add(v); pts.append((x, y, 0.3)); n += 1
         x += 3.0
