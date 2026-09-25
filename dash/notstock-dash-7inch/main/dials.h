@@ -5,7 +5,6 @@
 #pragma once
 #include "lvgl.h"
 
-extern const lv_img_dsc_t dial_speed;
 extern const lv_img_dsc_t dial_rpm;
 extern const lv_img_dsc_t dial_clt;
 extern const lv_img_dsc_t dial_iat;
@@ -20,8 +19,7 @@ extern const lv_img_dsc_t hub_turbo;
 
 #define BIG_SWEEP_START          135
 #define BIG_SWEEP                270
-#define BIG_SIZE                 280
-#define SPEED_MAX                240
+#define BIG_SIZE                 400
 #define RPM_MAX                  8000
 #define RPM_REDLINE              7000
 
@@ -39,8 +37,8 @@ extern const lv_img_dsc_t hub_turbo;
 #define AFR_MIN                  (10.00f)
 #define AFR_MAX                  (18.00f)
 
-#define NEEDLE_BIG_PIVOT_X       21
-#define NEEDLE_BIG_PIVOT_Y       8
+#define NEEDLE_BIG_PIVOT_X       29
+#define NEEDLE_BIG_PIVOT_Y       9
 #define NEEDLE_TEMP_PIVOT_X      12
 #define NEEDLE_TEMP_PIVOT_Y      6
 #define NEEDLE_TURBO_PIVOT_X     12

@@ -18,10 +18,11 @@ The first design started from a mockup image the owner supplied (kept at
 confirmed on hardware.
 
 v2.0 replaced the screen with a classic analogue cluster after a reference
-picture from the owner: speedometer (km/h) and rev counter in the middle,
-water and intake air temperature on the left in one style, turbo and AFR on
-the right in another, every gauge with a needle and a digital readout, no
-warning lamps. The board support is unchanged; the new gauges have been
+picture from the owner: water and intake air temperature on the left in one
+style, turbo and AFR on the right in another, every gauge with a needle and a
+digital readout, no warning lamps. The owner then dropped the speedometer:
+the middle is one big rev counter with the rpm readout under its hub, and the
+speed is plain text under it in Orbitron Black, no needle. The board support is unchanged; the new gauges have been
 checked in the host simulator (`tools/preview.py`) but not yet on the panel.
 
 ---
@@ -97,10 +98,12 @@ main/
   dials.c/h       generated: scale faces, needles, hubs and their geometry
   icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
   logo.c          generated: NOT STOCK wordmark, TRUE_COLOR_ALPHA
-  fonts/          generated: 6 LVGL fonts from DejaVu Sans Condensed Bold
+  fonts/          generated: DejaVu Sans Condensed Bold (side gauges, menu)
+                  and Orbitron (speed, rpm, rev counter), tools/gen_fonts.sh
 tools/
   gen_dials.py    renders the gauge artwork -> main/dials.c, main/dials.h
   gen_assets.py   traces assets/ -> main/icons.c and main/logo.c
+  gen_fonts.sh    Orbitron TTF -> main/fonts/dash_speed_104.c, dash_orb_*.c
   preview.py      builds tools/sim and renders preview/*.png
   sim/            host build of the real ui.c + LVGL, stubs for ESP-IDF
 assets/

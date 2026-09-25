@@ -10,12 +10,13 @@ if you cut power mid-frame.
 
 ## What is on the screen
 
-A classic analogue cluster. Every gauge has a needle **and** a digital readout.
+A classic analogue cluster built around one big rev counter. Every gauge has
+a needle **and** a digital readout, except speed, which is text only.
 
 | Where | Gauge | Scale | Readout |
 | --- | --- | --- | --- |
-| centre left | speedometer | 0-240 km/h | km/h |
-| centre right | rev counter | 0-8 x1000, red from 7000 | rpm, to 10 |
+| centre | rev counter, 400 px | 0-8 x1000, red from 7000 | rpm, to 10, under the hub |
+| under it | speed | text only | km/h, 104 px Orbitron Black |
 | left top | water temperature | 40-130 degC, red from 105 | degC, icon |
 | left bottom | intake air temperature | 0-80 degC, red from 60 | degC, icon |
 | right top | turbo | -1.0-2.0 bar, yellow 0.8-1.2, red from 1.2 | bar |
@@ -24,8 +25,8 @@ A classic analogue cluster. Every gauge has a needle **and** a digital readout.
 **No warning lamps.** A value past its limit (settings menu) turns its own
 readout red, the temperature icons go red with it. The only thing that
 flashes is the shift light, see below. The one piece of text that can appear
-is `NO CAN` (red) or `DEMO` (yellow) at the top, and only while the needles are
-not showing live data.
+is `NO CAN` (red) or `DEMO` (yellow) in the top left corner, and only while
+the needles are not showing live data.
 
 ## Changing the look
 
@@ -42,6 +43,14 @@ at 4x supersampling and writes
 
 `ui.c` takes every range and angle from `dials.h`, so a changed scale cannot
 drift out of step with the needle.
+
+**Fonts**: the rev counter numbers, the rpm readout and the speed are
+[Orbitron](https://fonts.google.com/specimen/Orbitron) (SIL OFL,
+`assets/fonts/`). `tools/gen_fonts.sh` turns it into `main/fonts/dash_speed_104.c`,
+`dash_orb_40.c` and `dash_orb_18.c` with `lv_font_conv`
+(`npm i -g lv_font_conv`); `gen_dials.py` draws the scale numbers with the
+same TTF. The side gauges and the menu use DejaVu Sans Condensed Bold, each
+font file carries its own `lv_font_conv` line.
 
 **Icons and wordmark**: `tools/gen_assets.py` traces the water and intake
 icons out of `assets/icons_sheet.png` and the NOT STOCK wordmark out of
@@ -157,7 +166,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.0` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.1` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 

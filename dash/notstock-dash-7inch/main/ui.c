@@ -1,8 +1,9 @@
 /* NOT STOCK dash layout, 800x480, hand-built LVGL 8.x (no SquareLine).
  *
- * Classic analogue cluster: speedometer and rev counter in the middle, water
- * and intake air temperature on the left, boost and AFR on the right. Every
- * gauge has a needle and a digital readout. No warning lamps: a value past
+ * Classic analogue cluster: a big rev counter in the middle with the speed
+ * as large text under it, water and intake air temperature on the left,
+ * boost and AFR on the right. Every gauge has a needle and a digital
+ * readout. No warning lamps: a value past
  * its limit turns its own readout red, and only revs flash the screen.
  *
  * All positions live in the LY_* block. The artwork itself (scales, zones,
@@ -31,13 +32,16 @@
 #define C_SUBTLE   lv_color_hex(0x505357)
 
 /* ---------------------------------------------------------------- geometry */
-/* Big dials. Each image is BIG_SIZE square with its pivot in the centre. */
-#define LY_SPEED_CX   260
-#define LY_RPM_CX     540
-#define LY_BIG_CY     184
-#define LY_BIG_UNIT_Y (LY_BIG_CY + 92)     /* unit, in the open bottom */
-#define LY_BIG_VAL_Y  (LY_BIG_CY + BIG_SIZE / 2 + 2)
-#define LY_BIG_VAL_W  220
+/* Rev counter. The image is BIG_SIZE square with its pivot in the centre. */
+#define LY_RPM_CX     400
+#define LY_RPM_CY     190
+#define LY_RPM_VAL_Y  (LY_RPM_CY + 36)     /* rpm readout, under the hub */
+#define LY_RPM_VAL_W  200
+
+/* Speed, as text under the rev counter. The Orbitron label box carries a
+ * lot of empty ascent above the digits, hence the pull-up. */
+#define LY_SPEED_Y    306
+#define LY_SPEED_W    360
 
 /* Side columns: pivot of each small gauge. */
 #define LY_LEFT_CX    60
@@ -56,7 +60,7 @@
 #define LY_SUB_DY        78                /* lambda line under the AFR */
 
 #define LY_LOGO_Y     450
-#define LY_LINK_Y     6
+#define LY_LINK_Y     4                    /* NO CAN / DEMO, top left */
 
 /* ------------------------------------------------------------------ config */
 #define NEEDLE_SMOOTH 0.25f                 /* 1.0 is instant, lower is lazier */
@@ -94,7 +98,8 @@ typedef struct {
     float shown;                    /* smoothed value */
 } gauge_t;
 
-static gauge_t g_speed, g_rpm, g_clt, g_iat, g_boost, g_afr;
+static lv_obj_t *lbl_speed;
+static gauge_t g_rpm, g_clt, g_iat, g_boost, g_afr;
 static lv_obj_t *scr_dash;
 static lv_obj_t *link_txt;
 static int link_state = -1;
@@ -266,26 +271,55 @@ static void update_gauge(gauge_t *g, float raw, lv_color_t normal)
     }
 }
 
-/* ------------------------------------------------------------ big dials */
-static void build_big(gauge_t *g, lv_obj_t *par, lv_coord_t cx,
-                      const lv_img_dsc_t *face, float vmax, const char *unit,
-                      int val_round)
+/* ------------------------------------------------ rev counter and speed */
+static void build_rpm(lv_obj_t *par)
 {
     const dial_cfg_t c = {
-        .face = face, .needle = &needle_big,
+        .face = &dial_rpm, .needle = &needle_big,
         .pivot_x = NEEDLE_BIG_PIVOT_X, .pivot_y = NEEDLE_BIG_PIVOT_Y,
         .hub = &hub_big,
         .sweep_start = BIG_SWEEP_START, .sweep = BIG_SWEEP,
-        .vmin = 0, .vmax = vmax, .scale_div = 1.0f,
+        .vmin = 0, .vmax = RPM_MAX, .scale_div = 1.0f,
     };
-    build_dial(g, par, cx, LY_BIG_CY, &c);
-    g->val_dec = 0;
-    g->val_round = val_round;
+    build_dial(&g_rpm, par, LY_RPM_CX, LY_RPM_CY, &c);
+    g_rpm.val_dec = 0;
+    g_rpm.val_round = 10;
 
-    mk_label(par, &dash_lbl_18, C_LBL, unit, cx - 60, LY_BIG_UNIT_Y, 120,
-             LV_TEXT_ALIGN_CENTER);
-    mk_value_row(par, cx - LY_BIG_VAL_W / 2, LY_BIG_VAL_Y, LY_BIG_VAL_W, 84,
-                 &dash_num_64, C_W, NULL, &g->value);
+    /* the readout sits in the open bottom of the scale, between 0 and 8 */
+    lv_obj_t *row = mk_box(par, LY_RPM_CX - LY_RPM_VAL_W / 2, LY_RPM_VAL_Y,
+                           LY_RPM_VAL_W, 50);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END,
+                          LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(row, 6, 0);
+    g_rpm.value = mk_label(row, &dash_orb_40, C_W, "0", 0, 0, 0,
+                           LV_TEXT_ALIGN_LEFT);
+    lv_obj_t *u = mk_label(row, &dash_orb_18, C_GREY, "rpm", 0, 0, 0,
+                           LV_TEXT_ALIGN_LEFT);
+    lv_obj_set_style_pad_bottom(u, 6, 0);
+}
+
+/* Speed is text only: a number, no needle. */
+static void build_speed(lv_obj_t *par)
+{
+    lv_obj_t *row = mk_box(par, LY_RPM_CX - LY_SPEED_W / 2, LY_SPEED_Y,
+                           LY_SPEED_W, 132);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END,
+                          LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(row, 10, 0);
+    lbl_speed = mk_label(row, &dash_speed_104, C_W, "0", 0, 0, 0,
+                         LV_TEXT_ALIGN_LEFT);
+    lv_obj_t *u = mk_label(row, &dash_orb_18, C_GREY, "km/h", 0, 0, 0,
+                           LV_TEXT_ALIGN_LEFT);
+    lv_obj_set_style_pad_bottom(u, 28, 0);
+}
+
+static void update_speed(float kmh)
+{
+    char buf[8];
+    snprintf(buf, sizeof buf, "%d", (int)lroundf(clampf(kmh, 0, 999)));
+    set_text_if_changed(lbl_speed, buf);
 }
 
 /* ---------------------------------------------------------- side gauges */
@@ -533,7 +567,7 @@ static void ui_timer_cb(lv_timer_t *t)
         update_link(rusefi_can_link_ok() ? 1 : 0);
     }
 
-    update_gauge(&g_speed, clampf(d.speed, 0, SPEED_MAX), C_W);
+    update_speed(d.speed);
     update_gauge(&g_rpm,   clampf(d.rpm, 0, RPM_MAX), C_W);
     update_gauge(&g_clt,   clampf(d.clt, -40, 150), C_Y);
     update_gauge(&g_iat,   clampf(d.iat, -40, 150), C_Y);
@@ -552,8 +586,8 @@ void ui_create(void)
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
 
-    build_big(&g_speed, scr, LY_SPEED_CX, &dial_speed, SPEED_MAX, "km/h", 0);
-    build_big(&g_rpm, scr, LY_RPM_CX, &dial_rpm, RPM_MAX, "x1000 rpm", 10);
+    build_rpm(scr);
+    build_speed(scr);
 
     build_temp(&g_clt, scr, LY_CLT_CY, &dial_clt, CLT_MIN, CLT_MAX, &ic_water);
     build_temp(&g_iat, scr, LY_IAT_CY, &dial_iat, IAT_MIN, IAT_MAX, &ic_iat);
@@ -571,8 +605,8 @@ void ui_create(void)
      * font can do. */
     mk_img(scr, &logo_notstock, 400, LY_LOGO_Y + logo_notstock.header.h / 2);
 
-    link_txt = mk_label(scr, &dash_lbl_18, C_RED, "", 300, LY_LINK_Y, 200,
-                        LV_TEXT_ALIGN_CENTER);
+    link_txt = mk_label(scr, &dash_lbl_18, C_RED, "", 0, LY_LINK_Y,
+                        LY_SIDE_W, LV_TEXT_ALIGN_CENTER);
     lv_obj_add_flag(link_txt, LV_OBJ_FLAG_HIDDEN);
 
     build_menu_hit(scr);

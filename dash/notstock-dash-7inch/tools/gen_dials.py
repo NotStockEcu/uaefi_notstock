@@ -30,8 +30,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 SS = 4                       # supersample factor
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 FONT = os.environ.get(
     "DASH_FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf")
+# rev counter numbers, same family as the speed and rpm readouts
+SCALE_FONT = os.path.join(HERE, "..", "assets", "fonts", "Orbitron-Bold.ttf")
 
 WHITE = (0xF2, 0xF2, 0xF2)
 WHITE_DIM = (0xB8, 0xBC, 0xC0)
@@ -41,22 +44,19 @@ YELLOW = (0xF5, 0xC5, 0x18)
 NEEDLE = (0xE8, 0x1E, 0x10)
 NEEDLE_EDGE = (0x70, 0x0C, 0x06)
 
-# ------------------------------------------------------------------ big dials
-# Speedometer and rev counter. Numbers sit outside the ticks, the bottom 90
-# degrees are open for the unit label.
-BIG = 280                    # image is BIG x BIG, pivot in the centre
+# ---------------------------------------------------------------- rev counter
+# The big dial in the middle. Numbers sit outside the ticks, the bottom 90
+# degrees are open for the digital rpm readout.
+BIG = 400                    # image is BIG x BIG, pivot in the centre
 BIG_SWEEP_START = 135        # LVGL angle: 0 = 3 o'clock, clockwise
 BIG_SWEEP = 270
-BIG_R_TICK = 93              # outer end of the ticks
-BIG_TICK_MAJ, BIG_TICK_MIN = 16, 8
-BIG_LABEL_GAP = 5            # clear space between tick ends and numbers
-BIG_LABEL_PX = 21
-BIG_NEEDLE_LEN = 88          # pivot to tip
-BIG_HUB = 42
-
-SPEED_MAX = 240              # km/h
-SPEED_MAJOR = 20
-SPEED_MINOR = 10
+BIG_R_TICK = 140             # outer end of the ticks
+BIG_TICK_MAJ, BIG_TICK_MIN = 24, 12
+BIG_TICK_W_MAJ, BIG_TICK_W_MIN = 6.5, 3.0
+BIG_LABEL_GAP = 8            # clear space between tick ends and numbers
+BIG_LABEL_PX = 32
+BIG_NEEDLE_LEN = 132         # pivot to tip
+BIG_HUB = 60
 
 RPM_MAX = 8000
 RPM_REDLINE = 7000
@@ -151,6 +151,8 @@ def finish(img, w, h):
 
 # ----------------------------------------------------------------- builders
 def build_big(vmax, major, minor, label_div, red_from=None):
+    """Rev counter face. The ticks and zone are generic, the numbers are
+    v / label_div."""
     img, d = canvas(BIG, BIG)
     c = u(BIG / 2)
 
@@ -167,13 +169,13 @@ def build_big(vmax, major, minor, label_div, red_from=None):
         v = i * minor
         is_major = v % major == 0
         ln = BIG_TICK_MAJ if is_major else BIG_TICK_MIN
-        w = 4.6 if is_major else 2.2
+        w = BIG_TICK_W_MAJ if is_major else BIG_TICK_W_MIN
         radial_line(d, c, c, u(BIG_R_TICK), u(BIG_R_TICK - ln), ang(v),
                     u(w), WHITE)
 
     # Each number is pushed out until its ink box clears the tick ring by the
     # same gap, so wide numbers at 3 and 9 o'clock do not touch their ticks.
-    f = font(BIG_LABEL_PX)
+    f = ImageFont.truetype(SCALE_FONT, int(round(BIG_LABEL_PX * SS)))
     for v in range(0, vmax + 1, major):
         t = str(v // label_div)
         bb = d.textbbox((0, 0), t, font=f)
@@ -330,7 +332,6 @@ def emit_rgba(name, img, out):
 
 def main():
     art = {
-        "dial_speed": build_big(SPEED_MAX, SPEED_MAJOR, SPEED_MINOR, 1),
         "dial_rpm": build_big(RPM_MAX, RPM_MAJOR, RPM_MINOR, 1000,
                               red_from=RPM_REDLINE),
         "dial_clt": build_temp(CLT_MIN, CLT_MAX, CLT_RED),
@@ -340,7 +341,7 @@ def main():
         "dial_afr": build_turbo(AFR_MIN, AFR_MAX, AFR_ZONES, AFR_MARK),
     }
     needles = {
-        "needle_big": build_needle(BIG_NEEDLE_LEN, 10, 3, 18),
+        "needle_big": build_needle(BIG_NEEDLE_LEN, 13, 4, 26),
         "needle_temp": build_needle(TEMP_NEEDLE_LEN, 6, 2, 9),
         "needle_turbo": build_needle(TURBO_NEEDLE_LEN, 6, 2, 9),
     }
@@ -385,7 +386,6 @@ def main():
     define("BIG_SWEEP_START", BIG_SWEEP_START)
     define("BIG_SWEEP", BIG_SWEEP)
     define("BIG_SIZE", BIG)
-    define("SPEED_MAX", SPEED_MAX)
     define("RPM_MAX", RPM_MAX)
     define("RPM_REDLINE", RPM_REDLINE)
     h.append("")
@@ -412,7 +412,7 @@ def main():
     os.makedirs(d, exist_ok=True)
     # drop what older versions of this script wrote; logo.png belongs to
     # gen_assets.py and stays
-    for f in ("needle_y.png", "needle_r.png", "hub.png"):
+    for f in ("needle_y.png", "needle_r.png", "hub.png", "dial_speed.png"):
         if os.path.exists(os.path.join(d, f)):
             os.remove(os.path.join(d, f))
     for name, img in art.items():
