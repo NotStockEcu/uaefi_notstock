@@ -61,8 +61,9 @@
 #define LY_TURBO_VAL_DY  52
 #define LY_SUB_DY        94                /* lambda line under the AFR */
 
-/* shift flash disc in rev counter mode, covers the scale and its numbers */
-#define LY_FLASH_R    232
+/* shift flash disc in rev counter mode: the dark face inside the rim, so the
+ * numbers outside it stay readable */
+#define LY_FLASH_R    BIG_FACE_R
 
 #define LY_LINK_Y     450                  /* NO CAN / DEMO, bottom left */
 

@@ -188,7 +188,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.5` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.6` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 
@@ -197,7 +197,7 @@ compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 | Shift flash | on/off | master switch for the shift flash |
 | Shift flash at | 0-9000 rpm | 0 disables it |
 | Shift flash level | 10-100 % | peak opacity of the wash |
-| Shift flash area | Screen / Rev counter | whole screen, or a disc over the rev counter |
+| Shift flash area | Screen / Rev counter | whole screen, or the rev counter face inside its rim (numbers stay clear) |
 | Shift flash colour | Red / White / Blue / Amber | |
 | Shift flash period | 80-600 ms | one on + off cycle, default 200 ms (5 Hz) |
 | Water temp | 60-130 degC | readout red at or above |

@@ -20,6 +20,7 @@ extern const lv_img_dsc_t hub_turbo;
 #define BIG_SWEEP_START          135
 #define BIG_SWEEP                270
 #define BIG_SIZE                 500
+#define BIG_FACE_R               185
 #define RPM_MAX                  8000
 #define RPM_REDLINE              7000
 

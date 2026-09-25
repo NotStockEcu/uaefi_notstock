@@ -423,6 +423,7 @@ def main():
     define("BIG_SWEEP_START", BIG_SWEEP_START)
     define("BIG_SWEEP", BIG_SWEEP)
     define("BIG_SIZE", BIG)
+    define("BIG_FACE_R", BIG_FACE_R)
     define("RPM_MAX", RPM_MAX)
     define("RPM_REDLINE", RPM_REDLINE)
     h.append("")
