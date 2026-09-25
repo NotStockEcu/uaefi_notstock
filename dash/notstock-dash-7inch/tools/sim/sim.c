@@ -10,6 +10,7 @@
  *
  *   boot=ms        the boot animation at ms after power-up, crossfading
  *                  into the dash rendered from the other inputs
+ *   screen=log     the LOG screen; with demo=1 t=30 it has 30 s of history
  *   night=1        night mode
  *   area=0|1       shift flash on the whole screen / on the rev counter
  *   colour=0..3    shift flash red / white / blue / amber
@@ -30,6 +31,7 @@
 #include "settings.h"
 #include "ui.h"
 #include "ui_menu.h"
+#include "ui_log.h"
 
 #define W 800
 #define H 480
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
     volatile float *peak_field[3] = { &g_dash.clt, &g_dash.iat, &g_dash.boost };
     const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
     int night = 0, area = 0, colour = 0;
-    bool menu = false;
+    bool menu = false, logscr = false;
     bool demo = false;
     int boot_ms = -1;
     float t_end = 4.0f;
@@ -123,7 +125,11 @@ int main(int argc, char **argv)
         if (strcmp(k, "link") == 0)   { s_link = atoi(v); used = true; }
         if (strcmp(k, "demo") == 0)   { demo = atoi(v) != 0; used = true; }
         if (strcmp(k, "t") == 0)      { t_end = strtof(v, NULL); used = true; }
-        if (strcmp(k, "screen") == 0) { menu = strcmp(v, "menu") == 0; used = true; }
+        if (strcmp(k, "screen") == 0) {
+            menu = strcmp(v, "menu") == 0;
+            logscr = strcmp(v, "log") == 0;
+            used = true;
+        }
         if (strcmp(k, "boot") == 0)   { boot_ms = atoi(v); used = true; }
         if (strcmp(k, "night") == 0)  { night = atoi(v); used = true; }
         if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
@@ -171,6 +177,7 @@ int main(int argc, char **argv)
         ui_menu_refresh();
         lv_scr_load(ui_menu_screen());
     }
+    if (logscr) lv_scr_load(ui_log_screen());
 
     /* peaks first, then the real values */
     float real[3];

@@ -188,7 +188,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.6` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.7` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 
@@ -247,6 +247,40 @@ dash is white. At night they turn amber and a warm dark wash, `Night dim`
 strong, takes the white artwork down to a warm grey. Brightness and night
 share one wash on the system layer, opacities combined, so there is never a
 second full-screen blend.
+
+## LOG screen
+
+**Long-press the top right corner** of the dash (three dim dots) to open it,
+**DASH** in the same corner goes back.
+
+![log](preview/log.png)
+
+The last 30 s of up to eight channels as a live chart, 10 samples a second:
+
+| Button | Channel | Chart range | From |
+| --- | --- | --- | --- |
+| RPM | engine speed | 0-8000 | base+1 |
+| MAP | manifold pressure, kPa | 0-300 | base+3 |
+| CLT | coolant, degC | 0-130 | base+3 |
+| IAT | intake air, degC | 0-80 | base+3 |
+| AFR | air/fuel ratio | 10-20 | base+7 (lambda x stoich) |
+| DUTY | injector duty, % | 0-100 | base+1 |
+| IGN | ignition timing, deg | -10-50 | base+1 |
+| TPS | throttle, % | 0-100 | base+2 |
+
+Each button shows the live value and switches its line on or off; the choice
+is saved. Every line is scaled to its own range, so they all use the full
+height and the vertical position is only meaningful per channel; read the
+numbers off the buttons. Grid lines are 5 s apart, newest on the right.
+
+**Recording never stops**, whichever screen is up. When something odd happens
+on the road, open the log afterwards and the last 30 s are there. **HOLD**
+freezes the chart to study it (the buttons keep showing live values), LIVE
+resumes. The history lives in RAM and is gone after a power cycle.
+
+Channels and ranges are the `CH[]` table at the top of `main/ui_log.c`;
+anything else rusEFI broadcasts (`dash_data_t` in `rusefi_can.h`) can be
+added there.
 
 ## Peak hold
 

@@ -9,7 +9,7 @@
 static const char *TAG = "set";
 #define NS  "dash"
 #define KEY "cfg"
-#define VER 3     /* bump whenever settings_t changes */
+#define VER 4     /* bump whenever settings_t changes */
 
 settings_t g_set;
 
@@ -32,6 +32,7 @@ void settings_defaults(void)
         .stoich          = 147,
         .baro            = 100,
         .demo            = false,
+        .log_mask        = 0x13,    /* RPM, MAP, AFR */
     };
 }
 

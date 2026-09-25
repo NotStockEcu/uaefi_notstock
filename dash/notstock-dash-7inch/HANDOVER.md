@@ -98,6 +98,7 @@ main/
   touch.c/h       GT911 driver plus LVGL pointer indev
   ui.c/h          the dash screen, alarm overlay, hidden menu trigger
   ui_menu.c/h     the settings screen; DASH_VERSION lives in the header
+  ui_log.c/h      LOG screen: 30 s ring buffer at 10 Hz, lv_chart, 8 channels
   dials.c/h       generated: scale faces, needles, hubs and their geometry
   icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
   splash.c        generated: boot logo, RGB565 440x440
@@ -189,6 +190,12 @@ icons from white to amber (`ink()`, `apply_ink`).
 **The shift flash only runs on the dash screen** (`lv_scr_act() == scr_dash`),
 otherwise demo mode strobed the settings menu. Area, colour and period are
 settings; area reshapes the same two overlay objects into a disc.
+
+**The LOG records all the time.** `ui_timer_cb` feeds `ui_log_sample` every
+tick, it keeps its own 10 Hz rate into a ring buffer stored pre-scaled to
+0..1000, so all channels share one chart axis. The chart only redraws (5 Hz)
+while the LOG screen is up. Screens are reached by long-press corners: bottom
+right menu, bottom left night mode, top right LOG.
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still

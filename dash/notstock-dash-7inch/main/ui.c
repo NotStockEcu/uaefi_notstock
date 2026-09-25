@@ -15,6 +15,7 @@
 #include "rusefi_can.h"
 #include "settings.h"
 #include "ui_menu.h"
+#include "ui_log.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -80,6 +81,9 @@
 /* hidden menu trigger, bottom right corner */
 #define MENU_HIT_W    130
 #define MENU_HIT_H    64
+/* LOG screen, top right corner, long press */
+#define LOG_HIT_W     130
+#define LOG_HIT_H     56
 /* night mode toggle, bottom left corner, long press */
 #define NIGHT_HIT_W   130
 #define NIGHT_HIT_H   56
@@ -522,6 +526,11 @@ static void demo_fill(dash_data_t *d)
                             : 14.4f + 0.8f * sinf(t * 1.7f);
     d->clt   = 88.0f + 6.0f * sinf(t / 9.0f);
     d->iat   = 30.0f + 18.0f * clampf(boost, 0, 2);
+    d->map   = (boost + 1.0f) * 100.0f;
+    d->tps   = clampf((rpm - 900.0f) / 50.0f, 0, 100);
+    d->injduty = clampf(rpm / 8000.0f * 70.0f + boost * 12.0f, 0, 100);
+    d->timing  = 32.0f - clampf(boost, 0, 2) * 9.0f - rpm / 8000.0f * 6.0f;
+    d->lambda  = d->afr / 14.7f;
 }
 
 /* ------------------------------------------------------------- alarm flash */
@@ -706,6 +715,28 @@ static void night_cb(lv_event_t *e)
     settings_save();
 }
 
+static void log_cb(lv_event_t *e)
+{
+    (void)e;
+    lv_scr_load(ui_log_screen());
+}
+
+/* Same pattern as the other two corners: invisible, three dim dots, long
+ * press. Sits above the boost gauge's peak reset area. */
+static void build_log_hit(lv_obj_t *par)
+{
+    lv_obj_t *hit = mk_box(par, 800 - LOG_HIT_W, 0, LOG_HIT_W, LOG_HIT_H);
+    lv_obj_add_flag(hit, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(hit, log_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_move_foreground(hit);
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *dot = mk_box(hit, LOG_HIT_W - 30 + i * 8, 13, 3, 3);
+        lv_obj_set_style_bg_color(dot, C_LINE, 0);
+        lv_obj_set_style_bg_opa(dot, LV_OPA_COVER, 0);
+        lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
+    }
+}
+
 static void build_night_hit(lv_obj_t *par)
 {
     lv_obj_t *hit = mk_box(par, 0, 480 - NIGHT_HIT_H, NIGHT_HIT_W,
@@ -761,6 +792,7 @@ static void ui_timer_cb(lv_timer_t *t)
         update_link(rusefi_can_link_ok() ? 1 : 0);
     }
 
+    ui_log_sample(&d, esp_timer_get_time());
     update_speed(d.speed);
     update_gauge(&g_rpm,   clampf(d.rpm, 0, RPM_MAX));
     update_gauge(&g_clt,   clampf(d.clt, -40, 150));
@@ -803,10 +835,12 @@ void ui_create(void)
 
     build_peak_hits(scr);
     build_night_hit(scr);
+    build_log_hit(scr);
     build_menu_hit(scr);
     build_overlays();
 
     ui_menu_create();
+    ui_log_create();
     ui_apply_settings();
 
     lv_timer_create(ui_timer_cb, 40, NULL);

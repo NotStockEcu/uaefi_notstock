@@ -6,6 +6,7 @@ idf_component_register(
         "settings.c"
         "touch.c"
         "ui_menu.c"
+        "ui_log.c"
         "icons.c"
         "dials.c"
         "splash.c"
