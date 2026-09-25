@@ -60,8 +60,9 @@ layout edit.
 **Boot logo**: `assets/splash.png`, the round NOT STOCK. / NOT STABLE. badge.
 `tools/gen_splash.py` keys out its white background (on the blue channel, so
 the rim stays smooth), crops it to the disc and writes `main/splash.c` at
-440x440. At power-up it shows on black for `SPLASH_MS` (2 s) and fades into
-the dash over `SPLASH_FADE_MS` (0.7 s), both at the top of `ui.c`. The dash is
+440x440. At power-up the screen starts black, the logo rises out of it over
+`SPLASH_IN_MS` (0.8 s), holds for `SPLASH_HOLD_MS` (1.2 s) and fades into the
+dash over `SPLASH_FADE_MS` (0.7 s), all at the top of `ui.c`. The dash is
 already running underneath, so it fades in with live values. Preview it with
 `python tools/preview.py t=1`.
 
@@ -173,7 +174,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.2` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.3` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 

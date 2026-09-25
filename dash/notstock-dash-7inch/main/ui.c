@@ -66,8 +66,9 @@
 
 /* alarm flash */
 #define FLASH_PERIOD_MS 420
-/* boot screen: how long the logo stays, and the fade into the dash */
-#define SPLASH_MS       2000
+/* boot screen: the logo rises out of black, stays, then fades into the dash */
+#define SPLASH_IN_MS    800
+#define SPLASH_HOLD_MS  1200
 #define SPLASH_FADE_MS  700
 
 /* hidden menu trigger, bottom right corner */
@@ -588,8 +589,15 @@ static void splash_done_cb(lv_timer_t *t)
                      true);
 }
 
-/* The logo on black, shown from the first frame until SPLASH_MS. The dash is
- * already built and updating underneath, so it comes up with live values. */
+static void splash_opa_cb(void *img, int32_t v)
+{
+    lv_obj_set_style_img_opa(img, (lv_opa_t)v, 0);
+}
+
+/* The logo on black. The first frame is fully black (the backlight comes on
+ * with it), the logo then rises out of the dark over SPLASH_IN_MS, holds, and
+ * the whole screen fades into the dash. The dash is already built and
+ * updating underneath, so it comes up with live values. */
 static void build_splash(void)
 {
     lv_obj_t *s = lv_obj_create(NULL);
@@ -597,9 +605,20 @@ static void build_splash(void)
     lv_obj_set_style_bg_color(s, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
     lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
-    mk_img(s, &splash_logo, 400, 240);
+    lv_obj_t *logo = mk_img(s, &splash_logo, 400, 240);
+    lv_obj_set_style_img_opa(logo, LV_OPA_TRANSP, 0);
     lv_scr_load(s);
-    lv_timer_create(splash_done_cb, SPLASH_MS, NULL);
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, logo);
+    lv_anim_set_exec_cb(&a, splash_opa_cb);
+    lv_anim_set_values(&a, LV_OPA_TRANSP, LV_OPA_COVER);
+    lv_anim_set_time(&a, SPLASH_IN_MS);
+    lv_anim_set_path_cb(&a, lv_anim_path_ease_in);
+    lv_anim_start(&a);
+
+    lv_timer_create(splash_done_cb, SPLASH_IN_MS + SPLASH_HOLD_MS, NULL);
 }
 
 /* ------------------------------------------------------------------- build */

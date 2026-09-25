@@ -24,7 +24,8 @@ digital readout, no warning lamps. The owner then dropped the speedometer:
 the middle is one big 500 px rev counter with the rpm readout under its hub,
 and the speed is plain text in its open bottom in Orbitron Black, no needle.
 The NOT STOCK wordmark is off the dash; instead the owner's round badge
-(`assets/splash.png`) is a boot screen for 2 s that fades into the dash. The board support is unchanged; the new gauges have been
+(`assets/splash.png`) is a boot screen: it rises out of black (0.8 s), holds
+(1.2 s) and fades into the dash (0.7 s). The board support is unchanged; the new gauges have been
 checked in the host simulator (`tools/preview.py`) but not yet on the panel.
 
 ---
