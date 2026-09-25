@@ -17,7 +17,8 @@ CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -Istubs -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
 APP_SRC := sim.c \
-           $(ROOT)/main/ui.c $(ROOT)/main/ui_menu.c $(ROOT)/main/ui_log.c $(ROOT)/main/settings.c \
+           $(ROOT)/main/ui.c $(ROOT)/main/ui_menu.c $(ROOT)/main/ui_log.c \
+           $(wildcard $(ROOT)/main/ui_theme_*.c) $(wildcard $(ROOT)/main/theme_art_*.c) $(ROOT)/main/settings.c \
            $(ROOT)/main/icons.c $(ROOT)/main/dials.c $(ROOT)/main/splash.c $(ROOT)/main/boot_anim.c \
            $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')

@@ -20,6 +20,8 @@ extern const lv_img_dsc_t ic_flame;
 
 /* Pre-rendered gauge artwork and its geometry, see tools/gen_dials.py */
 #include "dials.h"
+/* artwork of the other looks, see tools/gen_themes.py */
+#include "theme_art.h"
 
 /* boot screen logo, see tools/gen_splash.py */
 extern const lv_img_dsc_t splash_logo;

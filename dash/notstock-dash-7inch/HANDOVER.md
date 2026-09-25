@@ -99,6 +99,9 @@ main/
   ui.c/h          the dash screen, alarm overlay, hidden menu trigger
   ui_menu.c/h     the settings screen; DASH_VERSION lives in the header
   ui_log.c/h      LOG screen: 30 s ring buffer at 10 Hz, lv_chart, 8 channels
+  ui_theme.h      look interface (build, update, flash disc) + shared helpers
+  ui_theme_emo.c, ui_theme_lonk.c, ui_theme_hill.c   the other looks
+  theme_art*.c/h  generated: their backgrounds, LONK lit band, HILL needle
   dials.c/h       generated: scale faces, needles, hubs and their geometry
   icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
   splash.c        generated: boot logo, RGB565 440x440
@@ -196,6 +199,22 @@ tick, it keeps its own 10 Hz rate into a ring buffer stored pre-scaled to
 0..1000, so all channels share one chart axis. The chart only redraws (5 Hz)
 while the LOG screen is up. Screens are reached by long-press corners: bottom
 right menu, bottom left night mode, top right LOG.
+
+**Looks are built one at a time.** `theme_ensure` in `ui.c` builds the
+selected look's screen and deletes the previous one; NOTSTOCK is just the
+first entry of `looks[]`. Code that touches NOTSTOCK widgets (`apply_ink`,
+gauge limits) checks `built_look` first, because those statics dangle while
+another look is up. Verified with AddressSanitizer in the host sim
+(`switch=1,2,3,0,3`). LVGL heap is 80 kB; 96 left too little internal RAM for
+the draw and bounce buffers. Each look's background is a full 800x480 RGB565
+image (~750 kB flash); the app is ~4.5 MB of the 7.9 MB partition.
+
+**LONK's rev band is a cropped image.** `lonk_lit` is the band area of the
+background with the band painted lit; an `lv_img` narrower than its source is
+clipped, so its width follows the rpm and a change redraws a thin strip.
+
+**EMO segments are whole degrees** (272 / 16 = 17), so each `lv_arc` lands
+exactly on its baked grey segment.
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still

@@ -13,6 +13,9 @@
  *   screen=log     the LOG screen; with demo=1 t=30 it has 30 s of history
  *   hold=N         LOG held at the end of the run, cursor on point N
  *                  (0 oldest .. 299 newest)
+ *   look=0..3      NOTSTOCK / EMO / LONK / HILL
+ *   switch=a,b,..  after the run, switch to these looks in turn (as SAVE
+ *                  in the menu would) and render the last one
  *   night=1        night mode
  *   area=0|1       shift flash on the whole screen / on the rev counter
  *   colour=0..3    shift flash red / white / blue / amber
@@ -103,13 +106,15 @@ int main(int argc, char **argv)
         { "iat",   &g_dash.iat },
         { "boost", &g_dash.boost },
         { "afr",   &g_dash.afr },
+        { "map",   &g_dash.map },
     };
     float peak[3] = { NAN, NAN, NAN };
     volatile float *peak_field[3] = { &g_dash.clt, &g_dash.iat, &g_dash.boost };
     const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
-    int night = 0, area = 0, colour = 0;
+    int night = 0, area = 0, colour = 0, look = 0;
     bool menu = false, logscr = false;
     int hold = -1;
+    const char *sw = NULL;
     bool demo = false;
     int boot_ms = -1;
     float t_end = 4.0f;
@@ -137,6 +142,8 @@ int main(int argc, char **argv)
         if (strcmp(k, "boot") == 0)   { boot_ms = atoi(v); used = true; }
         if (strcmp(k, "hold") == 0)   { hold = atoi(v); used = true; }
         if (strcmp(k, "night") == 0)  { night = atoi(v); used = true; }
+        if (strcmp(k, "look") == 0)   { look = atoi(v); used = true; }
+        if (strcmp(k, "switch") == 0) { sw = v; used = true; }
         if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
         if (strcmp(k, "colour") == 0) { colour = atoi(v); used = true; }
         for (int j = 0; j < 3; j++) {
@@ -174,6 +181,7 @@ int main(int argc, char **argv)
     settings_load();
     g_set.demo = demo;
     g_set.night = night != 0;
+    g_set.look = (uint8_t)look;
     g_set.flash_area = (uint8_t)area;
     g_set.flash_colour = (uint8_t)colour;
     g_dash.last_rx_us = 1;
@@ -200,6 +208,19 @@ int main(int argc, char **argv)
         lv_tick_inc(STEP_MS);
         lv_timer_handler();
     }
+    for (const char *p = sw; p && *p; ) {
+        g_set.look = (uint8_t)atoi(p);
+        lv_scr_load(ui_menu_screen());       /* switching happens from the menu */
+        ui_show_dash();
+        for (int i = 0; i < 25; i++) {
+            s_now_us += STEP_MS * 1000;
+            lv_tick_inc(STEP_MS);
+            lv_timer_handler();
+        }
+        p = strchr(p, ',');
+        if (p) p++;
+    }
+
     if (hold >= 0) {
         ui_log_sim_hold(hold);
         for (int i = 0; i < 10; i++) {       /* let it run on while held */

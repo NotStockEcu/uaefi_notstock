@@ -32,6 +32,7 @@ typedef struct {
     uint16_t baro;              /* bar * 100 subtracted from MAP */
     bool     demo;              /* run off the synthetic generator */
     uint8_t  log_mask;          /* LOG screen channels shown, bit per channel */
+    uint8_t  look;              /* LOOK_*, see ui_theme.h */
 } settings_t;
 
 enum { FLASH_AREA_SCREEN, FLASH_AREA_DIAL };

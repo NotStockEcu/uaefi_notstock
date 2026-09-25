@@ -307,6 +307,14 @@ void app_main(void)
 
     boot_run();     /* also switches the backlight on */
 
+    /* One line to judge memory headroom by: the LVGL heap holds the current
+     * look, the menu and the LOG screen. */
+    lv_mem_monitor_t mon;
+    lv_mem_monitor(&mon);
+    ESP_LOGI(TAG, "LVGL heap %d%% used, %u B free; internal RAM %u B free",
+             mon.used_pct, (unsigned)mon.free_size,
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+
     while (1) {
         uint32_t next = lv_timer_handler();
         if (next == LV_NO_TIMER_READY || next > 20) next = 20;

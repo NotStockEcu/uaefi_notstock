@@ -16,6 +16,7 @@
 #include "settings.h"
 #include "ui_menu.h"
 #include "ui_log.h"
+#include "ui_theme.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -121,7 +122,8 @@ typedef struct {
 
 static lv_obj_t *lbl_speed;
 static gauge_t g_rpm, g_clt, g_iat, g_boost, g_afr;
-static lv_obj_t *scr_dash;
+static lv_obj_t *scr_theme;          /* the dash screen of the current look */
+static int built_look = -1;
 static lv_obj_t *link_txt;
 static int link_state = -1;
 static lv_obj_t *flash_layer;      /* red wash, on the top layer */
@@ -212,6 +214,81 @@ static void set_text_if_changed(lv_obj_t *label, const char *txt)
 static float clampf(float v, float lo, float hi)
 {
     return v < lo ? lo : (v > hi ? hi : v);
+}
+
+/* ---- the same helpers for the other looks, see ui_theme.h ---- */
+lv_obj_t *ui_screen(lv_color_t bg)
+{
+    lv_obj_t *s = lv_obj_create(NULL);
+    lv_obj_remove_style_all(s);
+    lv_obj_set_style_bg_color(s, bg, 0);
+    lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
+    return s;
+}
+
+lv_obj_t *ui_label(lv_obj_t *par, const lv_font_t *font, lv_color_t col,
+                   const char *txt, lv_coord_t x, lv_coord_t y, lv_coord_t w,
+                   lv_text_align_t align)
+{
+    return mk_label(par, font, col, txt, x, y, w, align);
+}
+
+lv_obj_t *ui_box(lv_obj_t *par, lv_coord_t x, lv_coord_t y, lv_coord_t w,
+                 lv_coord_t h)
+{
+    return mk_box(par, x, y, w, h);
+}
+
+lv_obj_t *ui_rect(lv_obj_t *par, lv_coord_t x, lv_coord_t y, lv_coord_t w,
+                  lv_coord_t h, lv_color_t col)
+{
+    lv_obj_t *o = mk_box(par, x, y, w, h);
+    lv_obj_set_style_bg_color(o, col, 0);
+    lv_obj_set_style_bg_opa(o, LV_OPA_COVER, 0);
+    return o;
+}
+
+lv_obj_t *ui_img_at(lv_obj_t *par, const lv_img_dsc_t *src, lv_coord_t x,
+                    lv_coord_t y)
+{
+    lv_obj_t *i = lv_img_create(par);
+    lv_img_set_src(i, src);
+    lv_obj_set_pos(i, x, y);
+    return i;
+}
+
+void ui_text(lv_obj_t *label, const char *txt)
+{
+    set_text_if_changed(label, txt);
+}
+
+void ui_unit_on_baseline(lv_obj_t *unit)
+{
+    unit_on_baseline(unit);
+}
+
+float ui_clampf(float v, float lo, float hi)
+{
+    return clampf(v, lo, hi);
+}
+
+float ui_limit(int which)
+{
+    switch (which) {
+    case LIM_CLT:   return g_set.clt_warn ? g_set.clt_warn : NAN;
+    case LIM_IAT:   return g_set.iat_warn ? g_set.iat_warn : NAN;
+    case LIM_BOOST: return g_set.boost_warn ? set_boost_warn() : NAN;
+    case LIM_AFR:   return g_set.afr_lean_warn ? g_set.afr_lean_warn / 10.0f
+                                               : NAN;
+    default:        return RPM_REDLINE;
+    }
+}
+
+bool ui_over(int which, float v)
+{
+    float l = ui_limit(which);
+    return !isnan(l) && v >= l;
 }
 
 /* ------------------------------------------------------------ dial builder */
@@ -580,7 +657,7 @@ static void build_overlays(void)
 static bool alarm_active(const dash_data_t *d)
 {
     /* the flash belongs to the dash: demo mode must not strobe the menu */
-    if (lv_scr_act() != scr_dash) return false;
+    if (lv_scr_act() != scr_theme) return false;
     if (!g_set.flash_enable) return false;
     if (!g_set.rpm_flash) return false;
     return d->rpm >= g_set.rpm_flash;
@@ -650,10 +727,6 @@ static void build_menu_hit(lv_obj_t *par)
     }
 }
 
-void ui_show_dash(void)
-{
-    lv_scr_load(scr_dash);
-}
 
 static lv_color_t flash_colour(void)
 {
@@ -667,12 +740,15 @@ static lv_color_t flash_colour(void)
 
 /* The flash and its knock-back are either the whole screen or a disc over
  * the rev counter. Same two objects either way, only the shape changes. */
+static const theme_t *cur_theme(void);
+
 static void shape_flash(lv_obj_t *o)
 {
-    if (g_set.flash_area == FLASH_AREA_DIAL) {
-        lv_coord_t r = LY_FLASH_R;
+    const theme_t *t = cur_theme();
+    if (g_set.flash_area == FLASH_AREA_DIAL && t->flash_r > 0) {
+        lv_coord_t r = t->flash_r;
         lv_obj_set_size(o, 2 * r, 2 * r);
-        lv_obj_set_pos(o, LY_RPM_CX - r, LY_RPM_CY - r);
+        lv_obj_set_pos(o, t->flash_cx - r, t->flash_cy - r);
         lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
     } else {
         lv_obj_set_size(o, 800, 480);
@@ -698,6 +774,7 @@ static void apply_dim(void)
 
 static void apply_ink(void)
 {
+    if (built_look != LOOK_NOTSTOCK) return;   /* the other looks keep theirs */
     paint_gauge(&g_rpm);
     paint_gauge(&g_clt);
     paint_gauge(&g_iat);
@@ -737,6 +814,16 @@ static void build_log_hit(lv_obj_t *par)
     }
 }
 
+static void build_menu_hit(lv_obj_t *par);
+static void build_night_hit(lv_obj_t *par);
+
+void ui_corners(lv_obj_t *scr)
+{
+    build_night_hit(scr);
+    build_log_hit(scr);
+    build_menu_hit(scr);
+}
+
 static void build_night_hit(lv_obj_t *par)
 {
     lv_obj_t *hit = mk_box(par, 0, 480 - NIGHT_HIT_H, NIGHT_HIT_W,
@@ -756,12 +843,13 @@ static void build_night_hit(lv_obj_t *par)
 
 void ui_apply_settings(void)
 {
-    g_rpm.warn_above   = RPM_REDLINE;
-    g_clt.warn_above   = g_set.clt_warn ? g_set.clt_warn : NAN;
-    g_iat.warn_above   = g_set.iat_warn ? g_set.iat_warn : NAN;
-    g_boost.warn_above = g_set.boost_warn ? set_boost_warn() : NAN;
-    g_afr.warn_above   = g_set.afr_lean_warn ? g_set.afr_lean_warn / 10.0f
-                                             : NAN;
+    if (built_look == LOOK_NOTSTOCK) {
+        g_rpm.warn_above   = ui_limit(LIM_RPM);
+        g_clt.warn_above   = ui_limit(LIM_CLT);
+        g_iat.warn_above   = ui_limit(LIM_IAT);
+        g_boost.warn_above = ui_limit(LIM_BOOST);
+        g_afr.warn_above   = ui_limit(LIM_AFR);
+    }
 
     apply_dim();
     apply_ink();
@@ -777,43 +865,25 @@ void ui_apply_settings(void)
     alarm_shown = false;
 }
 
-/* ------------------------------------------------------------------- timer */
-static void ui_timer_cb(lv_timer_t *t)
+/* ---------------------------------------------------------- NOTSTOCK look */
+static void notstock_update(const dash_data_t *d, int link)
 {
-    (void)t;
-    dash_data_t d;
-
-    if (g_set.demo) {
-        memset(&d, 0, sizeof d);
-        demo_fill(&d);
-        update_link(2);
-    } else {
-        memcpy(&d, (const void *)&g_dash, sizeof d);
-        update_link(rusefi_can_link_ok() ? 1 : 0);
-    }
-
-    ui_log_sample(&d, esp_timer_get_time());
-    update_speed(d.speed);
-    update_gauge(&g_rpm,   clampf(d.rpm, 0, RPM_MAX));
-    update_gauge(&g_clt,   clampf(d.clt, -40, 150));
-    update_gauge(&g_iat,   clampf(d.iat, -40, 150));
-    update_gauge(&g_boost, clampf(d.boost, -1.2f, 2.5f));
+    update_link(link);
+    update_speed(d->speed);
+    update_gauge(&g_rpm,   clampf(d->rpm, 0, RPM_MAX));
+    update_gauge(&g_clt,   clampf(d->clt, -40, 150));
+    update_gauge(&g_iat,   clampf(d->iat, -40, 150));
+    update_gauge(&g_boost, clampf(d->boost, -1.2f, 2.5f));
     update_peak(&g_clt);
     update_peak(&g_iat);
     update_peak(&g_boost);
-    update_gauge(&g_afr,   clampf(d.afr, 9.0f, 19.0f));
-    update_alarm(&d);
+    update_gauge(&g_afr,   clampf(d->afr, 9.0f, 19.0f));
 }
 
-/* ------------------------------------------------------------------- build */
-void ui_create(void)
+static lv_obj_t *notstock_build(void)
 {
-    lv_obj_t *scr = lv_scr_act();
-    scr_dash = scr;
-    lv_obj_remove_style_all(scr);
-    lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
-    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
-    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *scr = ui_screen(lv_color_black());
+    link_state = -1;
 
     build_rpm(scr);
     build_speed(scr);
@@ -834,14 +904,89 @@ void ui_create(void)
     lv_obj_add_flag(link_txt, LV_OBJ_FLAG_HIDDEN);
 
     build_peak_hits(scr);
-    build_night_hit(scr);
-    build_log_hit(scr);
-    build_menu_hit(scr);
-    build_overlays();
+    ui_corners(scr);
+    return scr;
+}
 
+static const theme_t theme_notstock = {
+    .build = notstock_build, .update = notstock_update,
+    .flash_cx = LY_RPM_CX, .flash_cy = LY_RPM_CY, .flash_r = LY_FLASH_R,
+};
+
+/* ------------------------------------------------------------------ looks */
+static const theme_t *const looks[LOOK_COUNT] = {
+    [LOOK_NOTSTOCK] = &theme_notstock,
+    [LOOK_EMO]      = &theme_emo,
+    [LOOK_LONK]     = &theme_lonk,
+    [LOOK_HILL]     = &theme_hill,
+};
+
+static int wanted_look(void)
+{
+    return g_set.look < LOOK_COUNT ? g_set.look : LOOK_NOTSTOCK;
+}
+
+static const theme_t *cur_theme(void)
+{
+    return looks[built_look >= 0 ? built_look : wanted_look()];
+}
+
+/* Build the selected look if it is not the one on hand. The old screen is
+ * deleted once the new one exists, so only one look ever sits in the LVGL
+ * heap. */
+static void theme_ensure(void)
+{
+    int want = wanted_look();
+    if (want == built_look) return;
+    lv_obj_t *old = scr_theme;
+    built_look = want;
+    scr_theme = looks[want]->build();
+    if (old) {
+        if (lv_scr_act() == old) lv_scr_load(scr_theme);
+        lv_obj_del(old);
+    }
+    ui_apply_settings();
+}
+
+void ui_show_dash(void)
+{
+    theme_ensure();
+    lv_scr_load(scr_theme);
+}
+
+/* ------------------------------------------------------------------- timer */
+static void ui_timer_cb(lv_timer_t *t)
+{
+    (void)t;
+    dash_data_t d;
+    int link;
+
+    if (g_set.demo) {
+        memset(&d, 0, sizeof d);
+        demo_fill(&d);
+        link = LINK_DEMO;
+    } else {
+        memcpy(&d, (const void *)&g_dash, sizeof d);
+        link = rusefi_can_link_ok() ? LINK_OK : LINK_NONE;
+    }
+
+    ui_log_sample(&d, esp_timer_get_time());
+    looks[built_look]->update(&d, link);
+    update_alarm(&d);
+}
+
+/* ------------------------------------------------------------------- build */
+void ui_create(void)
+{
+    lv_obj_t *first = lv_scr_act();
+
+    build_overlays();
     ui_menu_create();
     ui_log_create();
-    ui_apply_settings();
+
+    theme_ensure();
+    lv_scr_load(scr_theme);
+    lv_obj_del(first);          /* LVGL's default screen, never used */
 
     lv_timer_create(ui_timer_cb, 40, NULL);
 }

@@ -29,6 +29,52 @@ flashes is the shift light, see below. The one piece of text that can appear
 is `NO CAN` (red) or `DEMO` (yellow) in the bottom left corner, and only while
 the needles are not showing live data.
 
+## Looks
+
+Settings menu, **Look**: NOTSTOCK (the default, described above), EMO,
+LONK or HILL. The choice is saved and applied on SAVE & CLOSE.
+
+| NOTSTOCK | EMO |
+| --- | --- |
+| ![](preview/dash.png) | ![](preview/look-emo.png) |
+| **LONK** | **HILL** |
+| ![](preview/look-lonk.png) | ![](preview/look-hill.png) |
+
+EMO, LONK and HILL are our own drawings in the spirit of well-known
+aftermarket dashes. They show only what this dash reads from rusEFI, so gear,
+oil, fuel, clock and warning lamps of the originals are left out, and no logos
+are copied.
+
+| Look | Middle | Around it |
+| --- | --- | --- |
+| EMO | segmented rev arc (red from 7000), big italic speed, rpm | bars: water, intake, boost, AFR; tabs: lambda, MAP |
+| LONK | rev band along the top, speed, rpm, boost box | tiles: AFR, MAP, intake, water, lambda; info line shows CAN / NO CAN / DEMO |
+| HILL | yellow round rev counter with needle, rpm and speed boxes | tiles with bargraphs: boost, AFR, lambda / water, intake, MAP |
+
+Common to every look: the three long-press corners (menu, night mode, LOG),
+the shift flash (the rev counter disc is the dial on EMO and HILL; LONK has no
+round dial and always flashes the whole screen), limits turning values red,
+NO CAN / DEMO, the LOG recording. Peak hold needles and the amber night ink
+are NOTSTOCK only; night mode dims every look.
+
+Only the selected look is built. Switching deletes the old screen and builds
+the new one, so the LVGL heap holds one look, the menu and the LOG. The boot
+log states the headroom:
+
+```
+LVGL heap 41% used, 47880 B free; internal RAM 58312 B free
+```
+
+Each look is `main/ui_theme_<name>.c` plus one baked background from
+`tools/gen_themes.py` (layout numbers at the top of the script, exported to
+`main/theme_art.h`). The fonts (Exo 2 for EMO, Orbitron for LONK, Barlow
+Condensed for HILL, all SIL OFL) come from `tools/gen_fonts.sh`.
+
+```bash
+python tools/gen_themes.py
+python tools/preview.py look=1 rpm=5650 speed=135   # EMO; 2 LONK, 3 HILL
+```
+
 ## Changing the look
 
 Two layers, each with one place to edit:
@@ -188,7 +234,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.8` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v3.0` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 
