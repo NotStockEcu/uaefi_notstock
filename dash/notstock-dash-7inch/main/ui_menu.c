@@ -26,7 +26,7 @@
 #define C_GREEN   lv_color_hex(0x25C25A)
 #define C_SUBTLE  lv_color_hex(0x50535A)
 
-typedef enum { T_INT, T_BOOL, T_CHOICE } kind_t;
+typedef enum { T_INT, T_BOOL, T_CHOICE, T_LIST } kind_t;
 
 typedef struct {
     const char *label;
@@ -36,20 +36,26 @@ typedef struct {
     bool is16;                  /* field is uint16_t rather than uint8_t */
     int lo, hi, step;
     int scale;                  /* value shown = raw / scale */
-    const char *choice[2];      /* T_CHOICE: raw lo and hi labels */
+    const char *choice[4];      /* T_CHOICE: raw lo and hi labels;
+                                 * T_LIST: one label per value lo..hi */
 } row_cfg_t;
 
-/* Only the three shift-flash rows drive the full-screen flash. Everything
- * below them sets the level at which that gauge's own readout turns red. */
+/* The shift-flash rows set the flash; the limit rows below them set the
+ * level at which that gauge's own readout turns red. */
 static const row_cfg_t rows[] = {
  { "Shift flash",      "",    T_BOOL,   &g_set.flash_enable,    false, 0, 1, 1, 1, {0} },
  { "Shift flash at",   "rpm", T_INT,    &g_set.rpm_flash,       true,  0, 9000, 100, 1, {0} },
  { "Shift flash level","%",   T_INT,    &g_set.flash_intensity, false, 10, 100, 5, 1, {0} },
+ { "Shift flash area", "",    T_LIST,   &g_set.flash_area,      false, 0, 1, 1, 1, { "Screen", "Rev counter" } },
+ { "Shift flash colour","",   T_LIST,   &g_set.flash_colour,    false, 0, 3, 1, 1, { "Red", "White", "Blue", "Amber" } },
+ { "Shift flash period","ms", T_INT,    &g_set.flash_period,    true,  80, 600, 20, 1, {0} },
  { "Water temp",       "\xC2\xB0" "C", T_INT, &g_set.clt_warn,  false, 60, 130, 1, 1, {0} },
  { "Intake air temp",  "\xC2\xB0" "C", T_INT, &g_set.iat_warn,  false, 20, 120, 1, 1, {0} },
  { "Boost limit",      "bar", T_INT,    &g_set.boost_warn,      true,  0, 250, 5, 100, {0} },
  { "AFR lean limit",   "",    T_INT,    &g_set.afr_lean_warn,   true,  0, 200, 1, 10, {0} },
  { "Brightness",       "%",   T_INT,    &g_set.brightness,      false, 15, 100, 5, 1, {0} },
+ { "Night mode",       "",    T_BOOL,   &g_set.night,           false, 0, 1, 1, 1, {0} },
+ { "Night dim",        "%",   T_INT,    &g_set.night_level,     false, 20, 80, 5, 1, {0} },
  { "Fuel",             "",    T_CHOICE, &g_set.stoich,          false, 98, 147, 49, 1, { "E85", "Petrol" } },
  { "Baro offset",      "bar", T_INT,    &g_set.baro,            true,  80, 110, 1, 100, {0} },
  { "Demo mode",        "",    T_BOOL,   &g_set.demo,            false, 0, 1, 1, 1, {0} },
@@ -85,6 +91,9 @@ static void row_text(const row_cfg_t *r, char *buf, size_t n)
     case T_CHOICE:
         snprintf(buf, n, "%s", v >= r->hi ? r->choice[1] : r->choice[0]);
         break;
+    case T_LIST:
+        snprintf(buf, n, "%s", r->choice[v - r->lo]);
+        break;
     default:
         if (r->scale == 100)      snprintf(buf, n, "%d.%02d", v / 100, v % 100);
         else if (r->scale == 10)  snprintf(buf, n, "%d.%d", v / 10, v % 10);
@@ -114,6 +123,8 @@ static void step_cb(lv_event_t *e)
 
     if (r->kind == T_BOOL || r->kind == T_CHOICE) {
         row_set(r, row_get(r) >= r->hi ? r->lo : r->hi);
+    } else if (r->kind == T_LIST) {
+        row_set(r, row_get(r) >= r->hi ? r->lo : row_get(r) + 1);
     } else {
         row_set(r, row_get(r) + dir * r->step);
     }

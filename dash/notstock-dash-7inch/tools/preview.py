@@ -29,7 +29,11 @@ SIM = os.path.join(HERE, "sim")
 OUT = os.path.join(ROOT, "preview")
 
 SCENES = {
-    "dash": "rpm=5700 speed=87 clt=92 iat=38 boost=0.85 afr=12.4",
+    "dash": "rpm=5700 speed=87 clt=92 iat=38 boost=0.85 afr=12.4 "
+            "peak_clt=98 peak_iat=46 peak_boost=1.32",
+    "dash-night": "rpm=3200 speed=64 clt=88 iat=30 boost=-0.3 afr=14.6 night=1",
+    "flash-dial": "rpm=7300 speed=150 clt=95 iat=40 boost=1.1 afr=12.0 "
+                  "area=1 t=4.1",
     "dash-limits": "rpm=7400 speed=238 clt=118 iat=72 boost=1.45 afr=17.6",
     "dash-idle": "rpm=850 speed=0 clt=45 iat=21 boost=-0.65 afr=14.7",
     "dash-nocan": "link=0",

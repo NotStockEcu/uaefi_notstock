@@ -10,7 +10,8 @@ if you cut power mid-frame.
 
 ## What is on the screen
 
-A classic analogue cluster built around one big rev counter. Every gauge has
+A classic analogue cluster built around one big rev counter. Numbers and
+icons are white by day and amber in night mode; limits turn them red. Every gauge has
 a needle **and** a digital readout, except speed, which is text only.
 
 | Where | Gauge | Scale | Readout |
@@ -187,20 +188,25 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.4` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.5` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 
 | Setting | Range | Notes |
 | --- | --- | --- |
-| Shift flash | on/off | master switch for the full-screen red flash |
+| Shift flash | on/off | master switch for the shift flash |
 | Shift flash at | 0-9000 rpm | 0 disables it |
-| Shift flash level | 10-100 % | peak opacity of the red wash |
+| Shift flash level | 10-100 % | peak opacity of the wash |
+| Shift flash area | Screen / Rev counter | whole screen, or a disc over the rev counter |
+| Shift flash colour | Red / White / Blue / Amber | |
+| Shift flash period | 80-600 ms | one on + off cycle, default 200 ms (5 Hz) |
 | Water temp | 60-130 degC | readout red at or above |
 | Intake air temp | 20-120 degC | readout red at or above |
 | Boost limit | 0-2.5 bar | readout red at or above, 0 disables |
 | AFR lean limit | 0-20.0 | readout red at or above, 0 disables |
 | Brightness | 15-100 % | see the note below |
+| Night mode | on/off | also a long press on the bottom left corner |
+| Night dim | 20-80 % | how dark night mode is |
 | Fuel | Petrol / E85 | sets stoichiometric AFR, 14.7 or 9.8 |
 | Baro offset | 0.80-1.10 bar | what gets subtracted from MAP for boost |
 | Demo mode | on/off | synthetic data, no reflash needed |
@@ -224,12 +230,30 @@ and strobing the panel while the driver is trying to read the number that
 caused it is worse than useless. Revs are the one case where the reaction has
 to happen inside a second, with your eyes on the road.
 
-Above the set rpm the whole screen pulses red with a 420 ms period. It is a
-square wave rather than a fade, because a hard flash is far more noticeable in
+Above the set rpm the screen, or just a disc over the rev counter, pulses in
+the chosen colour and period (menu). It only runs while the dash is on screen,
+so demo mode does not strobe the settings menu. It is a square wave rather
+than a fade, because a hard flash is far more noticeable in
 daylight and costs one opacity write per half period rather than one per
 frame. The wash sits on LVGL's top layer, so it covers the dash but does not
 block the menu, and the brightness dim sits above it on the system layer so a
 dimmed screen also has a dimmer flash.
+
+## Night mode
+
+**Long-press the bottom left corner** (three dim dots, like the menu corner)
+to toggle it; it is saved straight away. By day every number and icon on the
+dash is white. At night they turn amber and a warm dark wash, `Night dim`
+strong, takes the white artwork down to a warm grey. Brightness and night
+share one wash on the system layer, opacities combined, so there is never a
+second full-screen blend.
+
+## Peak hold
+
+Water, intake air and boost each have a thin amber drag needle that stays at
+the highest value since power-up. Revs and AFR have none, they swing too
+much for a peak to mean anything. **Long-press any of the three gauges** to
+clear all peaks. Peaks are not saved; a power cycle clears them too.
 
 ## Bench test without the car
 

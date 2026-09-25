@@ -19,14 +19,23 @@ typedef struct {
     uint16_t boost_warn;        /* bar * 100 */
     uint16_t afr_lean_warn;     /* afr * 10, high limit, 0 disables */
 
-    bool     flash_enable;      /* master switch for the full-screen flash */
-    uint8_t  flash_intensity;   /* 0..100, peak opacity of the red wash */
+    bool     flash_enable;      /* master switch for the shift flash */
+    uint8_t  flash_intensity;   /* 0..100, peak opacity of the wash */
+    uint8_t  flash_area;        /* FLASH_AREA_* */
+    uint8_t  flash_colour;      /* FLASH_COLOUR_* */
+    uint16_t flash_period;      /* ms for one on + off cycle */
 
     uint8_t  brightness;        /* 15..100 */
+    bool     night;             /* night mode, long press bottom left */
+    uint8_t  night_level;       /* % of the night wash, 20..80 */
     uint8_t  stoich;            /* afr * 10: 147 petrol, 98 E85 */
     uint16_t baro;              /* bar * 100 subtracted from MAP */
     bool     demo;              /* run off the synthetic generator */
 } settings_t;
+
+enum { FLASH_AREA_SCREEN, FLASH_AREA_DIAL };
+enum { FLASH_COLOUR_RED, FLASH_COLOUR_WHITE, FLASH_COLOUR_BLUE,
+       FLASH_COLOUR_AMBER };
 
 extern settings_t g_set;
 

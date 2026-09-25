@@ -176,6 +176,20 @@ full-screen red pulse. Every other limit turns its own readout red and stops
 there. This was an explicit instruction after an earlier version
 flashed on everything.
 
+**Peak hold is an lv_meter needle line** added before the needle image, so it
+draws underneath; `lv_meter` draws indicators oldest first. Its length is
+measured from `r_edge`, half the meter, which here is the needle image width,
+hence `peak_len - needle->header.w`. Hidden with `indic->opa` until there is a
+peak. No peak on revs or AFR, the owner's call.
+
+**Night mode and brightness are one wash.** `apply_dim` combines both
+opacities on the single `dim_layer`. Night also switches the numbers and
+icons from white to amber (`ink()`, `apply_ink`).
+
+**The shift flash only runs on the dash screen** (`lv_scr_act() == scr_dash`),
+otherwise demo mode strobed the settings menu. Area, colour and period are
+settings; area reshapes the same two overlay objects into a disc.
+
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still
 reads those channels.

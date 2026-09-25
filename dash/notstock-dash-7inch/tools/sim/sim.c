@@ -10,12 +10,19 @@
  *
  *   boot=ms        the boot animation at ms after power-up, crossfading
  *                  into the dash rendered from the other inputs
+ *   night=1        night mode
+ *   area=0|1       shift flash on the whole screen / on the rev counter
+ *   colour=0..3    shift flash red / white / blue / amber
+ *   peak_clt=.. peak_iat=.. peak_boost=..
+ *                  hold these for the first second, then drop to the
+ *                  normal values, to show the peak needles
  *
  * tools/preview.py builds this and turns the PPM into PNGs.
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "lvgl.h"
 #include "boot_anim.h"
@@ -92,6 +99,10 @@ int main(int argc, char **argv)
         { "boost", &g_dash.boost },
         { "afr",   &g_dash.afr },
     };
+    float peak[3] = { NAN, NAN, NAN };
+    volatile float *peak_field[3] = { &g_dash.clt, &g_dash.iat, &g_dash.boost };
+    const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
+    int night = 0, area = 0, colour = 0;
     bool menu = false;
     bool demo = false;
     int boot_ms = -1;
@@ -114,6 +125,15 @@ int main(int argc, char **argv)
         if (strcmp(k, "t") == 0)      { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "screen") == 0) { menu = strcmp(v, "menu") == 0; used = true; }
         if (strcmp(k, "boot") == 0)   { boot_ms = atoi(v); used = true; }
+        if (strcmp(k, "night") == 0)  { night = atoi(v); used = true; }
+        if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
+        if (strcmp(k, "colour") == 0) { colour = atoi(v); used = true; }
+        for (int j = 0; j < 3; j++) {
+            if (strcmp(k, peak_name[j]) == 0) {
+                peak[j] = strtof(v, NULL);
+                used = true;
+            }
+        }
         if (strcmp(k, "touch") == 0) {
             sscanf(v, "%d,%d", &s_touch_x, &s_touch_y);
             used = true;
@@ -142,6 +162,9 @@ int main(int argc, char **argv)
 
     settings_load();
     g_set.demo = demo;
+    g_set.night = night != 0;
+    g_set.flash_area = (uint8_t)area;
+    g_set.flash_colour = (uint8_t)colour;
     g_dash.last_rx_us = 1;
     ui_create();
     if (menu) {
@@ -149,8 +172,18 @@ int main(int argc, char **argv)
         lv_scr_load(ui_menu_screen());
     }
 
+    /* peaks first, then the real values */
+    float real[3];
+    for (int j = 0; j < 3; j++) {
+        real[j] = *peak_field[j];
+        if (!isnan(peak[j])) *peak_field[j] = peak[j];
+    }
+
     /* run the UI timer long enough for the needle smoothing to settle */
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {
+        if (t >= 1.0f && t < 1.0f + STEP_MS / 1000.0f) {
+            for (int j = 0; j < 3; j++) *peak_field[j] = real[j];
+        }
         s_now_us += STEP_MS * 1000;
         lv_tick_inc(STEP_MS);
         lv_timer_handler();

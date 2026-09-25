@@ -37,6 +37,9 @@ extern const lv_img_dsc_t hub_turbo;
 #define AFR_MIN                  (10.00f)
 #define AFR_MAX                  (18.00f)
 
+#define TEMP_NEEDLE_LEN          80
+#define TURBO_NEEDLE_LEN         58
+
 #define NEEDLE_BIG_PIVOT_X       35
 #define NEEDLE_BIG_PIVOT_Y       11
 #define NEEDLE_TEMP_PIVOT_X      16

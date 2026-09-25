@@ -9,7 +9,7 @@
 static const char *TAG = "set";
 #define NS  "dash"
 #define KEY "cfg"
-#define VER 2     /* bump whenever settings_t changes */
+#define VER 3     /* bump whenever settings_t changes */
 
 settings_t g_set;
 
@@ -23,7 +23,12 @@ void settings_defaults(void)
         .afr_lean_warn   = 160,     /* 16.0 */
         .flash_enable    = true,
         .flash_intensity = 80,
+        .flash_area      = FLASH_AREA_SCREEN,
+        .flash_colour    = FLASH_COLOUR_RED,
+        .flash_period    = 200,     /* 5 Hz */
         .brightness      = 100,
+        .night           = false,
+        .night_level     = 55,
         .stoich          = 147,
         .baro            = 100,
         .demo            = false,

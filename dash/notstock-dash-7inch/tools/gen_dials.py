@@ -440,6 +440,9 @@ def main():
     define("AFR_MIN", f"({AFR_MIN:.2f}f)")
     define("AFR_MAX", f"({AFR_MAX:.2f}f)")
     h.append("")
+    define("TEMP_NEEDLE_LEN", TEMP_NEEDLE_LEN)
+    define("TURBO_NEEDLE_LEN", TURBO_NEEDLE_LEN)
+    h.append("")
     for name, (img, piv) in needles.items():
         define(f"{name.upper()}_PIVOT_X", piv[0])
         define(f"{name.upper()}_PIVOT_Y", piv[1])
