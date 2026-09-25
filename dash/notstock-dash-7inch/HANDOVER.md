@@ -101,6 +101,7 @@ main/
   dials.c/h       generated: scale faces, needles, hubs and their geometry
   icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
   splash.c        generated: boot logo, RGB565 440x440
+  boot_anim.c/h   boot animation, straight into the frame buffer
   fonts/          generated: DejaVu Sans Condensed Bold (side gauges, menu)
                   and Orbitron (speed, rpm, rev counter), tools/gen_fonts.sh
 tools/
@@ -158,9 +159,14 @@ the panel has 64 kB.
 and `ui.c` places every icon by the centre read from its own image header, so
 mixed sizes need no layout edits.
 
-**The boot screen is a separate LVGL screen.** `ui_create` builds the dash,
-then loads the splash screen on top and a one-shot timer fades to the dash
-with `lv_scr_load_anim(..., auto_del)`. The dash timer runs the whole time.
+**The boot animation bypasses LVGL.** An LVGL splash screen with
+`img_opa` and `lv_scr_load_anim` stuttered on the panel: every step blends
+440x440, then 800x480 pixels through a 40-line buffer. `boot_anim.c` writes
+straight into the RGB frame buffer (32-level integer RGB565 blend, logo data
+is `uint16_t` so it can be read as words). `main.c` points LVGL's flush at a
+PSRAM shadow buffer during the hold, then crossfades into it; the last frame
+equals what LVGL believes is on screen, so it carries on without a redraw.
+`tools/sim` renders the same frames (`boot=<ms>`).
 
 **Temperature min/max labels hang under the ends of the arc.** Placed along
 the end radius, the needle lies across them when it rests on the stop.

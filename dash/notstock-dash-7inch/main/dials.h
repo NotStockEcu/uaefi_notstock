@@ -39,7 +39,7 @@ extern const lv_img_dsc_t hub_turbo;
 
 #define NEEDLE_BIG_PIVOT_X       35
 #define NEEDLE_BIG_PIVOT_Y       11
-#define NEEDLE_TEMP_PIVOT_X      12
-#define NEEDLE_TEMP_PIVOT_Y      6
-#define NEEDLE_TURBO_PIVOT_X     12
-#define NEEDLE_TURBO_PIVOT_Y     6
+#define NEEDLE_TEMP_PIVOT_X      16
+#define NEEDLE_TEMP_PIVOT_Y      7
+#define NEEDLE_TURBO_PIVOT_X     15
+#define NEEDLE_TURBO_PIVOT_Y     7

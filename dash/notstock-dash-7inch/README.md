@@ -25,7 +25,7 @@ a needle **and** a digital readout, except speed, which is text only.
 **No warning lamps.** A value past its limit (settings menu) turns its own
 readout red, the temperature icons go red with it. The only thing that
 flashes is the shift light, see below. The one piece of text that can appear
-is `NO CAN` (red) or `DEMO` (yellow) in the top left corner, and only while
+is `NO CAN` (red) or `DEMO` (yellow) in the bottom left corner, and only while
 the needles are not showing live data.
 
 ## Changing the look
@@ -44,13 +44,19 @@ at 4x supersampling and writes
 `ui.c` takes every range and angle from `dials.h`, so a changed scale cannot
 drift out of step with the needle.
 
-**Fonts**: the rev counter numbers, the rpm readout and the speed are
+**Fonts**: every number and label on the dash is
 [Orbitron](https://fonts.google.com/specimen/Orbitron) (SIL OFL,
-`assets/fonts/`). `tools/gen_fonts.sh` turns it into `main/fonts/dash_speed_56.c`,
-`dash_orb_40.c` and `dash_orb_18.c` with `lv_font_conv`
-(`npm i -g lv_font_conv`); `gen_dials.py` draws the scale numbers with the
-same TTF. The side gauges and the menu use DejaVu Sans Condensed Bold, each
-font file carries its own `lv_font_conv` line.
+`assets/fonts/`). `tools/gen_fonts.sh` turns it into the `main/fonts/dash_orb_*.c`
+and `dash_speed_56.c` files with `lv_font_conv` (`npm i -g lv_font_conv`);
+`gen_dials.py` draws the scale numbers with the same TTF. Units sit on the
+same baseline as their number (`unit_on_baseline` in `ui.c`). The settings
+menu and the lambda line use DejaVu Sans Condensed Bold, whose font files
+carry their own `lv_font_conv` line.
+
+**Look**: the rev counter has a dark gradient face under its ticks with a
+thin grey rim, numbers outside on black. The side gauges are 184 px wide and
+carry minor ticks; boost and AFR have their numbers inside the arc and a
+yellow mark at 0 bar and at 14.7.
 
 **Icons**: `tools/gen_assets.py` traces the water and intake icons out of
 `assets/icons_sheet.png` into `main/icons.c`. Replace the source file and
@@ -61,10 +67,17 @@ layout edit.
 `tools/gen_splash.py` keys out its white background (on the blue channel, so
 the rim stays smooth), crops it to the disc and writes `main/splash.c` at
 440x440. At power-up the screen starts black, the logo rises out of it over
-`SPLASH_IN_MS` (0.8 s), holds for `SPLASH_HOLD_MS` (1.2 s) and fades into the
-dash over `SPLASH_FADE_MS` (0.7 s), all at the top of `ui.c`. The dash is
-already running underneath, so it fades in with live values. Preview it with
-`python tools/preview.py t=1`.
+`BOOT_IN_MS` (0.8 s), holds for `BOOT_HOLD_MS` (1.2 s) and crossfades into
+the dash over `BOOT_FADE_MS` (0.7 s), all in `main/boot_anim.h`.
+
+The animation does not go through LVGL. Blending the logo, and then the whole
+screen, through LVGL's 40-line draw buffer stuttered on the panel.
+`main/boot_anim.c` writes the frames straight into the RGB panel's frame
+buffer with a 32-level integer RGB565 blend. During the hold LVGL runs
+normally but renders into a shadow buffer in PSRAM (`s_shadow` in `main.c`),
+so the needles settle on live values and the crossfade ends on exactly the
+frame LVGL thinks is on screen. Preview any moment of it with
+`python tools/preview.py boot=500` (milliseconds after power-up).
 
 **The layout**: the `LY_*` block at the top of `main/ui.c`. Every gauge is
 placed by its pivot, readouts by an offset from that pivot. Colours are the
@@ -174,7 +187,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.3` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.4` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 

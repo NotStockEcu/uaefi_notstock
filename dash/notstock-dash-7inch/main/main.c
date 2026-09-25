@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "board.h"
+#include "boot_anim.h"
 #include "rusefi_can.h"
 #include "settings.h"
 #include "touch.h"
@@ -31,6 +32,9 @@ static const char *TAG = "dash";
 #define LVGL_TICK_MS   2
 
 static esp_lcd_panel_handle_t s_panel;
+/* While set, LVGL renders into this buffer instead of the panel. The boot
+ * animation uses it to get a finished dash frame to crossfade into. */
+static uint16_t *s_shadow;
 static uint8_t s_exio;
 
 /* ------------------------------------------------------------ CH422G / I2C */
@@ -148,8 +152,16 @@ static void panel_init(void)
 static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *area,
                      lv_color_t *px)
 {
-    esp_lcd_panel_draw_bitmap(s_panel, area->x1, area->y1,
-                              area->x2 + 1, area->y2 + 1, px);
+    if (s_shadow) {
+        int w = area->x2 - area->x1 + 1;
+        for (int y = area->y1; y <= area->y2; y++) {
+            memcpy(s_shadow + y * LCD_H_RES + area->x1, px, w * 2);
+            px += w;
+        }
+    } else {
+        esp_lcd_panel_draw_bitmap(s_panel, area->x1, area->y1,
+                                  area->x2 + 1, area->y2 + 1, px);
+    }
     lv_disp_flush_ready(drv);
 }
 
@@ -187,6 +199,87 @@ static void lvgl_init(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(h, LVGL_TICK_MS * 1000));
 }
 
+/* ------------------------------------------------------------ boot screen */
+/* Logo rises out of black, holds, crossfades into the dash. The frames are
+ * written straight into the panel's frame buffer by boot_anim.c; going
+ * through LVGL made the fade stutter. During the hold LVGL renders the dash
+ * into a shadow buffer, so the crossfade has a finished frame to blend into
+ * and ends on exactly what LVGL believes is on screen. */
+static void fb_present(uint16_t *fb)
+{
+    /* the frame buffer is its own draw buffer: the driver only syncs */
+    esp_lcd_panel_draw_bitmap(s_panel, 0, 0, LCD_H_RES, LCD_V_RES, fb);
+}
+
+static void boot_run(void)
+{
+    uint16_t *fb = NULL;
+    if (esp_lcd_rgb_panel_get_frame_buffer(s_panel, 1, (void **)&fb) != ESP_OK
+        || fb == NULL) {
+        ESP_LOGW(TAG, "no frame buffer, skipping the boot logo");
+        lv_timer_handler();
+        exio_set(EXIO_LCD_BL, true);
+        return;
+    }
+
+    memset(fb, 0, LCD_H_RES * LCD_V_RES * 2);
+    fb_present(fb);
+    exio_set(EXIO_LCD_BL, true);
+
+    int64_t t0 = esp_timer_get_time();
+    int last = -1;
+    for (;;) {
+        uint32_t ms = (uint32_t)((esp_timer_get_time() - t0) / 1000);
+        int lv = boot_in_level(ms);
+        if (lv != last) {
+            boot_draw_logo(fb, lv);
+            fb_present(fb);
+            last = lv;
+        }
+        if (ms >= BOOT_IN_MS) break;
+        vTaskDelay(1);
+    }
+
+    uint16_t *shadow = heap_caps_malloc(LCD_H_RES * LCD_V_RES * 2,
+                                        MALLOC_CAP_SPIRAM);
+    if (!shadow) {
+        ESP_LOGW(TAG, "no memory for the crossfade, cutting to the dash");
+        vTaskDelay(pdMS_TO_TICKS(BOOT_HOLD_MS));
+        lv_obj_invalidate(lv_scr_act());
+        return;
+    }
+
+    /* hold: LVGL runs normally but draws into the shadow, so the needles
+     * settle on live values while the logo is up */
+    s_shadow = shadow;
+    lv_obj_invalidate(lv_scr_act());
+    int64_t hold_end = t0 + (int64_t)(BOOT_IN_MS + BOOT_HOLD_MS) * 1000;
+    while (esp_timer_get_time() < hold_end) {
+        lv_timer_handler();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    lv_obj_invalidate(lv_scr_act());
+    lv_refr_now(NULL);
+
+    int64_t t1 = esp_timer_get_time();
+    last = -1;
+    for (;;) {
+        uint32_t ms = (uint32_t)((esp_timer_get_time() - t1) / 1000);
+        int lv = boot_fade_level(ms);
+        if (lv != last) {
+            boot_draw_cross(fb, shadow, lv);
+            fb_present(fb);
+            last = lv;
+        }
+        if (lv >= 32) break;
+        vTaskDelay(1);
+    }
+
+    /* the frame buffer now holds exactly the last LVGL frame */
+    s_shadow = NULL;
+    heap_caps_free(shadow);
+}
+
 /* ------------------------------------------------------------------- main */
 void app_main(void)
 {
@@ -207,13 +300,12 @@ void app_main(void)
 
     ui_create();
 
-    /* first frame out, then light it up */
-    lv_timer_handler();
-    exio_set(EXIO_LCD_BL, true);
-
     /* Demo mode is a setting now, so CAN always comes up: switching the
-     * setting off in the menu makes live data appear without a reflash. */
+     * setting off in the menu makes live data appear without a reflash.
+     * Started before the boot logo so the dash fades in on live values. */
     rusefi_can_start();
+
+    boot_run();     /* also switches the backlight on */
 
     while (1) {
         uint32_t next = lv_timer_handler();

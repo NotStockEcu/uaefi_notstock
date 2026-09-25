@@ -11,7 +11,7 @@ re-implements the layout.
 
 Inputs: rpm speed clt iat boost afr, link=0 for the NO CAN state, demo=1 t=3.2
 for the demo generator at time t, screen=menu for the settings screen,
-t=1 for the boot logo (it fades into the dash after 2.5 s).
+boot=<ms> for the boot animation at that time after power-up.
 
 Needs make, a C compiler, Pillow and LVGL 8.4. After one `idf.py build` LVGL
 sits in managed_components/ and is found automatically; otherwise set
@@ -34,7 +34,8 @@ SCENES = {
     "dash-idle": "rpm=850 speed=0 clt=45 iat=21 boost=-0.65 afr=14.7",
     "dash-nocan": "link=0",
     "menu": "screen=menu",
-    "splash": "t=1",
+    "boot-in": "boot=500 rpm=900 clt=70 iat=25 boost=-0.6 afr=14.7",
+    "boot-cross": "boot=2350 rpm=900 clt=70 iat=25 boost=-0.6 afr=14.7",
 }
 
 

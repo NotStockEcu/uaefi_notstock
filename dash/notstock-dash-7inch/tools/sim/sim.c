@@ -8,7 +8,8 @@
  *               [afr=12.5] [link=0|1] [demo=1] [t=3.5] [screen=menu]
  *               [touch=x,y]   finger held at x,y for the whole run
  *
- *   screen=splash  the boot logo (only visible in the first 2.5 s, use t=1)
+ *   boot=ms        the boot animation at ms after power-up, crossfading
+ *                  into the dash rendered from the other inputs
  *
  * tools/preview.py builds this and turns the PPM into PNGs.
  */
@@ -17,6 +18,7 @@
 #include <string.h>
 
 #include "lvgl.h"
+#include "boot_anim.h"
 #include "rusefi_can.h"
 #include "settings.h"
 #include "ui.h"
@@ -92,6 +94,7 @@ int main(int argc, char **argv)
     };
     bool menu = false;
     bool demo = false;
+    int boot_ms = -1;
     float t_end = 4.0f;
 
     for (int i = 2; i < argc; i++) {
@@ -110,6 +113,7 @@ int main(int argc, char **argv)
         if (strcmp(k, "demo") == 0)   { demo = atoi(v) != 0; used = true; }
         if (strcmp(k, "t") == 0)      { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "screen") == 0) { menu = strcmp(v, "menu") == 0; used = true; }
+        if (strcmp(k, "boot") == 0)   { boot_ms = atoi(v); used = true; }
         if (strcmp(k, "touch") == 0) {
             sscanf(v, "%d,%d", &s_touch_x, &s_touch_y);
             used = true;
@@ -152,6 +156,20 @@ int main(int argc, char **argv)
         lv_timer_handler();
     }
     lv_refr_now(NULL);
+
+    if (boot_ms >= 0) {
+        /* same frames the panel shows, from the same code as main.c */
+        static uint16_t dash[W * H];
+        uint16_t *fb = (uint16_t *)s_fb;
+        memcpy(dash, fb, sizeof dash);
+        if (boot_ms < BOOT_IN_MS + BOOT_HOLD_MS) {
+            memset(fb, 0, sizeof dash);
+            boot_draw_logo(fb, boot_in_level(boot_ms));
+        } else {
+            boot_draw_cross(fb, dash,
+                            boot_fade_level(boot_ms - BOOT_IN_MS - BOOT_HOLD_MS));
+        }
+    }
 
     return write_ppm(argv[1]) == 0 ? 0 : 1;
 }

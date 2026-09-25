@@ -9,12 +9,14 @@ idf_component_register(
         "icons.c"
         "dials.c"
         "splash.c"
-        "fonts/dash_num_28.c"
+        "boot_anim.c"
         "fonts/dash_lbl_18.c"
         "fonts/dash_lbl_13.c"
         "fonts/dash_speed_56.c"
         "fonts/dash_orb_40.c"
         "fonts/dash_orb_18.c"
+        "fonts/dash_orb_30.c"
+        "fonts/dash_orb_14.c"
     INCLUDE_DIRS ".")
 
 # the generated font files pick their lvgl include path from this

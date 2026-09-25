@@ -1,13 +1,14 @@
 #pragma once
 #include "lvgl.h"
 
-LV_FONT_DECLARE(dash_num_28);
 LV_FONT_DECLARE(dash_lbl_18);
 LV_FONT_DECLARE(dash_lbl_13);
 /* Orbitron, see tools/gen_fonts.sh */
 LV_FONT_DECLARE(dash_speed_56);
 LV_FONT_DECLARE(dash_orb_40);
 LV_FONT_DECLARE(dash_orb_18);
+LV_FONT_DECLARE(dash_orb_30);
+LV_FONT_DECLARE(dash_orb_14);
 
 extern const lv_img_dsc_t ic_water;
 extern const lv_img_dsc_t ic_oiltemp;

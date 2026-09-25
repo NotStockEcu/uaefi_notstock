@@ -53,10 +53,14 @@ BIG_SWEEP = 270
 BIG_R_TICK = 178             # outer end of the ticks
 BIG_TICK_MAJ, BIG_TICK_MIN = 30, 15
 BIG_TICK_W_MAJ, BIG_TICK_W_MIN = 8.0, 3.6
-BIG_LABEL_GAP = 10           # clear space between tick ends and numbers
+BIG_LABEL_GAP = 14           # clear space between tick ends and numbers
 BIG_LABEL_PX = 40
 BIG_NEEDLE_LEN = 169         # pivot to tip
 BIG_HUB = 72
+BIG_FACE_R = BIG_R_TICK + 7   # dark face disc under the ticks, numbers outside
+FACE_IN = (0x17, 0x18, 0x1B)  # face gradient, centre
+FACE_OUT = (0x05, 0x05, 0x06) # face gradient, edge
+FACE_RIM = (0x33, 0x35, 0x39)
 
 RPM_MAX = 8000
 RPM_REDLINE = 7000
@@ -66,33 +70,36 @@ RPM_MINOR = 250
 # ---------------------------------------------------------------- temp gauges
 # Water and intake air: a short arc across the top, needle swinging up from a
 # hub below it, red zone above the hot end. Same drawing for both.
-TEMP_W, TEMP_H = 120, 156    # pivot in the centre
+TEMP_W, TEMP_H = 184, 210    # pivot in the centre
 TEMP_SWEEP_START = 220
 TEMP_SWEEP = 100
-TEMP_R = 60                  # the arc line
-TEMP_NEEDLE_LEN = 57
-TEMP_HUB = 28
+TEMP_R = 84                  # the arc line
+TEMP_NEEDLE_LEN = 80
+TEMP_HUB = 36
 
-CLT_MIN, CLT_MAX, CLT_RED = 40, 130, 105
-IAT_MIN, IAT_MAX, IAT_RED = 0, 80, 60
+CLT_MIN, CLT_MAX, CLT_RED, CLT_STEP = 40, 130, 105, 10
+IAT_MIN, IAT_MAX, IAT_RED, IAT_STEP = 0, 80, 60, 10
 
 # --------------------------------------------------------------- turbo gauges
 # Boost and AFR: a long sweep from 9 o'clock over the top to just past
-# 3 o'clock, thin line with thick coloured zones on the outside.
-TURBO_W, TURBO_H = 120, 124
+# 3 o'clock, thin line with thick coloured zones on the outside, small ticks
+# and numbers inside.
+TURBO_W, TURBO_H = 184, 184
 TURBO_SWEEP_START = 180
 TURBO_SWEEP = 210
-TURBO_R = 43                 # the thin line
-TURBO_ZONE_W = 11            # zones stick out this far past the line
-TURBO_NEEDLE_LEN = 41
-TURBO_HUB = 28
+TURBO_R = 62                 # the thin line
+TURBO_ZONE_W = 15            # zones stick out this far past the line
+TURBO_NEEDLE_LEN = 58
+TURBO_HUB = 36
 
 BOOST_MIN, BOOST_MAX = -1.0, 2.0
 BOOST_ZONES = [(0.8, 1.2, YELLOW), (1.2, 2.0, RED)]
-BOOST_MARK = 0.0             # small tick at atmospheric
+BOOST_TICKS = (0.5, 1.0)     # minor step, labelled step
+BOOST_MARK = 0.0             # longer tick at atmospheric
 
 AFR_MIN, AFR_MAX = 10.0, 18.0
 AFR_ZONES = [(10.0, 11.0, YELLOW), (16.0, 18.0, RED)]
+AFR_TICKS = (1.0, 2.0)
 AFR_MARK = 14.7
 
 
@@ -150,11 +157,27 @@ def finish(img, w, h):
 
 
 # ----------------------------------------------------------------- builders
+def face_disc(img, c, r):
+    """Dark disc with a centre-to-edge gradient and a thin rim, so the big
+    dial reads as an instrument face rather than ticks floating on black."""
+    d = ImageDraw.Draw(img)
+    rim = u(2.2)
+    d.ellipse([c - r, c - r, c + r, c + r], fill=FACE_RIM)
+    steps = 64
+    for i in range(steps, 0, -1):
+        f = i / steps
+        rr = (r - rim) * f
+        col = tuple(int(FACE_OUT[k] + (FACE_IN[k] - FACE_OUT[k]) * (1 - f) ** 1.6)
+                    for k in range(3))
+        d.ellipse([c - rr, c - rr, c + rr, c + rr], fill=col)
+
+
 def build_big(vmax, major, minor, label_div, red_from=None):
     """Rev counter face. The ticks and zone are generic, the numbers are
     v / label_div."""
     img, d = canvas(BIG, BIG)
     c = u(BIG / 2)
+    face_disc(img, c, u(BIG_FACE_R))
 
     def ang(v):
         return BIG_SWEEP_START + v / vmax * BIG_SWEEP
@@ -188,7 +211,7 @@ def build_big(vmax, major, minor, label_div, red_from=None):
     return finish(img, BIG, BIG)
 
 
-def build_temp(vmin, vmax, red_from):
+def build_temp(vmin, vmax, red_from, step):
     img, d = canvas(TEMP_W, TEMP_H)
     cx, cy = u(TEMP_W / 2), u(TEMP_H / 2)
     a0, a1 = TEMP_SWEEP_START, TEMP_SWEEP_START + TEMP_SWEEP
@@ -196,25 +219,26 @@ def build_temp(vmin, vmax, red_from):
     def ang(v):
         return a0 + (v - vmin) / (vmax - vmin) * TEMP_SWEEP
 
-    arc_poly(d, cx, cy, u(TEMP_R + 3), u(TEMP_R + 11), ang(red_from), a1, RED)
-    arc_poly(d, cx, cy, u(TEMP_R - 1.2), u(TEMP_R + 1.2), a0, a1, LINE)
-    for a in (a0, a1):
-        radial_line(d, cx, cy, u(TEMP_R - 9), u(TEMP_R + 1), a, u(3.2), LINE)
-    # middle mark
-    radial_line(d, cx, cy, u(TEMP_R - 6), u(TEMP_R), (a0 + a1) / 2, u(2.2),
-                LINE)
+    arc_poly(d, cx, cy, u(TEMP_R + 4), u(TEMP_R + 15), ang(red_from), a1, RED)
+    arc_poly(d, cx, cy, u(TEMP_R - 1.4), u(TEMP_R + 1.4), a0, a1, LINE)
+    v = vmin
+    while v <= vmax + 1e-6:
+        end = v in (vmin, vmax)
+        radial_line(d, cx, cy, u(TEMP_R - (13 if end else 7)), u(TEMP_R + 1),
+                    ang(v), u(4.0 if end else 2.2), LINE)
+        v += step
 
     # Min and max hang just under the ends of the arc. Anywhere along the end
     # radius the needle would lie across them when it rests on the stop.
-    f = font(14)
+    f = ImageFont.truetype(SCALE_FONT, u(16))
     for v, a, side in ((vmin, a0, 1), (vmax, a1, -1)):
         x, y = pt(cx, cy, u(TEMP_R), a)
-        text_c(d, x + side * u(5), y + u(17), str(v), f, WHITE_DIM)
+        text_c(d, x + side * u(8), y + u(22), str(v), f, WHITE_DIM)
 
     return finish(img, TEMP_W, TEMP_H)
 
 
-def build_turbo(vmin, vmax, zones, mark):
+def build_turbo(vmin, vmax, zones, ticks, mark):
     img, d = canvas(TURBO_W, TURBO_H)
     cx, cy = u(TURBO_W / 2), u(TURBO_H / 2)
     a0, a1 = TURBO_SWEEP_START, TURBO_SWEEP_START + TURBO_SWEEP
@@ -222,12 +246,24 @@ def build_turbo(vmin, vmax, zones, mark):
     def ang(v):
         return a0 + (v - vmin) / (vmax - vmin) * TURBO_SWEEP
 
-    arc_poly(d, cx, cy, u(TURBO_R - 1.2), u(TURBO_R + 1.2), a0, a1, LINE)
+    arc_poly(d, cx, cy, u(TURBO_R - 1.4), u(TURBO_R + 1.4), a0, a1, LINE)
     for lo, hi, col in zones:
-        arc_poly(d, cx, cy, u(TURBO_R - 1.2), u(TURBO_R + TURBO_ZONE_W),
+        arc_poly(d, cx, cy, u(TURBO_R - 1.4), u(TURBO_R + TURBO_ZONE_W),
                  ang(lo), ang(hi), col)
-    radial_line(d, cx, cy, u(TURBO_R - 8), u(TURBO_R + 1), ang(mark), u(2.6),
-                LINE)
+
+    minor, labelled = ticks
+    f = ImageFont.truetype(SCALE_FONT, u(13))
+    n = int(round((vmax - vmin) / minor))
+    for i in range(n + 1):
+        v = vmin + i * minor
+        lab = abs((v - vmin) / labelled - round((v - vmin) / labelled)) < 1e-6
+        radial_line(d, cx, cy, u(TURBO_R - (9 if lab else 5)), u(TURBO_R + 1),
+                    ang(v), u(3.0 if lab else 1.8), LINE)
+        if lab:
+            x, y = pt(cx, cy, u(TURBO_R - 20), ang(v))
+            text_c(d, x, y, f"{v:.0f}", f, WHITE_DIM)
+    radial_line(d, cx, cy, u(TURBO_R - 12), u(TURBO_R + 1), ang(mark), u(3.0),
+                YELLOW)
     return finish(img, TURBO_W, TURBO_H)
 
 
@@ -334,16 +370,17 @@ def main():
     art = {
         "dial_rpm": build_big(RPM_MAX, RPM_MAJOR, RPM_MINOR, 1000,
                               red_from=RPM_REDLINE),
-        "dial_clt": build_temp(CLT_MIN, CLT_MAX, CLT_RED),
-        "dial_iat": build_temp(IAT_MIN, IAT_MAX, IAT_RED),
+        "dial_clt": build_temp(CLT_MIN, CLT_MAX, CLT_RED, CLT_STEP),
+        "dial_iat": build_temp(IAT_MIN, IAT_MAX, IAT_RED, IAT_STEP),
         "dial_boost": build_turbo(BOOST_MIN, BOOST_MAX, BOOST_ZONES,
-                                  BOOST_MARK),
-        "dial_afr": build_turbo(AFR_MIN, AFR_MAX, AFR_ZONES, AFR_MARK),
+                                  BOOST_TICKS, BOOST_MARK),
+        "dial_afr": build_turbo(AFR_MIN, AFR_MAX, AFR_ZONES, AFR_TICKS,
+                                AFR_MARK),
     }
     needles = {
         "needle_big": build_needle(BIG_NEEDLE_LEN, 16, 4, 32),
-        "needle_temp": build_needle(TEMP_NEEDLE_LEN, 6, 2, 9),
-        "needle_turbo": build_needle(TURBO_NEEDLE_LEN, 6, 2, 9),
+        "needle_temp": build_needle(TEMP_NEEDLE_LEN, 8, 2.5, 13),
+        "needle_turbo": build_needle(TURBO_NEEDLE_LEN, 8, 2.5, 12),
     }
     hubs = {
         "hub_big": build_hub(BIG_HUB),

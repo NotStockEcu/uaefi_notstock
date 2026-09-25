@@ -43,34 +43,31 @@
 #define LY_SPEED_Y    (LY_RPM_CY + 132)
 #define LY_SPEED_W    240
 
-/* Side columns: pivot of each small gauge. */
-#define LY_LEFT_CX    60
-#define LY_RIGHT_CX   740
-#define LY_CLT_CY     112
-#define LY_IAT_CY     352
-#define LY_BOOST_CY   100
-#define LY_AFR_CY     340
-#define LY_SIDE_W     120
+/* Side columns: pivot of each small gauge. The rev counter's numbers end at
+ * x 192 and 608, the columns fill what is left either side. */
+#define LY_LEFT_CX    92
+#define LY_RIGHT_CX   708
+#define LY_CLT_CY     122
+#define LY_IAT_CY     360
+#define LY_BOOST_CY   112
+#define LY_AFR_CY     350
+#define LY_SIDE_W     184
 
 /* readouts relative to their pivot */
-#define LY_TEMP_VAL_DY   26
-#define LY_TEMP_ICON_DX  38                /* icon centre, right of the hub */
-#define LY_TURBO_LBL_DY  18
-#define LY_TURBO_VAL_DY  38
-#define LY_SUB_DY        78                /* lambda line under the AFR */
+#define LY_TEMP_VAL_DY   30
+#define LY_TEMP_ICON_DX  54                /* icon centre, right of the hub */
+/* title under the hub, clear of the end-of-scale number beside it */
+#define LY_TURBO_LBL_DY  34
+#define LY_TURBO_VAL_DY  52
+#define LY_SUB_DY        94                /* lambda line under the AFR */
 
-#define LY_LINK_Y     4                    /* NO CAN / DEMO, top left */
+#define LY_LINK_Y     450                  /* NO CAN / DEMO, bottom left */
 
 /* ------------------------------------------------------------------ config */
 #define NEEDLE_SMOOTH 0.25f                 /* 1.0 is instant, lower is lazier */
 
 /* alarm flash */
 #define FLASH_PERIOD_MS 420
-/* boot screen: the logo rises out of black, stays, then fades into the dash */
-#define SPLASH_IN_MS    800
-#define SPLASH_HOLD_MS  1200
-#define SPLASH_FADE_MS  700
-
 /* hidden menu trigger, bottom right corner */
 #define MENU_HIT_W    130
 #define MENU_HIT_H    64
@@ -151,6 +148,16 @@ static lv_obj_t *mk_img(lv_obj_t *par, const lv_img_dsc_t *src,
     return i;
 }
 
+/* Put a small unit label on the same baseline as the number next to it.
+ * Both sit bottom-aligned in a flex row, but the digit-only fonts have their
+ * baseline at the very bottom while the unit fonts keep room for descenders,
+ * so the unit is pushed down by exactly that room. */
+static void unit_on_baseline(lv_obj_t *unit)
+{
+    const lv_font_t *f = lv_obj_get_style_text_font(unit, 0);
+    lv_obj_set_style_translate_y(unit, f->base_line, 0);
+}
+
 /* A horizontal row that packs a number and a small unit on one baseline.
  * Flex handles the widths, so the pair stays centred whatever the digits. */
 static lv_obj_t *mk_value_row(lv_obj_t *par, lv_coord_t x, lv_coord_t y,
@@ -165,9 +172,9 @@ static lv_obj_t *mk_value_row(lv_obj_t *par, lv_coord_t x, lv_coord_t y,
     lv_obj_set_style_pad_column(row, 4, 0);
     *out_value = mk_label(row, big, col, "--", 0, 0, 0, LV_TEXT_ALIGN_LEFT);
     if (unit && unit[0]) {
-        lv_obj_t *u = mk_label(row, &dash_lbl_13, C_GREY, unit, 0, 0, 0,
+        lv_obj_t *u = mk_label(row, &dash_orb_14, C_GREY, unit, 0, 0, 0,
                                LV_TEXT_ALIGN_LEFT);
-        lv_obj_set_style_pad_bottom(u, 4, 0);
+        unit_on_baseline(u);
     }
     return row;
 }
@@ -300,7 +307,7 @@ static void build_rpm(lv_obj_t *par)
                            LV_TEXT_ALIGN_LEFT);
     lv_obj_t *u = mk_label(row, &dash_orb_18, C_GREY, "rpm", 0, 0, 0,
                            LV_TEXT_ALIGN_LEFT);
-    lv_obj_set_style_pad_bottom(u, 6, 0);
+    unit_on_baseline(u);
 }
 
 /* Speed is text only: a number, no needle. */
@@ -316,7 +323,7 @@ static void build_speed(lv_obj_t *par)
                          LV_TEXT_ALIGN_LEFT);
     lv_obj_t *u = mk_label(row, &dash_orb_18, C_GREY, "km/h", 0, 0, 0,
                            LV_TEXT_ALIGN_LEFT);
-    lv_obj_set_style_pad_bottom(u, 14, 0);
+    unit_on_baseline(u);
 }
 
 static void update_speed(float kmh)
@@ -351,7 +358,7 @@ static void build_temp(gauge_t *g, lv_obj_t *par, lv_coord_t cy,
     lv_obj_set_style_img_recolor_opa(g->icon, LV_OPA_COVER, 0);
 
     mk_value_row(par, LY_LEFT_CX - LY_SIDE_W / 2, cy + LY_TEMP_VAL_DY,
-                 LY_SIDE_W, 40, &dash_num_28, C_Y, "\xC2\xB0" "C", &g->value);
+                 LY_SIDE_W, 44, &dash_orb_30, C_Y, "\xC2\xB0" "C", &g->value);
 }
 
 /* Boost and AFR: long sweep with coloured zones, title under the hub, number
@@ -371,10 +378,12 @@ static void build_turbo(gauge_t *g, lv_obj_t *par, lv_coord_t cy,
     g->val_dec = val_dec;
     g->val_round = 0;
 
-    mk_label(par, &dash_lbl_13, C_LBL, title, LY_RIGHT_CX - LY_SIDE_W / 2,
-             cy + LY_TURBO_LBL_DY, LY_SIDE_W, LV_TEXT_ALIGN_CENTER);
+    lv_obj_t *t = mk_label(par, &dash_orb_14, C_LBL, title,
+                           LY_RIGHT_CX - LY_SIDE_W / 2, cy + LY_TURBO_LBL_DY,
+                           LY_SIDE_W, LV_TEXT_ALIGN_CENTER);
+    lv_obj_set_style_text_letter_space(t, 2, 0);
     mk_value_row(par, LY_RIGHT_CX - LY_SIDE_W / 2, cy + LY_TURBO_VAL_DY,
-                 LY_SIDE_W, 40, &dash_num_28, C_Y, unit, &g->value);
+                 LY_SIDE_W, 44, &dash_orb_30, C_Y, unit, &g->value);
 }
 
 /* ----------------------------------------------------------- link status */
@@ -580,47 +589,6 @@ static void ui_timer_cb(lv_timer_t *t)
     update_alarm(&d);
 }
 
-/* ------------------------------------------------------------ boot screen */
-static void splash_done_cb(lv_timer_t *t)
-{
-    lv_timer_del(t);
-    /* auto_del frees the splash screen; the image itself lives in flash */
-    lv_scr_load_anim(scr_dash, LV_SCR_LOAD_ANIM_FADE_ON, SPLASH_FADE_MS, 0,
-                     true);
-}
-
-static void splash_opa_cb(void *img, int32_t v)
-{
-    lv_obj_set_style_img_opa(img, (lv_opa_t)v, 0);
-}
-
-/* The logo on black. The first frame is fully black (the backlight comes on
- * with it), the logo then rises out of the dark over SPLASH_IN_MS, holds, and
- * the whole screen fades into the dash. The dash is already built and
- * updating underneath, so it comes up with live values. */
-static void build_splash(void)
-{
-    lv_obj_t *s = lv_obj_create(NULL);
-    lv_obj_remove_style_all(s);
-    lv_obj_set_style_bg_color(s, lv_color_black(), 0);
-    lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
-    lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *logo = mk_img(s, &splash_logo, 400, 240);
-    lv_obj_set_style_img_opa(logo, LV_OPA_TRANSP, 0);
-    lv_scr_load(s);
-
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, logo);
-    lv_anim_set_exec_cb(&a, splash_opa_cb);
-    lv_anim_set_values(&a, LV_OPA_TRANSP, LV_OPA_COVER);
-    lv_anim_set_time(&a, SPLASH_IN_MS);
-    lv_anim_set_path_cb(&a, lv_anim_path_ease_in);
-    lv_anim_start(&a);
-
-    lv_timer_create(splash_done_cb, SPLASH_IN_MS + SPLASH_HOLD_MS, NULL);
-}
-
 /* ------------------------------------------------------------------- build */
 void ui_create(void)
 {
@@ -656,5 +624,4 @@ void ui_create(void)
     ui_apply_settings();
 
     lv_timer_create(ui_timer_cb, 40, NULL);
-    build_splash();
 }
