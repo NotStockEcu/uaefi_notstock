@@ -6,84 +6,92 @@ verbose CAN broadcast over the board's onboard TJA1051 transceiver and draws
 the dash with hand-written LVGL. Boots in well under a second and does not care
 if you cut power mid-frame.
 
-Fonts and icons that SquareLine would normally generate are already in the
-repo (`main/fonts/`, `main/icons.c`), built from DejaVu Sans Condensed Bold by
-`lv_font_conv`, and from `tools/gen_icons.py`.
+![dash](preview/dash.png)
 
-## Artwork pipeline
+## What is on the screen
 
-Two source files under `assets/` produce every non-gauge bitmap:
+A classic analogue cluster. Every gauge has a needle **and** a digital readout.
 
-| file | produces |
-| --- | --- |
-| `icons_sheet.png` | the five card icons, traced out of the sheet |
-| `mockup.jpg` | the NOT STOCK wordmark |
+| Where | Gauge | Scale | Readout |
+| --- | --- | --- | --- |
+| centre left | speedometer | 0-240 km/h | km/h |
+| centre right | rev counter | 0-8 x1000, red from 7000 | rpm, to 10 |
+| left top | water temperature | 40-130 degC, red from 105 | degC, icon |
+| left bottom | intake air temperature | 0-80 degC, red from 60 | degC, icon |
+| right top | turbo | -1.0-2.0 bar, yellow 0.8-1.2, red from 1.2 | bar |
+| right bottom | AFR | 10-18, yellow under 11, red over 16 | AFR and lambda |
 
-```bash
-python tools/gen_assets.py     # rewrites main/icons.c and main/logo.c
-idf.py build
-```
+**No warning lamps.** A value past its limit (settings menu) turns its own
+readout red, the temperature icons go red with it. The only thing that
+flashes is the shift light, see below. The one piece of text that can appear
+is `NO CAN` (red) or `DEMO` (yellow) at the top, and only while the needles are
+not showing live data.
 
-The icons are traced by colour rather than brightness: the alpha comes from
-`R - B`, so the yellow strokes survive and the white card labels cancel out.
-The FAN and ALS glyphs are not in the sheet, so they are drawn in the same
-script at 10x and downsampled.
+## Changing the look
 
-Icons are deliberately **not** squared off. The oil can compositions are twice
-as wide as they are tall and a square box would halve the drawing, so each is
-fitted into a 44x30 slot at its own aspect ratio. `ui.c` positions every icon
-by the centre read from its own header, so mixed sizes need no layout edits;
-change `ICON_BOX` in the script and nothing else moves.
+Two layers, each with one place to edit:
 
-The wordmark is a traced bitmap rather than two text labels, because it is
-italic, tightly kerned and two-coloured, and no single LVGL font does that.
-Each pixel is snapped to either white or the brand yellow before scaling, so
-the JPEG compression noise in the source does not reach the panel. `LOGO_W`
-sets its rendered width.
+**The artwork**: `tools/gen_dials.py`. Scales, tick spacing, zones, colours,
+needle and hub sizes are constants at the top. It draws everything in Pillow
+at 4x supersampling and writes
 
-To swap any of it, replace the file in `assets/` and re-run the script. If your
-sheet has a different layout, adjust `CARDS`, `ICON_ROWS` and `LOGO_BOX` at the
-top, they are plain pixel coordinates.
+- `main/dials.c`, RGB565 / RGBA image data,
+- `main/dials.h`, the matching geometry: sweep angles, ranges, redline,
+  needle pivots,
+- `build_art/*.png`, the same images for a quick look.
 
-## The gauge artwork is pre-rendered
+`ui.c` takes every range and angle from `dials.h`, so a changed scale cannot
+drift out of step with the needle.
 
-The dial face, its coloured band, the ticks and the scale labels never change,
-so they are not rebuilt from LVGL primitives every frame. `tools/gen_dials.py`
-draws them once in Pillow at 4x supersampling and writes `main/dials.c` as
-RGB565 image data. That buys radial gradients, hairline ticks, a bevelled edge
-and properly antialiased labels, none of which LVGL 8 can draw itself. The
-needle and hub cap are images too. At runtime LVGL only rotates the needle,
-moves one arc and rewrites a number.
+**Icons and wordmark**: `tools/gen_assets.py` traces the water and intake
+icons out of `assets/icons_sheet.png` and the NOT STOCK wordmark out of
+`assets/mockup.jpg` into `main/icons.c` and `main/logo.c`. Replace the source
+file and re-run it; `ui.c` places icons by their centre, so a different size
+needs no layout edit.
 
-Cost is about 180 kB of flash and the redraw gets *cheaper*, since a blit beats
-dozens of arc and line draws.
+**The layout**: the `LY_*` block at the top of `main/ui.c`. Every gauge is
+placed by its pivot, readouts by an offset from that pivot. Colours are the
+`C_*` defines, needle lag is `NEEDLE_SMOOTH`.
 
 ```bash
-python tools/gen_dials.py     # rewrites main/dials.c and build_art/*.png
-idf.py build
+python tools/gen_dials.py     # after changing the artwork
+python tools/preview.py       # renders preview/*.png
+idf.py build flash
 ```
 
-Edit the colours, radii, tick counts and zone breakpoints at the top of that
-script. Two values have to stay in step with `main/ui.c`: `R_BAND_OUT` and
-`BAND_W` correspond to `LY_BAND_MOD` and `LY_BAND_W`, which position the live
-boost fill arc on top of the baked band. `SWEEP_START` and `SWEEP` must match
-the `lv_meter_set_scale_range` call.
+### Previewing on the PC
 
-## Checking the layout without flashing
+`tools/preview.py` compiles the real `ui.c`, `ui_menu.c`, `settings.c`, fonts
+and artwork together with LVGL for the PC (`tools/sim/`) and renders frames
+into `preview/`. Nothing in it re-implements the layout, so the PNG is what
+the panel shows, pixel for pixel. Standard scenes: normal driving, everything
+past its limit, idle, no CAN, settings menu. For one custom frame:
 
 ```bash
-python tools/preview.py
+python tools/preview.py rpm=6500 speed=140 clt=96 iat=41 boost=1.35 afr=11.8
+python tools/preview.py link=0          # NO CAN
+python tools/preview.py demo=1 t=3.2    # demo generator at 3.2 s
 ```
 
-Renders an 800x480 PNG from the same geometry constants the firmware uses, and
-composites the exact dial and needle bitmaps from `build_art/`, so the preview
-is what the panel shows rather than an approximation of it.
+Needs `make`, a C compiler and Pillow. LVGL is taken from
+`managed_components/` after one `idf.py build`, or from `LVGL_DIR`.
 
-## Layout preview
+### Why the artwork is pre-rendered
 
-`notstock-dash-800x480-preview.png` is a pixel-accurate render of the layout,
-produced by `tools/preview.py` from the same geometry constants the firmware
-uses. Check it before you flash.
+The scales never change, so they are not rebuilt from LVGL primitives every
+frame. A blit is cheaper than dozens of line and arc draws and looks far
+better: LVGL 8 cannot antialias hairline ticks or hint small labels. At
+runtime LVGL only rotates the needle images and rewrites the numbers.
+
+Each face is a plain image centred on its pivot, with a transparent
+`lv_meter` on top that only draws the needle. The meter is not given the face
+as its background because `lv_meter` puts its centre at (w/2, w/2) from the
+top-left, which only works for square images, and the side gauges are not
+square.
+
+The rev counter scale and redline are baked in. Change `RPM_MAX` /
+`RPM_REDLINE` in `gen_dials.py` and re-run it; there is no menu setting for
+them any more.
 
 ## Which board
 
@@ -144,31 +152,33 @@ gets close to, so `partitions.csv` gives the app almost all of the 8 MB
 
 ## Settings menu
 
-The build stamp sits bottom right of that screen: `NOT STOCK v1.0` over the
-compile date, the LVGL version and the IDF version. `DASH_VERSION` in
-`main/ui_menu.h` is the bit to bump; the rest fills itself in from `__DATE__`,
-`__TIME__` and `esp_get_idf_version()` at compile time, so it always tells the
-truth about what is actually on the panel.
-
 **Long-press the bottom-right corner of the screen** for about half a second.
-The hit area is 96x46 px and invisible apart from three dim dots; nothing about
-normal driving opens it. Values apply live as you adjust them, SAVE & CLOSE
-writes them to NVS so they survive a power cut, DEFAULTS puts everything back.
+The hit area is invisible apart from three dim dots; nothing about normal
+driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
+them to NVS so they survive a power cut, DEFAULTS puts everything back.
+
+The build stamp sits bottom right of that screen: `NOT STOCK v2.0` over the
+compile date, the LVGL version and the IDF version. `DASH_VERSION` in
+`main/ui_menu.h` is the bit to bump.
 
 | Setting | Range | Notes |
 | --- | --- | --- |
 | Shift flash | on/off | master switch for the full-screen red flash |
 | Shift flash at | 0-9000 rpm | 0 disables it |
 | Shift flash level | 10-100 % | peak opacity of the red wash |
-| Water / oil / intake temp | | high limits |
-| Oil press min, fuel press min | | low limits, see the note below |
-| Boost limit | 0-2.5 bar | also turns the boost needle and readout red |
-| AFR lean limit | 0-20.0 | 0 disables |
+| Water temp | 60-130 degC | readout red at or above |
+| Intake air temp | 20-120 degC | readout red at or above |
+| Boost limit | 0-2.5 bar | readout red at or above, 0 disables |
+| AFR lean limit | 0-20.0 | readout red at or above, 0 disables |
 | Brightness | 15-100 % | see the note below |
-| Rev counter max, redline | | rescales the strip and its numbers |
 | Fuel | Petrol / E85 | sets stoichiometric AFR, 14.7 or 9.8 |
-| Baro offset | 0.80-1.10 bar | what gets subtracted from MAP for gauge boost |
+| Baro offset | 0.80-1.10 bar | what gets subtracted from MAP for boost |
 | Demo mode | on/off | synthetic data, no reflash needed |
+
+The rev counter readout goes red at the baked redline.
+
+Settings are stored with a version number. This build changed the stored
+layout, so the first boot after flashing it starts from the defaults.
 
 **Brightness is software, not backlight.** EXIO2 on the CH422G is a plain
 display-enable line with no PWM, so there is no way to dim the LEDs from
@@ -176,37 +186,25 @@ firmware. The setting lays a black wash over the picture instead, which lowers
 apparent brightness but not power draw or black level. That is why it stops at
 15 %.
 
-### Why a tile limit can look like it does nothing
-
-Every limit treats **0 as off**, including the low-pressure ones. Setting oil
-press min to 0 disables it rather than turning the tile red at zero pressure.
-
-The two low-pressure tiles also arm themselves. A tile only starts warning
-after its channel has been seen *above* the limit at least once since
-power-up, and only above 400 rpm. This matters because an oil or fuel pressure
-sensor that is not wired, or not configured in rusEFI, broadcasts a flat zero,
-which is below any limit, so the tile would sit permanently red. Once a channel
-has read healthy the arming latches and a genuine pressure drop still shows
-immediately. Changing a limit in the menu re-arms both channels.
-
 ## Shift flash
 
 **Revs are the only thing that flashes the screen.** Every other limit turns
-its own tile, needle or readout red and leaves it at that. Temperatures and
-pressures creep, and strobing the panel while the driver is trying to read the
-number that caused it is worse than useless. Revs are the one case where the
-reaction has to happen inside a second, with your eyes on the road.
+its own readout red and leaves it at that. Temperatures and pressures creep,
+and strobing the panel while the driver is trying to read the number that
+caused it is worse than useless. Revs are the one case where the reaction has
+to happen inside a second, with your eyes on the road.
 
-Above the set rpm the whole screen pulses red at about It is a square wave rather than a fade, because a hard flash is far
-more noticeable in daylight and costs one opacity write per half period rather
-than one per frame. The wash sits on LVGL's top layer, so it covers the dash
-but does not block the menu, and the brightness dim sits above it on the system
-layer so a dimmed screen also has a dimmer flash.
+Above the set rpm the whole screen pulses red with a 420 ms period. It is a
+square wave rather than a fade, because a hard flash is far more noticeable in
+daylight and costs one opacity write per half period rather than one per
+frame. The wash sits on LVGL's top layer, so it covers the dash but does not
+block the menu, and the brightness dim sits above it on the system layer so a
+dimmed screen also has a dimmer flash.
 
 ## Bench test without the car
 
 Turn on Demo mode in the settings menu. A synthetic generator sweeps every
-gauge and the link indicator reads DEMO. No rebuild, no reflash.
+gauge and the top line reads DEMO. No rebuild, no reflash.
 
 ## Touch
 
@@ -252,76 +250,33 @@ Draw is roughly 450 mA at 5V with the backlight up.
 - Bitrate: **500 kbit** (match `CAN_BITRATE_500` in `main/rusefi_can.h`)
 - Can Dash Type: **None**
 
+On uaEFI the CAN pair is on the main connector; see the
+[uaEFI pinout](https://github.com/rusefi/rusefi/wiki/uaEFI).
+
 The dash runs TWAI in normal mode, not listen-only, on purpose. On a two node
 bus the dash has to acknowledge frames or rusEFI piles up transmit errors and
 eventually drops to bus-off. It never queues a transmission of its own
 (`tx_queue_len = 0`).
 
 Decoded frames, from
-[can_verbose.cpp](https://github.com/rusefi/rusefi/blob/master/firmware/controllers/can/can_verbose.cpp):
+[can_verbose.cpp](https://github.com/rusefi/rusefi/blob/master/firmware/controllers/can/can_verbose.cpp).
+The decoder still reads everything it did before; the screen uses the rows
+marked in bold.
 
-| ID | Contents used |
+| ID | Contents |
 | --- | --- |
 | base+0 | Status: fan / fan2, check engine, rev limit |
-| base+1 | RPM, ignition timing, injector duty, VSS |
+| base+1 | **RPM**, ignition timing, injector duty, **VSS** |
 | base+2 | TPS |
-| base+3 | MAP, coolant, intake air temp |
+| base+3 | **MAP** (boost = MAP - baro), **coolant**, **intake air temp** |
 | base+4 | oil pressure, oil temp, battery voltage |
-| base+7 | lambda, low-side fuel pressure |
+| base+7 | **lambda** (AFR = lambda x stoich), low-side fuel pressure |
 
 Scaling constants (`PACK_MULT_PRESSURE` 30, `PACK_MULT_LAMBDA` 10000,
 `PACK_ADD_TEMPERATURE` 40, `PACK_MULT_VOLTAGE` 1000, `PACK_MULT_ANGLE` 50) come
 from [rusefi_generated.h](https://rusefi.com/docs/html/rusefi__generated__cypress_8h_source.html).
 
-**ALS is not in the verbose broadcast.** Send it yourself from a Lua script on
-a spare ID with the flag in byte 0 bit 0, then set `CAN_ALS_ID` in
-`main/rusefi_can.h`. Left at 0 the ALS tile just stays OFF. If you would rather
-show check engine there, swap `d.als` for `d.cel` in `ui_timer_cb`.
-
-## What to tune where
-
-`main/rusefi_can.h`
-
-- `CAN_BASE_ID`, `CAN_BITRATE_500`
-- `AFR_STOICH` - 14.7 petrol, 9.76 E85
-- `BARO_BAR` - what gets subtracted from MAP to give gauge boost
-
-`main/ui.c`
-
-- `LY_*` block at the top: every block position and size
-- `RPM_MAX`, `RPM_REDLINE`, `RPM_SEGS`
-- `card_cfg[]`: range, decimals, `warn_hi` / `warn_lo` per tile. A tile past
-  its threshold turns its border, bar, icon and number red.
-- `boost_cfg` / `afr_cfg` in `ui_create`: range, tick spacing, coloured zones
-- `NEEDLE_SMOOTH`: 1.0 is instant, lower is lazier
-
-Colours are the `C_*` defines at the top of `ui.c`.
-
-Note on the boost scale: the mockup has zero at twelve o'clock *and* an even
--1 to 2 bar scale, which cannot both be true. The firmware uses a symmetric
-250 degree sweep with even ticks, so zero sits upper-left. For zero exactly at
-the top, change the `lv_meter_set_scale_range` call to a 270 degree range with
-rotation 180.
-
-The tick numbers sit inside the coloured band, matching the original mockup.
-`LY_LABEL_GAP` controls how far inboard they sit: smaller pushes them out
-toward the ticks, larger pulls them in toward the hub. Do not lower it much,
-at 11 or less the label ink starts disappearing under the arc and minus signs
-get eaten. `tools/preview.py` plus the radius figures in this README are how
-that gets checked.
-
-Layout budget on this panel, top to bottom:
-
-| block | y | height |
-| --- | --- | --- |
-| gauges and rev counter | 4 | 286 |
-| sensor cards | 302 | 104 |
-| flags, wordmark, link | 418 | 46 |
-
-The big gauge readouts sit *below* their dials rather than inside them. Inside
-looks tighter but a 202 px dial cannot hold a coloured band, two tick sizes,
-scale labels and a 48 px number without something colliding at the extremes of
-the range (-1.00 bar was the case that broke it).
+VSS is a uint8 in km/h, so speed tops out at 255.
 
 ## Expected frame rate
 
@@ -329,7 +284,7 @@ Waveshare's own measurement on this board with ESP-IDF 5.3 is
 [26 fps average for the LVGL benchmark at PCLK 21 MHz](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7).
 That number is for full-screen churn. This dash redraws only dirty rectangles
 and caches every label so nothing is invalidated unless its text actually
-changed, so the needles run smooth. The UI refresh timer is 40 ms.
+changed. The UI refresh timer is 40 ms.
 
 `sdkconfig.defaults` already carries the performance flags Waveshare
 recommends: 240 MHz, QIO flash, octal PSRAM, instructions and rodata fetched
@@ -337,8 +292,9 @@ from PSRAM, 64 byte cache lines, `-O2`, LVGL hot paths in IRAM.
 
 ## If something is wrong
 
-I could not compile or run this against the real hardware, so budget an
-evening. In rough order of likelihood:
+The board support is what already ran on the 7 inch; the gauges are new and
+have only been checked in the simulator, not on the panel. In rough order of
+likelihood:
 
 1. **Screen stays black.** The CH422G IO expander is the suspect. This
    firmware writes mode byte 0x01 to I2C address 0x24 and then the output
@@ -352,6 +308,10 @@ evening. In rough order of likelihood:
    check the 120R termination jumper. The boot log states which pins TWAI came
    up on: it must say `tx 20 rx 19`. If it says `tx 15 rx 16` you are running
    the 5 inch build.
+
+5. **Needles stutter.** Each needle redraws its rotated bounding box every
+   40 ms. Raise the UI timer period in `ui_create` or lower `NEEDLE_SMOOTH`
+   so fewer frames carry movement.
 
 ## Sources
 

@@ -9,7 +9,7 @@
 static const char *TAG = "set";
 #define NS  "dash"
 #define KEY "cfg"
-#define VER 1
+#define VER 2     /* bump whenever settings_t changes */
 
 settings_t g_set;
 
@@ -18,10 +18,7 @@ void settings_defaults(void)
     g_set = (settings_t){
         .rpm_flash       = 7000,
         .clt_warn        = 105,
-        .oilt_warn       = 130,
         .iat_warn        = 60,
-        .oilp_warn       = 100,     /* 1.00 bar */
-        .fuelp_warn      = 250,     /* 2.50 bar */
         .boost_warn      = 120,     /* 1.20 bar */
         .afr_lean_warn   = 160,     /* 16.0 */
         .flash_enable    = true,
@@ -29,8 +26,6 @@ void settings_defaults(void)
         .brightness      = 100,
         .stoich          = 147,
         .baro            = 100,
-        .rpm_max         = 8000,
-        .rpm_redline     = 7000,
         .demo            = false,
     };
 }

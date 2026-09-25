@@ -40,21 +40,16 @@ typedef struct {
 } row_cfg_t;
 
 /* Only the three shift-flash rows drive the full-screen flash. Everything
- * below them sets the level at which that channel's own tile turns red. */
+ * below them sets the level at which that gauge's own readout turns red. */
 static const row_cfg_t rows[] = {
  { "Shift flash",      "",    T_BOOL,   &g_set.flash_enable,    false, 0, 1, 1, 1, {0} },
  { "Shift flash at",   "rpm", T_INT,    &g_set.rpm_flash,       true,  0, 9000, 100, 1, {0} },
  { "Shift flash level","%",   T_INT,    &g_set.flash_intensity, false, 10, 100, 5, 1, {0} },
  { "Water temp",       "\xC2\xB0" "C", T_INT, &g_set.clt_warn,  false, 60, 130, 1, 1, {0} },
- { "Oil temp",         "\xC2\xB0" "C", T_INT, &g_set.oilt_warn, false, 60, 160, 1, 1, {0} },
  { "Intake air temp",  "\xC2\xB0" "C", T_INT, &g_set.iat_warn,  false, 20, 120, 1, 1, {0} },
- { "Oil press min",    "bar", T_INT,    &g_set.oilp_warn,       true,  0, 500, 5, 100, {0} },
- { "Fuel press min",   "bar", T_INT,    &g_set.fuelp_warn,      true,  0, 600, 5, 100, {0} },
  { "Boost limit",      "bar", T_INT,    &g_set.boost_warn,      true,  0, 250, 5, 100, {0} },
  { "AFR lean limit",   "",    T_INT,    &g_set.afr_lean_warn,   true,  0, 200, 1, 10, {0} },
  { "Brightness",       "%",   T_INT,    &g_set.brightness,      false, 15, 100, 5, 1, {0} },
- { "Rev counter max",  "rpm", T_INT,    &g_set.rpm_max,         true,  4000, 12000, 250, 1, {0} },
- { "Redline",          "rpm", T_INT,    &g_set.rpm_redline,     true,  3000, 12000, 100, 1, {0} },
  { "Fuel",             "",    T_CHOICE, &g_set.stoich,          false, 98, 147, 49, 1, { "E85", "Petrol" } },
  { "Baro offset",      "bar", T_INT,    &g_set.baro,            true,  80, 110, 1, 100, {0} },
  { "Demo mode",        "",    T_BOOL,   &g_set.demo,            false, 0, 1, 1, 1, {0} },
@@ -177,7 +172,7 @@ void ui_menu_create(void)
     lv_obj_set_pos(title, 16, 12);
 
     lv_obj_t *hint = lv_label_create(scr_menu);
-    lv_label_set_text(hint, "flash is rev limit only  \xC2\xB7  swipe to scroll");
+    lv_label_set_text(hint, "flash is rev limit only  /  swipe to scroll");
     lv_obj_set_style_text_font(hint, &dash_lbl_13, 0);
     lv_obj_set_style_text_color(hint, C_GREY, 0);
     lv_obj_set_pos(hint, 140, 16);

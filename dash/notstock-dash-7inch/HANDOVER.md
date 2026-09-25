@@ -13,9 +13,16 @@ a **rusEFI** ECU over CAN. Bare ESP-IDF and LVGL 8.4, no SquareLine Studio, no
 Raspberry Pi, no operating system. Boots in well under a second and does not
 care about being cut off mid-frame by the ignition key.
 
-The design started from a mockup image the owner supplied (kept at
-`assets/mockup.jpg`). The current firmware is a working, flashed, running
-build — display, touch and the settings menu are all confirmed on hardware.
+The first design started from a mockup image the owner supplied (kept at
+`assets/mockup.jpg`). Display, touch and the settings menu of that build are
+confirmed on hardware.
+
+v2.0 replaced the screen with a classic analogue cluster after a reference
+picture from the owner: speedometer (km/h) and rev counter in the middle,
+water and intake air temperature on the left in one style, turbo and AFR on
+the right in another, every gauge with a needle and a digital readout, no
+warning lamps. The board support is unchanged; the new gauges have been
+checked in the host simulator (`tools/preview.py`) but not yet on the panel.
 
 ---
 
@@ -87,29 +94,28 @@ main/
   touch.c/h       GT911 driver plus LVGL pointer indev
   ui.c/h          the dash screen, alarm overlay, hidden menu trigger
   ui_menu.c/h     the settings screen; DASH_VERSION lives in the header
-  icons.c         generated: 7 card/flag icons, ALPHA_8BIT
-  dials.c         generated: dial faces, needles, hub, ~1.1 MB
+  dials.c/h       generated: scale faces, needles, hubs and their geometry
+  icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
   logo.c          generated: NOT STOCK wordmark, TRUE_COLOR_ALPHA
   fonts/          generated: 6 LVGL fonts from DejaVu Sans Condensed Bold
 tools/
-  gen_dials.py    renders the static gauge artwork -> main/dials.c
+  gen_dials.py    renders the gauge artwork -> main/dials.c, main/dials.h
   gen_assets.py   traces assets/ -> main/icons.c and main/logo.c
-  preview.py      renders the dash to PNG from the same constants as ui.c
-  preview_menu.py renders the settings screen the same way
+  preview.py      builds tools/sim and renders preview/*.png
+  sim/            host build of the real ui.c + LVGL, stubs for ESP-IDF
 assets/
   icons_sheet.png  owner-supplied card icons, yellow on black
   mockup.jpg       original design mockup, source of the wordmark
-build_art/         PNGs the generators emit, consumed by preview.py
-rusefi_can_bridge.py  unrelated: the old Raspberry Pi route, kept for reference
+build_art/         PNGs gen_dials.py emits, for eyeballing
+preview/           simulator renders
 ```
 
 Regenerating artwork:
 
 ```
-python tools/gen_dials.py     # after changing dial colours, zones, radii
+python tools/gen_dials.py     # after changing scales, zones, colours, needles
 python tools/gen_assets.py    # after changing assets/
-python tools/preview.py       # check the layout without flashing
-python tools/preview_menu.py 0
+python tools/preview.py       # check the result without flashing
 ```
 
 ---
@@ -117,41 +123,46 @@ python tools/preview_menu.py 0
 ## Architecture decisions worth not undoing
 
 **The static gauge artwork is pre-rendered, not drawn by LVGL.** `gen_dials.py`
-draws each dial face at 4x supersampling in Pillow — radial gradient, bevelled
-edge, hairline minor ticks, antialiased scale labels — and emits RGB565. LVGL 8
-can do none of that; earlier attempts to build the dials from `lv_meter`
-primitives looked cheap and the owner rejected them twice. At runtime LVGL only
-rotates a needle image, moves one arc and rewrites a number. Costs ~180 kB of
-flash and the redraw is *cheaper* than the primitive version.
+draws each scale at 4x supersampling in Pillow and emits RGB565. Earlier
+attempts to build dials from `lv_meter` primitives looked cheap and the owner
+rejected them twice. At runtime LVGL only rotates needle images and rewrites
+numbers.
 
-`LY_BAND_W` / `LY_BAND_MOD` in `ui.c` must stay in step with `R_BAND_OUT` /
-`BAND_W` in `gen_dials.py`; they position the live boost fill arc over the
-baked band. Same for `SWEEP_START` / `SWEEP` versus the
-`lv_meter_set_scale_range` call.
+**Geometry comes from `dials.h`, which `gen_dials.py` writes.** Sweep angles,
+ranges, the redline and needle pivots are generated next to the images, so
+`ui.c` never repeats a number that has to match the art.
 
-**Icons are not squared.** The oil can compositions are twice as wide as tall;
-a square box halves the drawing. Each is fitted to a 44x30 slot at its own
-aspect, and `ui.c` places every icon by the centre read from its own image
-header, so mixed sizes need no layout edits.
+**Faces are plain images, the lv_meter only draws the needle.** `lv_meter`
+puts its centre at (w/2, w/2) from its top-left corner, not the middle of the
+object, so a non-square face used as its background shifts the needle off the
+pivot. Each face is an `lv_img` centred on the pivot; a transparent, square,
+non-clickable meter centred on the same point draws the needle; the hub cap
+image goes on top.
+
+**The preview is the real code.** `tools/sim` compiles `ui.c`, `ui_menu.c`,
+`settings.c`, fonts and art against LVGL on the host with stub ESP-IDF
+headers. The old Python preview mirrored the layout constants and could drift;
+it is gone. On the host LVGL's heap is 256 kB because pointers are 8 bytes;
+the panel has 64 kB.
+
+**Icons are not squared.** Each is fitted to a 44x30 slot at its own aspect,
+and `ui.c` places every icon by the centre read from its own image header, so
+mixed sizes need no layout edits.
 
 **The wordmark is a traced bitmap, not text.** Italic, tightly kerned, two
 colours in one word. No single LVGL font does that.
 
-**The RPM strip is on an integer grid.** 33 segments at a pitch of 8. An
-earlier version used 40 segments across a 268 px column, which put the pitch at
-6.7 and made every second segment land a pixel off. The owner spotted it as
-"wavy". Do not reintroduce fractional pitch.
+**Temperature min/max labels hang under the ends of the arc.** Placed along
+the end radius, the needle lies across them when it rests on the stop.
 
 **The flash alarm is a shift light and nothing else.** Only RPM triggers the
-full-screen red pulse. Every other limit turns its own tile, needle or readout
-red and stops there. This was an explicit instruction after an earlier version
+full-screen red pulse. Every other limit turns its own readout red and stops
+there. This was an explicit instruction after an earlier version
 flashed on everything.
 
-**Every limit treats 0 as off.** The two low-pressure limits additionally arm
-themselves: a tile only warns after its channel has been seen *above* the limit
-once since boot, and only above 400 rpm. Without this, an unwired pressure
-sensor broadcasts a flat zero and the tile sits permanently red. This was a
-real bug found on the car.
+**Every limit treats 0 as off.** The low-pressure limits and their arming
+logic went with the oil and fuel pressure tiles in v2.0; the decoder still
+reads those channels.
 
 ---
 
@@ -183,9 +194,8 @@ TWAI runs in **normal mode, not listen-only**, on purpose: on a two-node bus
 the dash must ACK or rusEFI accumulates TX errors and eventually goes bus-off.
 It never queues a transmission (`tx_queue_len = 0`).
 
-**ALS is not in the verbose broadcast.** Send it from a Lua script on a spare
-ID with the flag in byte 0 bit 0 and set `CAN_ALS_ID` in `rusefi_can.h`. Left
-at 0 the ALS tile just reads OFF.
+`CAN_ALS_ID` in `rusefi_can.h` is still decoded but nothing shows it since
+v2.0 dropped the flag bar.
 
 VSS is a uint8 in km/h, so speed tops out at 255. Irrelevant for this car.
 
@@ -197,10 +207,12 @@ Long-press the bottom-right corner (96x46 invisible hit area, three dim dots
 are the only hint). Values apply live, SAVE & CLOSE writes to NVS, DEFAULTS
 restores. Build stamp bottom right.
 
-Rows: Shift flash on/off, shift flash rpm, shift flash level, water/oil/intake
-temp limits, oil and fuel pressure minimums, boost limit, AFR lean limit,
-brightness, rev counter max, redline, fuel (Petrol/E85), baro offset, demo
-mode.
+Rows: Shift flash on/off, shift flash rpm, shift flash level, water/intake
+temp limits, boost limit, AFR lean limit,
+brightness, fuel (Petrol/E85), baro offset, demo mode. Rev counter max and
+redline are baked into the artwork since v2.0 (`RPM_MAX`, `RPM_REDLINE` in
+`gen_dials.py`). `settings.c` VER went to 2, so old NVS contents are dropped
+once and the defaults load.
 
 Demo mode is a setting, not a compile-time flag — no reflash to bench test.
 
@@ -208,25 +220,21 @@ Demo mode is a setting, not a compile-time flag — no reflash to bench test.
 
 ## Verification approach used throughout
 
-The assistant could not see the panel, so everything was checked numerically.
-Reusable checks, worth repeating after any layout change:
+The assistant cannot see the panel. Since v2.0 it can see the real UI code
+rendered on the host: `python tools/preview.py` and look at `preview/*.png`.
+Worth doing after any change:
 
-- **Collision sweep.** Instrument `ImageDraw.text` in `preview.py`, collect
-  every text bounding box, report overlaps and out-of-bounds. Run it at nominal,
-  all-zero and widest-string data ("-1.00", "8000", "255", three-digit tiles).
-  This is how the `-1.00 bar` collision with the end-of-scale labels was found.
-- **Container fit.** Measure each label with the real generated font metrics
-  and compare against its LVGL parent box, since LVGL clips children.
+- **Extreme values.** Render at nominal, all-minimum and all-maximum inputs
+  ("-1.00" boost, "238" km/h, "7400" rpm, "-20" degC, "100" degC). Wide strings
+  and needles resting on the stops are where collisions show up.
+- **States.** `link=0` for NO CAN, `demo=1 t=...` for the demo and shift flash,
+  `screen=menu` for the settings screen.
 - **Font glyph audit.** Parse the cmap tables out of `main/fonts/*.c` and check
-  every string literal against the font it is drawn with. This is how the
-  missing degree sign in `dash_lbl_18` was caught.
-- **Constant cross-check.** Run the `LY_*` defines through `gcc -E` and compare
-  against `preview.py`'s constants, so the preview cannot drift from the
-  firmware.
-- **Geometry probes.** Walk outward from the dial centre along the needle angle
-  and report where its ink ends, to prove it clears the ticks and the band.
-  Careful: naive colour probes catch the coloured band and the fill arc, not
-  the needle. Probe at a value where the band under the needle is neutral.
+  every string literal against the font it is drawn with. A missing glyph
+  renders as a box in the preview too (the menu's middle dot was caught that
+  way).
+- **Firmware build.** The simulator does not compile `main.c`, `touch.c` or
+  `rusefi_can.c`; run `idf.py build` as well.
 
 A recurring failure mode during development: caching. `importlib` with a
 constant temp filename served stale bytecode and produced three identical
@@ -237,16 +245,14 @@ constant temp filename served stale bytecode and produced three identical
 ## Known gaps / untested
 
 - **Touch is confirmed working**, display confirmed working, menu confirmed
-  reachable. CAN decoding has **not** been verified against a live ECU yet.
+  reachable on the v1 screen. The v2.0 gauges are verified in the simulator
+  and compile for the target, but have not been on the panel yet: needle
+  smoothness at 25 Hz with six rotating needles is the thing to watch.
+- CAN decoding has **not** been verified against a live ECU yet.
 - Brightness is a software overlay, not real dimming (hardware limitation).
-- Glow around the RPM digits, present in the mockup, is not implemented. It
-  would need pre-rendered glowing digit bitmaps, roughly 300 kB.
-- Flash usage is ~1.5 MB of C arrays. Fits `SINGLE_APP_LARGE` on 8 MB. If a
-  build ever fails on app size, switch `CONFIG_ESPTOOLPY_FLASHSIZE_8MB` to
-  `_16MB` if the board is the 16 MB variant.
-- The oil-can icons do not include the falling drop from the standard symbol.
-  At 28 px it lands on the spout tip and merges into a blob. Heat waves under
-  the can distinguish oil temp from oil press instead.
+- The app is about 1 MB; `partitions.csv` gives it 7.9 MB.
+- `icons.c` still carries the oil, fuel, fan and flame icons nobody draws any
+  more. Harmless, about 6 kB.
 
 ---
 

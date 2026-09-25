@@ -3,4 +3,4 @@ sdkconfig
 sdkconfig.old
 managed_components/
 dependencies.lock
-notstock-dash-800x480-preview.png
+tools/sim/build/
