@@ -5,7 +5,8 @@
  *
  * The address is latched at reset: INT held low while RST is released gives
  * 0x5D, INT high gives 0x14. This driver drives INT low, so it expects 0x5D,
- * and falls back to probing 0x14 if that does not answer.
+ * and falls back to probing 0x14 if that does not answer. INT stays an output
+ * afterwards; touch is polled, see gt_reset.
  */
 #include "touch.h"
 #include "board.h"
@@ -66,12 +67,16 @@ static esp_err_t gt_write8(uint16_t reg, uint8_t v)
 
 static void gt_reset(void)
 {
-    /* Timing matters more than it looks. The GT911 latches its I2C address
-     * from the INT level when reset is released, and it wants INT handed back
-     * as an input within a few tens of milliseconds. Holding INT low for much
-     * longer can leave the chip in a state where it answers on I2C and reports
-     * a valid config but never scans, which looks exactly like a dead panel.
-     * These delays follow Waveshare's own driver. */
+    /* Waveshare's ESP-IDF demo for this board (08_lvgl_v8_demo,
+     * waveshare_esp32_s3_touch_reset), step for step: reset low, INT low,
+     * reset high, and INT stays driven low from then on. The GT911 latches
+     * address 0x5D from INT being low across the release.
+     *
+     * An earlier version held reset for 10 ms and handed INT back as a
+     * pulled-up input 10 ms after the release. On the 7 inch that left the
+     * controller answering on I2C with a valid config but never scanning:
+     * the status register read 0x00 forever. This driver polls and never
+     * uses the interrupt, so there is no reason to release the pin. */
     gpio_config_t io = {
         .pin_bit_mask = 1ULL << PIN_TP_INT,
         .mode = GPIO_MODE_OUTPUT,
@@ -81,16 +86,12 @@ static void gt_reset(void)
     };
     gpio_config(&io);
 
-    gpio_set_level(PIN_TP_INT, 0);      /* low across the release = 0x5D */
     exio_set(EXIO_TP_RST, false);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(100));
+    gpio_set_level(PIN_TP_INT, 0);
+    vTaskDelay(pdMS_TO_TICKS(100));
     exio_set(EXIO_TP_RST, true);
-    vTaskDelay(pdMS_TO_TICKS(10));
-
-    io.mode = GPIO_MODE_INPUT;
-    io.pull_up_en = GPIO_PULLUP_ENABLE;
-    gpio_config(&io);
-    vTaskDelay(pdMS_TO_TICKS(50));
+    vTaskDelay(pdMS_TO_TICKS(200));
 }
 
 static bool gt_probe(uint8_t *id)

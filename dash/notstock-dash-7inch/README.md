@@ -227,8 +227,11 @@ GT911 at 0x5D, id 911, controller grid 1024x600, panel 800x480  -> scaling
 and every press logs one line, `touch 743,451`. If presses appear in the log
 but land in the wrong place, the scaling numbers in that boot line are the
 thing to look at. If nothing appears at all, check the i2c scan line for 0x5D.
-The INT line doubles as the address select during reset, so the driver holds it
-low, releases reset, then hands the pin back as an input. If the controller
+The INT line doubles as the address select during reset. The reset follows
+Waveshare's own ESP-IDF demo for this board: reset low 100 ms, INT low 100 ms,
+reset high, 200 ms settle, and INT stays driven low because touch is polled.
+Releasing INT early left the controller answering on I2C but never scanning
+(`no touch yet: ... raw 0x00` forever). If the controller
 does not answer on 0x5D it retries 0x14. A failed probe is not fatal: the dash
 runs as before, only the menu becomes unreachable.
 
