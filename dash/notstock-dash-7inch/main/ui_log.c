@@ -1,14 +1,19 @@
 /* LOG screen, see ui_log.h.
  *
- * Every channel is stored already scaled to 0..1000 of its own range, so all
- * of them share one chart axis and each fills the height. The buttons along
- * the top carry the live value in real units and switch their line on and
- * off; the selection is saved.
+ * The ring buffer holds real values. What the chart shows is a "view": the
+ * ring laid out oldest to newest, newest on the right edge. Live, the view
+ * is rebuilt from the ring every refresh. HOLD stops that, so the view is a
+ * snapshot: the chart, the cursor and the numbers on the buttons all read
+ * the same frozen data while recording carries on underneath.
+ *
+ * Every line is drawn scaled to 0..1000 of its own channel range, so all of
+ * them share one chart axis and use the full height.
  */
 #include "ui_log.h"
 #include "settings.h"
 #include "ui.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -62,25 +67,21 @@ static float channel_value(const dash_data_t *d, int ch)
     }
 }
 
-/* ring buffer, oldest at s_head once full */
-static lv_coord_t s_ring[CH_COUNT][LOG_POINTS];
+/* recording: ring of real values, oldest at s_head once full */
+static float s_ring[CH_COUNT][LOG_POINTS];
 static int s_head, s_count;
 static float s_last[CH_COUNT];
 static int64_t s_next_us;
 
-static lv_obj_t *scr_log, *chart, *hold_btn, *hold_lbl, *time_lbl;
+/* what is on screen: oldest left, newest right, NAN where there is no data */
+static float s_view[CH_COUNT][LOG_POINTS];
+
+static lv_obj_t *scr_log, *chart, *cursor, *hold_btn, *hold_lbl, *time_lbl;
 static lv_chart_series_t *ser[CH_COUNT];
 static lv_coord_t ser_buf[CH_COUNT][LOG_POINTS];
 static lv_obj_t *btn[CH_COUNT], *btn_name[CH_COUNT], *btn_val[CH_COUNT];
 static bool s_hold;
-
-static lv_coord_t scale_to_chart(int ch, float v)
-{
-    float f = (v - CH[ch].lo) / (CH[ch].hi - CH[ch].lo);
-    if (f < 0) f = 0;
-    if (f > 1) f = 1;
-    return (lv_coord_t)(f * SCALE + 0.5f);
-}
+static int s_cursor = LOG_POINTS - 1;
 
 void ui_log_sample(const dash_data_t *d, int64_t now_us)
 {
@@ -89,9 +90,7 @@ void ui_log_sample(const dash_data_t *d, int64_t now_us)
     s_next_us = (s_next_us == 0 ? now_us : s_next_us) + 1000000 / LOG_HZ;
     if (s_next_us < now_us) s_next_us = now_us;     /* fell behind, resync */
 
-    for (int c = 0; c < CH_COUNT; c++) {
-        s_ring[c][s_head] = scale_to_chart(c, s_last[c]);
-    }
+    for (int c = 0; c < CH_COUNT; c++) s_ring[c][s_head] = s_last[c];
     s_head = (s_head + 1) % LOG_POINTS;
     if (s_count < LOG_POINTS) s_count++;
 }
@@ -100,6 +99,19 @@ void ui_log_sample(const dash_data_t *d, int64_t now_us)
 static bool channel_on(int c)
 {
     return (g_set.log_mask >> c) & 1;
+}
+
+static void set_label(lv_obj_t *l, const char *t)
+{
+    const char *cur = lv_label_get_text(l);
+    if (!cur || strcmp(cur, t) != 0) lv_label_set_text(l, t);
+}
+
+static void format(int c, float v, char *b, size_t n)
+{
+    if (isnan(v))            snprintf(b, n, "-");
+    else if (CH[c].decimals) snprintf(b, n, "%.1f", v);
+    else                     snprintf(b, n, "%d", (int)lroundf(v));
 }
 
 static void paint_button(int c)
@@ -111,39 +123,95 @@ static void paint_button(int c)
     lv_obj_set_style_text_color(btn_val[c], on ? C_W : C_OFF, 0);
 }
 
-static void refresh_chart(void)
+static void view_from_ring(void)
 {
-    /* newest sample on the right edge, empty points to the left of it */
     int missing = LOG_POINTS - s_count;
     int start = (s_head - s_count + LOG_POINTS) % LOG_POINTS;
     for (int c = 0; c < CH_COUNT; c++) {
-        if (!channel_on(c)) continue;
         for (int i = 0; i < LOG_POINTS; i++) {
-            ser_buf[c][i] = i < missing
-                ? LV_CHART_POINT_NONE
+            s_view[c][i] = i < missing
+                ? NAN
                 : s_ring[c][(start + i - missing) % LOG_POINTS];
         }
+    }
+}
+
+static void series_from_view(int c)
+{
+    float span = CH[c].hi - CH[c].lo;
+    for (int i = 0; i < LOG_POINTS; i++) {
+        float v = s_view[c][i];
+        if (isnan(v)) {
+            ser_buf[c][i] = LV_CHART_POINT_NONE;
+            continue;
+        }
+        float f = (v - CH[c].lo) / span;
+        if (f < 0) f = 0;
+        if (f > 1) f = 1;
+        ser_buf[c][i] = (lv_coord_t)(f * SCALE + 0.5f);
+    }
+}
+
+static void refresh_chart(void)
+{
+    for (int c = 0; c < CH_COUNT; c++) {
+        if (channel_on(c)) series_from_view(c);
     }
     lv_chart_refresh(chart);
 }
 
+/* Buttons read live values, or the values under the cursor while held. */
 static void refresh_values(void)
 {
     char b[16];
     for (int c = 0; c < CH_COUNT; c++) {
-        if (CH[c].decimals) snprintf(b, sizeof b, "%.1f", s_last[c]);
-        else                snprintf(b, sizeof b, "%d", (int)(s_last[c] + (s_last[c] < 0 ? -0.5f : 0.5f)));
-        const char *cur = lv_label_get_text(btn_val[c]);
-        if (!cur || strcmp(cur, b) != 0) lv_label_set_text(btn_val[c], b);
+        format(c, s_hold ? s_view[c][s_cursor] : s_last[c], b, sizeof b);
+        set_label(btn_val[c], b);
     }
 }
 
+/* ---------------------------------------------------------------- cursor */
+static void place_cursor(void)
+{
+    lv_area_t a;
+    lv_obj_get_content_coords(chart, &a);
+    lv_coord_t w = lv_area_get_width(&a);
+    lv_coord_t x = a.x1 + (lv_coord_t)((int32_t)w * s_cursor / (LOG_POINTS - 1));
+    lv_obj_set_pos(cursor, x - 1, a.y1);
+    lv_obj_set_height(cursor, lv_area_get_height(&a));
+
+    char b[32];
+    float ago = (float)(LOG_POINTS - 1 - s_cursor) / LOG_HZ;
+    snprintf(b, sizeof b, "HELD  -%.1f s", ago);
+    set_label(time_lbl, b);
+    refresh_values();
+}
+
+static void chart_touch_cb(lv_event_t *e)
+{
+    (void)e;
+    if (!s_hold) return;
+    lv_point_t p;
+    lv_indev_get_point(lv_indev_get_act(), &p);
+    lv_area_t a;
+    lv_obj_get_content_coords(chart, &a);
+    int32_t w = lv_area_get_width(&a);
+    int32_t i = ((int32_t)(p.x - a.x1) * (LOG_POINTS - 1) + w / 2) / w;
+    if (i < 0) i = 0;
+    if (i > LOG_POINTS - 1) i = LOG_POINTS - 1;
+    if (i == s_cursor) return;
+    s_cursor = (int)i;
+    place_cursor();
+}
+
+/* ------------------------------------------------------------ callbacks */
 static void log_timer_cb(lv_timer_t *t)
 {
     (void)t;
-    if (lv_scr_act() != scr_log) return;
+    if (lv_scr_act() != scr_log || s_hold) return;
+    view_from_ring();
+    refresh_chart();
     refresh_values();
-    if (!s_hold) refresh_chart();
 }
 
 static void channel_cb(lv_event_t *e)
@@ -156,14 +224,33 @@ static void channel_cb(lv_event_t *e)
     settings_save();
 }
 
+static void set_hold(bool hold)
+{
+    s_hold = hold;
+    lv_label_set_text(hold_lbl, hold ? "LIVE" : "HOLD");
+    lv_obj_set_style_border_color(hold_btn, hold ? C_Y : C_LINE, 0);
+    if (hold) {
+        /* freeze exactly what is recorded right now */
+        view_from_ring();
+        refresh_chart();
+        s_cursor = LOG_POINTS - 1;
+        lv_obj_add_flag(chart, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(cursor, LV_OBJ_FLAG_HIDDEN);
+        place_cursor();
+    } else {
+        lv_obj_clear_flag(chart, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(cursor, LV_OBJ_FLAG_HIDDEN);
+        set_label(time_lbl, "30 s");
+        view_from_ring();
+        refresh_chart();
+        refresh_values();
+    }
+}
+
 static void hold_cb(lv_event_t *e)
 {
     (void)e;
-    s_hold = !s_hold;
-    lv_label_set_text(hold_lbl, s_hold ? "LIVE" : "HOLD");
-    lv_obj_set_style_border_color(hold_btn, s_hold ? C_Y : C_LINE, 0);
-    lv_label_set_text(time_lbl, s_hold ? "30 s  -  HELD" : "30 s");
-    if (!s_hold) refresh_chart();
+    set_hold(!s_hold);
 }
 
 static void dash_cb(lv_event_t *e)
@@ -172,6 +259,7 @@ static void dash_cb(lv_event_t *e)
     ui_show_dash();
 }
 
+/* ---------------------------------------------------------------- build */
 static lv_obj_t *mk_btn(lv_obj_t *par, lv_coord_t x, lv_coord_t y,
                         lv_coord_t w, lv_coord_t h)
 {
@@ -226,7 +314,7 @@ void ui_log_create(void)
     lv_obj_center(bl);
     lv_obj_add_event_cb(back, dash_cb, LV_EVENT_CLICKED, NULL);
 
-    /* channel buttons: name in the channel colour, live value under it */
+    /* channel buttons: name in the channel colour, value under it */
     const lv_coord_t bw = 94, bh = 56, gap = 4, x0 = 8, y0 = 52;
     for (int c = 0; c < CH_COUNT; c++) {
         btn[c] = mk_btn(scr_log, x0 + c * (bw + gap), y0, bw, bh);
@@ -238,7 +326,7 @@ void ui_log_create(void)
                             (void *)(intptr_t)c);
     }
 
-    /* chart */
+    /* chart; only takes touches while held, to move the cursor */
     chart = lv_chart_create(scr_log);
     lv_obj_set_pos(chart, 8, 118);
     lv_obj_set_size(chart, 784, 354);
@@ -256,9 +344,14 @@ void ui_log_create(void)
     lv_obj_set_style_line_color(chart, C_GRID, LV_PART_MAIN);
     lv_obj_set_style_line_width(chart, 2, LV_PART_ITEMS);
     lv_obj_set_style_size(chart, 0, LV_PART_INDICATOR);    /* no dots */
+    lv_obj_add_event_cb(chart, chart_touch_cb, LV_EVENT_PRESSED, NULL);
+    lv_obj_add_event_cb(chart, chart_touch_cb, LV_EVENT_PRESSING, NULL);
 
     for (int c = 0; c < CH_COUNT; c++) {
-        for (int i = 0; i < LOG_POINTS; i++) ser_buf[c][i] = LV_CHART_POINT_NONE;
+        for (int i = 0; i < LOG_POINTS; i++) {
+            ser_buf[c][i] = LV_CHART_POINT_NONE;
+            s_view[c][i] = NAN;
+        }
         ser[c] = lv_chart_add_series(chart, lv_color_hex(CH[c].colour),
                                      LV_CHART_AXIS_PRIMARY_Y);
         lv_chart_set_ext_y_array(chart, ser[c], ser_buf[c]);
@@ -266,12 +359,35 @@ void ui_log_create(void)
         paint_button(c);
     }
 
+    /* the held-moment cursor, a thin vertical line over the chart */
+    cursor = lv_obj_create(scr_log);
+    lv_obj_remove_style_all(cursor);
+    lv_obj_set_width(cursor, 2);
+    lv_obj_set_style_bg_color(cursor, C_Y, 0);
+    lv_obj_set_style_bg_opa(cursor, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(cursor, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(cursor, LV_OBJ_FLAG_HIDDEN);
+
     lv_timer_create(log_timer_cb, LOG_REFRESH_MS, NULL);
 }
 
 lv_obj_t *ui_log_screen(void)
 {
+    if (!s_hold) {
+        view_from_ring();
+        refresh_chart();
+    }
     refresh_values();
-    if (!s_hold) refresh_chart();
     return scr_log;
 }
+
+#ifdef DASH_SIM
+/* tools/sim: hold and put the cursor at a point, to render a held frame */
+void ui_log_sim_hold(int point)
+{
+    set_hold(true);
+    s_cursor = point < 0 ? 0 : (point >= LOG_POINTS ? LOG_POINTS - 1 : point);
+    lv_obj_update_layout(scr_log);
+    place_cursor();
+}
+#endif

@@ -11,7 +11,7 @@ OUT      ?= build
 CC      ?= cc
 # pointers are 8 bytes here, so the LVGL heap is 4x the 64 kB on the panel
 CFLAGS  += -O1 -g0 -w -std=gnu99 \
-           -DLV_CONF_SKIP -DLV_LVGL_H_INCLUDE_SIMPLE \
+           -DDASH_SIM -DLV_CONF_SKIP -DLV_LVGL_H_INCLUDE_SIMPLE \
            -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(256U*1024U)' \
            -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 \
            -Istubs -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src

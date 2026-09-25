@@ -11,6 +11,8 @@
  *   boot=ms        the boot animation at ms after power-up, crossfading
  *                  into the dash rendered from the other inputs
  *   screen=log     the LOG screen; with demo=1 t=30 it has 30 s of history
+ *   hold=N         LOG held at the end of the run, cursor on point N
+ *                  (0 oldest .. 299 newest)
  *   night=1        night mode
  *   area=0|1       shift flash on the whole screen / on the rev counter
  *   colour=0..3    shift flash red / white / blue / amber
@@ -32,6 +34,7 @@
 #include "ui.h"
 #include "ui_menu.h"
 #include "ui_log.h"
+void ui_log_sim_hold(int point);
 
 #define W 800
 #define H 480
@@ -106,6 +109,7 @@ int main(int argc, char **argv)
     const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
     int night = 0, area = 0, colour = 0;
     bool menu = false, logscr = false;
+    int hold = -1;
     bool demo = false;
     int boot_ms = -1;
     float t_end = 4.0f;
@@ -131,6 +135,7 @@ int main(int argc, char **argv)
             used = true;
         }
         if (strcmp(k, "boot") == 0)   { boot_ms = atoi(v); used = true; }
+        if (strcmp(k, "hold") == 0)   { hold = atoi(v); used = true; }
         if (strcmp(k, "night") == 0)  { night = atoi(v); used = true; }
         if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
         if (strcmp(k, "colour") == 0) { colour = atoi(v); used = true; }
@@ -194,6 +199,14 @@ int main(int argc, char **argv)
         s_now_us += STEP_MS * 1000;
         lv_tick_inc(STEP_MS);
         lv_timer_handler();
+    }
+    if (hold >= 0) {
+        ui_log_sim_hold(hold);
+        for (int i = 0; i < 10; i++) {       /* let it run on while held */
+            s_now_us += STEP_MS * 1000;
+            lv_tick_inc(STEP_MS);
+            lv_timer_handler();
+        }
     }
     lv_refr_now(NULL);
 

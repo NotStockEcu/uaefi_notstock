@@ -39,6 +39,7 @@ SCENES = {
     "dash-nocan": "link=0",
     "menu": "screen=menu",
     "log": "screen=log demo=1 t=31",
+    "log-hold": "screen=log demo=1 t=31 hold=190",
     "boot-in": "boot=500 rpm=900 clt=70 iat=25 boost=-0.6 afr=14.7",
     "boot-cross": "boot=2350 rpm=900 clt=70 iat=25 boost=-0.6 afr=14.7",
 }

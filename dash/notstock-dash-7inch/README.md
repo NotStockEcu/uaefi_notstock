@@ -188,7 +188,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.7` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.8` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 
@@ -274,9 +274,16 @@ height and the vertical position is only meaningful per channel; read the
 numbers off the buttons. Grid lines are 5 s apart, newest on the right.
 
 **Recording never stops**, whichever screen is up. When something odd happens
-on the road, open the log afterwards and the last 30 s are there. **HOLD**
-freezes the chart to study it (the buttons keep showing live values), LIVE
-resumes. The history lives in RAM and is gone after a power cycle.
+on the road, open the log afterwards and the last 30 s are there. The history
+lives in RAM and is gone after a power cycle.
+
+**HOLD** freezes the chart and puts a yellow cursor line on the newest point.
+**Tap or drag on the chart** to move it: the buttons then show every
+channel's value at that moment, and the top line how long ago it was
+(`HELD -10.9 s`). Everything on screen reads the same frozen snapshot while
+recording carries on underneath. **LIVE** goes back to the running chart.
+
+![log held](preview/log-hold.png)
 
 Channels and ranges are the `CH[]` table at the top of `main/ui_log.c`;
 anything else rusEFI broadcasts (`dash_data_t` in `rusefi_can.h`) can be
