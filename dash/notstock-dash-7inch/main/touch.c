@@ -179,16 +179,29 @@ static uint16_t scale(uint32_t v, uint16_t from, uint16_t to)
     return (uint16_t)(r >= to ? to - 1 : r);
 }
 
+/* Last reported contact. The GT911 only raises bit 7 of the status register
+ * when it has a fresh sample, and it samples slower than LVGL may poll. "No
+ * new sample" is therefore not "finger lifted": the contact stays as it was
+ * until the controller reports zero points. Treating a missing sample as a
+ * release chopped every press into pieces, and the settings menu needs one
+ * unbroken 400 ms long press. */
+static bool s_down = false;
+static uint16_t s_x = 0, s_y = 0;
+static int64_t s_last_sample = 0;
+
+/* If the release report itself is lost, do not stay pressed forever. */
+#define TOUCH_STALE_US 250000
+
 bool touch_read(uint16_t *x, uint16_t *y)
 {
     if (!s_ok) return false;
 
     uint8_t st = 0;
     esp_err_t e = gt_read(REG_STATUS, &st, 1);
+    int64_t now = esp_timer_get_time();
 
     if (!s_seen_point) {
         maybe_retry();
-        int64_t now = esp_timer_get_time();
         if (now - s_last_diag > 1000000) {
             s_last_diag = now;
             ESP_LOGI(TAG, "no touch yet: status read %s, raw 0x%02X",
@@ -196,32 +209,36 @@ bool touch_read(uint16_t *x, uint16_t *y)
         }
     }
 
-    if (e != ESP_OK) return false;
-    if (!(st & 0x80)) return false;             /* no new data */
-
-    int n = st & 0x0F;
-    bool got = false;
-    if (n > 0) {
+    if (e == ESP_OK && (st & 0x80)) {
+        int n = st & 0x0F;
         uint8_t p[8];
-        if (gt_read(REG_POINT1, p, 8) == ESP_OK) {
+        if (n > 0 && gt_read(REG_POINT1, p, 8) == ESP_OK) {
             uint16_t rx = (uint16_t)(p[1] | (p[2] << 8));
             uint16_t ry = (uint16_t)(p[3] | (p[4] << 8));
             /* Scale rather than reject. The old code dropped anything at or
              * beyond 800x480, which on a controller configured for 1024x600
              * threw away the entire right and bottom of the screen, including
              * the corner the settings menu lives in. */
-            *x = scale(rx, s_native_w, LCD_H_RES);
-            *y = scale(ry, s_native_h, LCD_V_RES);
-            got = true;
+            s_x = scale(rx, s_native_w, LCD_H_RES);
+            s_y = scale(ry, s_native_h, LCD_V_RES);
+            s_down = true;
             if (!s_seen_point) {
                 s_seen_point = true;
                 ESP_LOGI(TAG, "first point: raw %u,%u -> %u,%u", rx, ry,
-                         *x, *y);
+                         s_x, s_y);
             }
+        } else if (n == 0) {
+            s_down = false;
         }
+        s_last_sample = now;
+        gt_write8(REG_STATUS, 0);               /* ack, or it never updates */
+    } else if (s_down && now - s_last_sample > TOUCH_STALE_US) {
+        s_down = false;
     }
-    gt_write8(REG_STATUS, 0);                   /* ack, or it never updates */
-    return got;
+
+    *x = s_x;
+    *y = s_y;
+    return s_down;
 }
 
 

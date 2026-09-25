@@ -6,6 +6,7 @@
  *
  *   sim out.ppm [rpm=5700] [speed=120] [clt=88] [iat=35] [boost=0.8]
  *               [afr=12.5] [link=0|1] [demo=1] [t=3.5] [screen=menu]
+ *               [touch=x,y]   finger held at x,y for the whole run
  *
  * tools/preview.py builds this and turns the PPM into PNGs.
  */
@@ -27,6 +28,16 @@
 volatile dash_data_t g_dash;
 static int64_t s_now_us;
 static int s_link = 1;
+static int s_touch_x = -1, s_touch_y = -1;   /* held down the whole run */
+
+static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+{
+    (void)drv;
+    data->point.x = s_touch_x < 0 ? 0 : s_touch_x;
+    data->point.y = s_touch_y < 0 ? 0 : s_touch_y;
+    data->state = s_touch_x < 0 ? LV_INDEV_STATE_RELEASED
+                                : LV_INDEV_STATE_PRESSED;
+}
 
 int64_t esp_timer_get_time(void) { return s_now_us; }
 bool rusefi_can_link_ok(void) { return s_link != 0; }
@@ -97,6 +108,10 @@ int main(int argc, char **argv)
         if (strcmp(k, "demo") == 0)   { demo = atoi(v) != 0; used = true; }
         if (strcmp(k, "t") == 0)      { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "screen") == 0) { menu = strcmp(v, "menu") == 0; used = true; }
+        if (strcmp(k, "touch") == 0) {
+            sscanf(v, "%d,%d", &s_touch_x, &s_touch_y);
+            used = true;
+        }
         if (!used) fprintf(stderr, "unknown input '%s'\n", k);
     }
 
@@ -112,6 +127,12 @@ int main(int argc, char **argv)
     drv.flush_cb = flush_cb;
     drv.draw_buf = &buf;
     lv_disp_drv_register(&drv);
+
+    static lv_indev_drv_t indev;
+    lv_indev_drv_init(&indev);
+    indev.type = LV_INDEV_TYPE_POINTER;
+    indev.read_cb = touch_cb;
+    lv_indev_drv_register(&indev);
 
     settings_load();
     g_set.demo = demo;
