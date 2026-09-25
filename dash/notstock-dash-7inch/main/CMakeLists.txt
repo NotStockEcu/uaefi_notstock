@@ -8,11 +8,11 @@ idf_component_register(
         "ui_menu.c"
         "icons.c"
         "dials.c"
-        "logo.c"
+        "splash.c"
         "fonts/dash_num_28.c"
         "fonts/dash_lbl_18.c"
         "fonts/dash_lbl_13.c"
-        "fonts/dash_speed_104.c"
+        "fonts/dash_speed_56.c"
         "fonts/dash_orb_40.c"
         "fonts/dash_orb_18.c"
     INCLUDE_DIRS ".")

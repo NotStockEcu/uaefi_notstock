@@ -34,14 +34,14 @@
 /* ---------------------------------------------------------------- geometry */
 /* Rev counter. The image is BIG_SIZE square with its pivot in the centre. */
 #define LY_RPM_CX     400
-#define LY_RPM_CY     190
-#define LY_RPM_VAL_Y  (LY_RPM_CY + 36)     /* rpm readout, under the hub */
-#define LY_RPM_VAL_W  200
+#define LY_RPM_CY     236
+#define LY_RPM_VAL_Y  (LY_RPM_CY + 48)     /* rpm readout, under the hub */
+#define LY_RPM_VAL_W  220
 
-/* Speed, as text under the rev counter. The Orbitron label box carries a
- * lot of empty ascent above the digits, hence the pull-up. */
-#define LY_SPEED_Y    306
-#define LY_SPEED_W    360
+/* Speed, as text in the open bottom of the rev counter, between the 0 and 8
+ * labels. */
+#define LY_SPEED_Y    (LY_RPM_CY + 132)
+#define LY_SPEED_W    240
 
 /* Side columns: pivot of each small gauge. */
 #define LY_LEFT_CX    60
@@ -59,7 +59,6 @@
 #define LY_TURBO_VAL_DY  38
 #define LY_SUB_DY        78                /* lambda line under the AFR */
 
-#define LY_LOGO_Y     450
 #define LY_LINK_Y     4                    /* NO CAN / DEMO, top left */
 
 /* ------------------------------------------------------------------ config */
@@ -67,6 +66,10 @@
 
 /* alarm flash */
 #define FLASH_PERIOD_MS 420
+/* boot screen: how long the logo stays, and the fade into the dash */
+#define SPLASH_MS       2000
+#define SPLASH_FADE_MS  700
+
 /* hidden menu trigger, bottom right corner */
 #define MENU_HIT_W    130
 #define MENU_HIT_H    64
@@ -303,16 +306,16 @@ static void build_rpm(lv_obj_t *par)
 static void build_speed(lv_obj_t *par)
 {
     lv_obj_t *row = mk_box(par, LY_RPM_CX - LY_SPEED_W / 2, LY_SPEED_Y,
-                           LY_SPEED_W, 132);
+                           LY_SPEED_W, 72);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END,
                           LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(row, 10, 0);
-    lbl_speed = mk_label(row, &dash_speed_104, C_W, "0", 0, 0, 0,
+    lbl_speed = mk_label(row, &dash_speed_56, C_W, "0", 0, 0, 0,
                          LV_TEXT_ALIGN_LEFT);
     lv_obj_t *u = mk_label(row, &dash_orb_18, C_GREY, "km/h", 0, 0, 0,
                            LV_TEXT_ALIGN_LEFT);
-    lv_obj_set_style_pad_bottom(u, 28, 0);
+    lv_obj_set_style_pad_bottom(u, 14, 0);
 }
 
 static void update_speed(float kmh)
@@ -576,6 +579,29 @@ static void ui_timer_cb(lv_timer_t *t)
     update_alarm(&d);
 }
 
+/* ------------------------------------------------------------ boot screen */
+static void splash_done_cb(lv_timer_t *t)
+{
+    lv_timer_del(t);
+    /* auto_del frees the splash screen; the image itself lives in flash */
+    lv_scr_load_anim(scr_dash, LV_SCR_LOAD_ANIM_FADE_ON, SPLASH_FADE_MS, 0,
+                     true);
+}
+
+/* The logo on black, shown from the first frame until SPLASH_MS. The dash is
+ * already built and updating underneath, so it comes up with live values. */
+static void build_splash(void)
+{
+    lv_obj_t *s = lv_obj_create(NULL);
+    lv_obj_remove_style_all(s);
+    lv_obj_set_style_bg_color(s, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
+    mk_img(s, &splash_logo, 400, 240);
+    lv_scr_load(s);
+    lv_timer_create(splash_done_cb, SPLASH_MS, NULL);
+}
+
 /* ------------------------------------------------------------------- build */
 void ui_create(void)
 {
@@ -600,11 +626,6 @@ void ui_create(void)
                          LY_RIGHT_CX - LY_SIDE_W / 2, LY_AFR_CY + LY_SUB_DY,
                          LY_SIDE_W, LV_TEXT_ALIGN_CENTER);
 
-    /* The wordmark is a traced bitmap rather than two text labels: it is
-     * italic, tightly kerned and two-coloured, none of which a single LVGL
-     * font can do. */
-    mk_img(scr, &logo_notstock, 400, LY_LOGO_Y + logo_notstock.header.h / 2);
-
     link_txt = mk_label(scr, &dash_lbl_18, C_RED, "", 0, LY_LINK_Y,
                         LY_SIDE_W, LV_TEXT_ALIGN_CENTER);
     lv_obj_add_flag(link_txt, LV_OBJ_FLAG_HIDDEN);
@@ -616,4 +637,5 @@ void ui_create(void)
     ui_apply_settings();
 
     lv_timer_create(ui_timer_cb, 40, NULL);
+    build_splash();
 }

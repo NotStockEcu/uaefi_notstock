@@ -19,7 +19,7 @@ extern const lv_img_dsc_t hub_turbo;
 
 #define BIG_SWEEP_START          135
 #define BIG_SWEEP                270
-#define BIG_SIZE                 400
+#define BIG_SIZE                 500
 #define RPM_MAX                  8000
 #define RPM_REDLINE              7000
 
@@ -37,8 +37,8 @@ extern const lv_img_dsc_t hub_turbo;
 #define AFR_MIN                  (10.00f)
 #define AFR_MAX                  (18.00f)
 
-#define NEEDLE_BIG_PIVOT_X       29
-#define NEEDLE_BIG_PIVOT_Y       9
+#define NEEDLE_BIG_PIVOT_X       35
+#define NEEDLE_BIG_PIVOT_Y       11
 #define NEEDLE_TEMP_PIVOT_X      12
 #define NEEDLE_TEMP_PIVOT_Y      6
 #define NEEDLE_TURBO_PIVOT_X     12

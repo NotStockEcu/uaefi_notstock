@@ -15,7 +15,7 @@ conv() {
         --lv-include lvgl.h "$@"
 }
 # speed, digits only
-conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --size 104 -o $O/dash_speed_104.c
+conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --size 56 -o $O/dash_speed_56.c
 # rpm readout inside the rev counter
 conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 40 -o $O/dash_orb_40.c
 # small labels: km/h, x1000 rpm

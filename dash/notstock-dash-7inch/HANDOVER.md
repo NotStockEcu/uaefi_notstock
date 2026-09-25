@@ -21,8 +21,10 @@ v2.0 replaced the screen with a classic analogue cluster after a reference
 picture from the owner: water and intake air temperature on the left in one
 style, turbo and AFR on the right in another, every gauge with a needle and a
 digital readout, no warning lamps. The owner then dropped the speedometer:
-the middle is one big rev counter with the rpm readout under its hub, and the
-speed is plain text under it in Orbitron Black, no needle. The board support is unchanged; the new gauges have been
+the middle is one big 500 px rev counter with the rpm readout under its hub,
+and the speed is plain text in its open bottom in Orbitron Black, no needle.
+The NOT STOCK wordmark is off the dash; instead the owner's round badge
+(`assets/splash.png`) is a boot screen for 2 s that fades into the dash. The board support is unchanged; the new gauges have been
 checked in the host simulator (`tools/preview.py`) but not yet on the panel.
 
 ---
@@ -97,18 +99,21 @@ main/
   ui_menu.c/h     the settings screen; DASH_VERSION lives in the header
   dials.c/h       generated: scale faces, needles, hubs and their geometry
   icons.c         generated: card/flag icons, ALPHA_8BIT (water, iat used)
-  logo.c          generated: NOT STOCK wordmark, TRUE_COLOR_ALPHA
+  splash.c        generated: boot logo, RGB565 440x440
   fonts/          generated: DejaVu Sans Condensed Bold (side gauges, menu)
                   and Orbitron (speed, rpm, rev counter), tools/gen_fonts.sh
 tools/
   gen_dials.py    renders the gauge artwork -> main/dials.c, main/dials.h
-  gen_assets.py   traces assets/ -> main/icons.c and main/logo.c
-  gen_fonts.sh    Orbitron TTF -> main/fonts/dash_speed_104.c, dash_orb_*.c
+  gen_assets.py   traces assets/icons_sheet.png -> main/icons.c
+  gen_splash.py   assets/splash.png -> main/splash.c, white keyed to black
+  gen_fonts.sh    Orbitron TTF -> main/fonts/dash_speed_56.c, dash_orb_*.c
   preview.py      builds tools/sim and renders preview/*.png
   sim/            host build of the real ui.c + LVGL, stubs for ESP-IDF
 assets/
   icons_sheet.png  owner-supplied card icons, yellow on black
-  mockup.jpg       original design mockup, source of the wordmark
+  mockup.jpg       original design mockup, kept for reference
+  splash.png       owner's round logo, on white
+  fonts/           Orbitron TTF + OFL licence
 build_art/         PNGs gen_dials.py emits, for eyeballing
 preview/           simulator renders
 ```
@@ -152,8 +157,9 @@ the panel has 64 kB.
 and `ui.c` places every icon by the centre read from its own image header, so
 mixed sizes need no layout edits.
 
-**The wordmark is a traced bitmap, not text.** Italic, tightly kerned, two
-colours in one word. No single LVGL font does that.
+**The boot screen is a separate LVGL screen.** `ui_create` builds the dash,
+then loads the splash screen on top and a one-shot timer fades to the dash
+with `lv_scr_load_anim(..., auto_del)`. The dash timer runs the whole time.
 
 **Temperature min/max labels hang under the ends of the arc.** Placed along
 the end radius, the needle lies across them when it rests on the stop.

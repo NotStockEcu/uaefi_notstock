@@ -47,16 +47,16 @@ NEEDLE_EDGE = (0x70, 0x0C, 0x06)
 # ---------------------------------------------------------------- rev counter
 # The big dial in the middle. Numbers sit outside the ticks, the bottom 90
 # degrees are open for the digital rpm readout.
-BIG = 400                    # image is BIG x BIG, pivot in the centre
+BIG = 500                    # image is BIG x BIG, pivot in the centre
 BIG_SWEEP_START = 135        # LVGL angle: 0 = 3 o'clock, clockwise
 BIG_SWEEP = 270
-BIG_R_TICK = 140             # outer end of the ticks
-BIG_TICK_MAJ, BIG_TICK_MIN = 24, 12
-BIG_TICK_W_MAJ, BIG_TICK_W_MIN = 6.5, 3.0
-BIG_LABEL_GAP = 8            # clear space between tick ends and numbers
-BIG_LABEL_PX = 32
-BIG_NEEDLE_LEN = 132         # pivot to tip
-BIG_HUB = 60
+BIG_R_TICK = 178             # outer end of the ticks
+BIG_TICK_MAJ, BIG_TICK_MIN = 30, 15
+BIG_TICK_W_MAJ, BIG_TICK_W_MIN = 8.0, 3.6
+BIG_LABEL_GAP = 10           # clear space between tick ends and numbers
+BIG_LABEL_PX = 40
+BIG_NEEDLE_LEN = 169         # pivot to tip
+BIG_HUB = 72
 
 RPM_MAX = 8000
 RPM_REDLINE = 7000
@@ -341,7 +341,7 @@ def main():
         "dial_afr": build_turbo(AFR_MIN, AFR_MAX, AFR_ZONES, AFR_MARK),
     }
     needles = {
-        "needle_big": build_needle(BIG_NEEDLE_LEN, 13, 4, 26),
+        "needle_big": build_needle(BIG_NEEDLE_LEN, 16, 4, 32),
         "needle_temp": build_needle(TEMP_NEEDLE_LEN, 6, 2, 9),
         "needle_turbo": build_needle(TURBO_NEEDLE_LEN, 6, 2, 9),
     }

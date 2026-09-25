@@ -18,7 +18,7 @@ CFLAGS  += -O1 -g0 -w -std=gnu99 \
 
 APP_SRC := sim.c \
            $(ROOT)/main/ui.c $(ROOT)/main/ui_menu.c $(ROOT)/main/settings.c \
-           $(ROOT)/main/icons.c $(ROOT)/main/dials.c $(ROOT)/main/logo.c \
+           $(ROOT)/main/icons.c $(ROOT)/main/dials.c $(ROOT)/main/splash.c \
            $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')
 

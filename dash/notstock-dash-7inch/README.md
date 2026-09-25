@@ -15,8 +15,8 @@ a needle **and** a digital readout, except speed, which is text only.
 
 | Where | Gauge | Scale | Readout |
 | --- | --- | --- | --- |
-| centre | rev counter, 400 px | 0-8 x1000, red from 7000 | rpm, to 10, under the hub |
-| under it | speed | text only | km/h, 104 px Orbitron Black |
+| centre | rev counter, 500 px | 0-8 x1000, red from 7000 | rpm, to 10, under the hub |
+| bottom of the rev counter | speed | text only | km/h, 56 px Orbitron Black |
 | left top | water temperature | 40-130 degC, red from 105 | degC, icon |
 | left bottom | intake air temperature | 0-80 degC, red from 60 | degC, icon |
 | right top | turbo | -1.0-2.0 bar, yellow 0.8-1.2, red from 1.2 | bar |
@@ -46,17 +46,24 @@ drift out of step with the needle.
 
 **Fonts**: the rev counter numbers, the rpm readout and the speed are
 [Orbitron](https://fonts.google.com/specimen/Orbitron) (SIL OFL,
-`assets/fonts/`). `tools/gen_fonts.sh` turns it into `main/fonts/dash_speed_104.c`,
+`assets/fonts/`). `tools/gen_fonts.sh` turns it into `main/fonts/dash_speed_56.c`,
 `dash_orb_40.c` and `dash_orb_18.c` with `lv_font_conv`
 (`npm i -g lv_font_conv`); `gen_dials.py` draws the scale numbers with the
 same TTF. The side gauges and the menu use DejaVu Sans Condensed Bold, each
 font file carries its own `lv_font_conv` line.
 
-**Icons and wordmark**: `tools/gen_assets.py` traces the water and intake
-icons out of `assets/icons_sheet.png` and the NOT STOCK wordmark out of
-`assets/mockup.jpg` into `main/icons.c` and `main/logo.c`. Replace the source
-file and re-run it; `ui.c` places icons by their centre, so a different size
-needs no layout edit.
+**Icons**: `tools/gen_assets.py` traces the water and intake icons out of
+`assets/icons_sheet.png` into `main/icons.c`. Replace the source file and
+re-run it; `ui.c` places icons by their centre, so a different size needs no
+layout edit.
+
+**Boot logo**: `assets/splash.png`, the round NOT STOCK. / NOT STABLE. badge.
+`tools/gen_splash.py` keys out its white background (on the blue channel, so
+the rim stays smooth), crops it to the disc and writes `main/splash.c` at
+440x440. At power-up it shows on black for `SPLASH_MS` (2 s) and fades into
+the dash over `SPLASH_FADE_MS` (0.7 s), both at the top of `ui.c`. The dash is
+already running underneath, so it fades in with live values. Preview it with
+`python tools/preview.py t=1`.
 
 **The layout**: the `LY_*` block at the top of `main/ui.c`. Every gauge is
 placed by its pivot, readouts by an offset from that pivot. Colours are the
@@ -166,7 +173,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v2.1` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v2.2` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 

@@ -8,6 +8,8 @@
  *               [afr=12.5] [link=0|1] [demo=1] [t=3.5] [screen=menu]
  *               [touch=x,y]   finger held at x,y for the whole run
  *
+ *   screen=splash  the boot logo (only visible in the first 2.5 s, use t=1)
+ *
  * tools/preview.py builds this and turns the PPM into PNGs.
  */
 #include <stdio.h>

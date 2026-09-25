@@ -5,7 +5,7 @@ LV_FONT_DECLARE(dash_num_28);
 LV_FONT_DECLARE(dash_lbl_18);
 LV_FONT_DECLARE(dash_lbl_13);
 /* Orbitron, see tools/gen_fonts.sh */
-LV_FONT_DECLARE(dash_speed_104);
+LV_FONT_DECLARE(dash_speed_56);
 LV_FONT_DECLARE(dash_orb_40);
 LV_FONT_DECLARE(dash_orb_18);
 
@@ -20,8 +20,8 @@ extern const lv_img_dsc_t ic_flame;
 /* Pre-rendered gauge artwork and its geometry, see tools/gen_dials.py */
 #include "dials.h"
 
-/* NOT STOCK wordmark, traced from the mockup, see tools/gen_assets.py */
-extern const lv_img_dsc_t logo_notstock;
+/* boot screen logo, see tools/gen_splash.py */
+extern const lv_img_dsc_t splash_logo;
 
 /* Builds the dash screen and starts its refresh timer. */
 void ui_create(void);
