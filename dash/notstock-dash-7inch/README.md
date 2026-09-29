@@ -79,7 +79,8 @@ service 0x22 and a VW-specific DID, which is what SNIFF is for.
 
 ## SNIFF mode (finding the VW measuring values)
 
-Settings menu, **ECU protocol: SNIFF**. The dash sends nothing; it listens
+Settings menu, **ECU protocol: SNIFF**. The CAN controller goes listen-only
+(no ACK, no error frames, nothing sent), and the dash listens
 while VCDS reads the car through the same OBD port (a Y splitter, or the
 dash's CAN H / L spliced onto pins 6 / 14 behind the socket).
 

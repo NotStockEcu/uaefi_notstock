@@ -128,6 +128,36 @@ bool obd_send(uint32_t id, const uint8_t d[8])
     return twai_transmit(&m, 0) == ESP_OK;
 }
 
+static bool s_listen;   /* controller in LISTEN_ONLY mode (SNIFF) */
+
+/* NORMAL mode for rusEFI and OBD-II: on a two-node bus (ECU + dash) the dash
+ * has to acknowledge frames, otherwise rusEFI racks up TX errors and goes
+ * bus-off; OBD-II sends one request at a time, hence the small TX queue.
+ * LISTEN_ONLY for SNIFF: next to a tester and the car there is always
+ * someone else to acknowledge, and a listen-only controller can never put
+ * an ACK or an error frame on the bus, so it cannot upset the diagnosis. */
+static void twai_up(bool listen)
+{
+    twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
+        PIN_TWAI_TX, PIN_TWAI_RX,
+        listen ? TWAI_MODE_LISTEN_ONLY : TWAI_MODE_NORMAL);
+    g.rx_queue_len = 64;          /* SNIFF prints each frame, give it slack */
+    g.tx_queue_len = listen ? 0 : 4;
+
+#if CAN_BITRATE_500
+    twai_timing_config_t t = TWAI_TIMING_CONFIG_500KBITS();
+#else
+    twai_timing_config_t t = TWAI_TIMING_CONFIG_250KBITS();
+#endif
+    twai_filter_config_t f = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+
+    ESP_ERROR_CHECK(twai_driver_install(&g, &t, &f));
+    ESP_ERROR_CHECK(twai_start());
+    s_listen = listen;
+    ESP_LOGI(TAG, "TWAI up on tx %d rx %d, %s", PIN_TWAI_TX, PIN_TWAI_RX,
+             listen ? "listen only" : "normal");
+}
+
 static void can_task(void *arg)
 {
     twai_message_t msg;
@@ -136,6 +166,12 @@ static void can_task(void *arg)
         /* protocol can change from the menu at any time */
         if (g_set.protocol != proto) {
             proto = g_set.protocol;
+            bool listen = proto == PROTO_SNIFF;
+            if (listen != s_listen) {
+                twai_stop();
+                twai_driver_uninstall();
+                twai_up(listen);
+            }
             g_obd.state = OBD_IDLE;
             if (proto == PROTO_OBD2) {
                 obd_reset();
@@ -146,7 +182,6 @@ static void can_task(void *arg)
                 ESP_LOGI(TAG, "SNIFF: listening only, every frame printed as "
                               "SNF <s> <id> <len> <bytes>");
             } else {
-                g_obd.state = OBD_IDLE;
                 ESP_LOGI(TAG, "protocol rusEFI verbose CAN");
             }
         }
@@ -157,7 +192,7 @@ static void can_task(void *arg)
                 obd_frame(msg.identifier, msg.data, msg.data_length_code,
                           esp_timer_get_time());
             } else if (proto == PROTO_SNIFF) {
-                /* never transmits: only the ACK bit, like any node */
+                /* listen only: not even an ACK goes out */
                 sniff_frame(msg.identifier, msg.data, msg.data_length_code,
                             esp_timer_get_time());
                 g_dash.last_rx_us = esp_timer_get_time();
@@ -170,7 +205,7 @@ static void can_task(void *arg)
         /* A stuck bus latches the controller into bus-off. Recover so the
          * dash comes back on its own after a wiring glitch. */
         twai_status_info_t st;
-        if (twai_get_status_info(&st) == ESP_OK &&
+        if (!s_listen && twai_get_status_info(&st) == ESP_OK &&
             st.state == TWAI_STATE_BUS_OFF) {
             ESP_LOGW(TAG, "bus-off, recovering");
             twai_initiate_recovery();
@@ -182,26 +217,6 @@ static void can_task(void *arg)
 
 void rusefi_can_start(void)
 {
-    /* NORMAL mode, not LISTEN_ONLY: on a two-node bus (ECU + dash) the dash
-     * has to acknowledge frames, otherwise rusEFI racks up TX errors and
-     * eventually goes bus-off. With rusEFI the dash never transmits; with
-     * OBD-II it sends one request at a time, hence the small TX queue. */
-    twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
-        PIN_TWAI_TX, PIN_TWAI_RX, TWAI_MODE_NORMAL);
-    g.rx_queue_len = 64;          /* SNIFF prints each frame, give it slack */
-    g.tx_queue_len = 4;
-
-#if CAN_BITRATE_500
-    twai_timing_config_t t = TWAI_TIMING_CONFIG_500KBITS();
-#else
-    twai_timing_config_t t = TWAI_TIMING_CONFIG_250KBITS();
-#endif
-    twai_filter_config_t f = TWAI_FILTER_CONFIG_ACCEPT_ALL();
-
-    ESP_ERROR_CHECK(twai_driver_install(&g, &t, &f));
-    ESP_ERROR_CHECK(twai_start());
-    ESP_LOGI(TAG, "TWAI up on tx %d rx %d, base 0x%03X",
-             PIN_TWAI_TX, PIN_TWAI_RX, CAN_BASE_ID);
-
+    twai_up(g_set.protocol == PROTO_SNIFF);
     xTaskCreatePinnedToCore(can_task, "can", 4096, NULL, 6, NULL, 0);
 }

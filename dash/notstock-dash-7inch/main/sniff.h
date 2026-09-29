@@ -1,7 +1,8 @@
 /* CAN sniffer, to find the VW measuring values OBD-II does not give.
  *
- * The dash only listens (it still acknowledges frames, it never sends one)
- * while VCDS reads values from the car through the same OBD port (Y cable).
+ * The dash only listens while VCDS reads values from the car through the
+ * same OBD port (Y cable): the CAN controller is in listen-only mode, so not
+ * even an ACK or an error frame goes out that could upset the diagnosis.
  * Every frame is printed to the serial console for idf.py monitor, and the
  * UDS "read data by identifier" answers (service 0x22 -> 0x62) are collected
  * per ECU and DID for the SNIFF screen: what VCDS shows as oil or exhaust
