@@ -82,6 +82,20 @@ the engine ECU, UDS service 22, both unsigned 16 bit in 0.1 K:
 | IDE00196 Engine oil temperature | 11BE | 0x0BC6 = 3014 -> 28.2 degC (VCDS 28.3) |
 | IDE02229 Exhaust gas temperature sensor 1 | 10FB | 0x0FE1 = 4065 -> 133.4 degC, rising at idle |
 
+The particulate filter, found the same way (VCDS 01, Advanced Measuring
+Values), polled every 4th round since it moves slowly:
+
+| VCDS | DID | scaling | log sample |
+| --- | --- | --- | --- |
+| IDE00427 DPF differential pressure | 14F5 | signed 16 bit, 1 hPa | 0x0005 -> 5 hPa (VCDS 5) |
+| IDE00434 soot mass, calculated | 114F | signed 16 bit, 0.01 g | 0x04CC -> 12.28 g (VCDS 12.30) |
+| IDE00435 soot mass, measured | 114E | signed 16 bit, 0.01 g | 0xFEB4 -> -3.32 g (VCDS -3.32) |
+| IDE00436 distance since regeneration | 1156 | unsigned 32 bit, 1 m | 0x00043023 -> 274.467 km (VCDS 274467 m) |
+| IDE04653 simulated DPF surface temperature | 1044 | 16 bit, 0.1 K | 0x0E34 -> 90.5 degC (VCDS 91.5, a little later) |
+
+Once they answer, the bottom line of the test screen shows them instead of
+the PID list.
+
 The dash polls them in the same round robin as the PIDs whenever the PID is
 missing; the tile then says `UDS 11BE` / `UDS 10FB` instead of the PID. An
 ECU that refuses a DID (7F 22) or ignores it three times in a row gets the

@@ -235,7 +235,9 @@ to the console (`SNF ...`) and tabulates UDS 0x62 answers by ECU and DID
 (`sniff.c`, `ui_theme_sniff.c`). The DIDs came out as 11BE (oil) and
 10FB (EGT 1), 0.1 K; `obd2.c` polls them with 22 when PIDs 5C / 78 are
 missing (WANT entries with bit 8 set are UDS). `tools/sim` ecu=2 is the T5.1
-as it answered, ecu=3 the same refusing the DIDs.
+as it answered, ecu=3 the same refusing the DIDs. The DPF DIDs (14F5, 114F,
+114E, 1156, 1044, table in README) have no PID behind them and are polled
+every DPF_EVERY-th round; values land in `g_obd.dpf`.
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still

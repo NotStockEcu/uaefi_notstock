@@ -14,7 +14,13 @@
  * "read data by identifier" (22 DID -> 62 DID data), same request and answer
  * IDs. The DIDs were found with SNIFF while VCDS read them from a T5.1 CAAC
  * (EDC17): 11BE engine oil temperature (IDE00196), 10FB exhaust gas
- * temperature sensor 1 (IDE02229), both unsigned 16 bit, 0.1 K.
+ * temperature sensor 1 (IDE02229), both unsigned 16 bit, 0.1 K. The diesel
+ * particulate filter, polled every DPF_EVERY-th round since it moves slowly:
+ *   14F5  differential pressure        IDE00427  signed 16 bit, 1 hPa
+ *   114F  soot mass, calculated        IDE00434  signed 16 bit, 0.01 g
+ *   114E  soot mass, measured          IDE00435  signed 16 bit, 0.01 g
+ *   1156  distance since regeneration  IDE00436  unsigned 32 bit, 1 m
+ *   1044  simulated filter surface temperature  IDE04653  16 bit, 0.1 K
  *
  * Decoded values go into g_dash like the rusEFI decoder's, so the LOG screen
  * and the link state work unchanged.
@@ -36,7 +42,9 @@ typedef enum {
 
 /* VW measuring values read with UDS 22, only when the matching mode 01 PID
  * (5C oil, 78 EGT) is missing */
-enum { OBD_UDS_OIL, OBD_UDS_EGT, OBD_UDS_N };
+enum { OBD_UDS_OIL, OBD_UDS_EGT,
+       OBD_UDS_DPF_DP, OBD_UDS_DPF_SOOT, OBD_UDS_DPF_SOOT_MEAS,
+       OBD_UDS_DPF_DIST, OBD_UDS_DPF_TEMP, OBD_UDS_N };
 enum { UDS_UNKNOWN, UDS_OK, UDS_REFUSED };
 extern const uint16_t obd_uds_did[OBD_UDS_N];
 
@@ -49,6 +57,13 @@ typedef struct {
     float    baro_kpa;            /* from PID 33, 0 until read */
     float    egt[4];              /* PID 78 sensors, NAN when absent */
     uint8_t  uds[OBD_UDS_N];      /* UDS_*, per VW measuring value */
+    struct {                      /* particulate filter, NAN until read */
+        float dp_hpa;             /* differential pressure */
+        float soot_g;             /* soot mass, calculated */
+        float soot_meas_g;        /* soot mass, measured */
+        float dist_km;            /* since the last regeneration */
+        float temp_c;             /* simulated surface temperature */
+    } dpf;
 } obd_status_t;
 
 extern volatile obd_status_t g_obd;

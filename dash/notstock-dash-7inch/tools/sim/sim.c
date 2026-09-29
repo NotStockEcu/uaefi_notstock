@@ -102,8 +102,14 @@ bool obd_send(uint32_t id, const uint8_t d[8])
     }
     if (s_fake_ecu >= 2 && id == 0x7E0 && d[1] == 0x22) {
         uint16_t did = (uint16_t)(d[2] << 8 | d[3]);
-        uint16_t raw = did == 0x11BE ? 0x0BC2 : did == 0x10FB ? 0x0FCB : 0;
-        if (raw && s_fake_ecu == 2) {
+        /* values from the car's own log: oil, EGT, then the DPF */
+        uint16_t raw = did == 0x11BE ? 0x0BC2 : did == 0x10FB ? 0x0FCB :
+                       did == 0x14F5 ? 0x0005 : did == 0x114F ? 0x04CC :
+                       did == 0x114E ? 0xFEB4 : did == 0x1044 ? 0x0E34 : 0;
+        if (did == 0x1156 && s_fake_ecu == 2) {
+            const uint8_t p[] = { 0x62, 0x11, 0x56, 0x00, 0x04, 0x30, 0x23 };
+            sf(0x7E8, 7, p);
+        } else if (raw && s_fake_ecu == 2) {
             const uint8_t p[] = { 0x62, d[2], d[3], raw >> 8, raw & 0xFF };
             sf(0x7E8, 5, p);
         } else {

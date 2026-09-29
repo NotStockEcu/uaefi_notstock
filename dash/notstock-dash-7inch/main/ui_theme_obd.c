@@ -106,7 +106,7 @@ static lv_obj_t *build(void)
 
     stats_lbl = ui_label(scr, &dash_lbl_13, C_GREY, "", 14, 438, 772,
                          LV_TEXT_ALIGN_LEFT);
-    pids_lbl = ui_label(scr, &dash_lbl_13, C_DIM, "", 14, 458, 640,
+    pids_lbl = ui_label(scr, &dash_lbl_13, C_DIM, "", 14, 458, 772,
                         LV_TEXT_ALIGN_LEFT);
     lv_label_set_long_mode(pids_lbl, LV_LABEL_LONG_CLIP);
     lv_obj_set_height(pids_lbl, 18);
@@ -199,6 +199,31 @@ static void update(const dash_data_t *d, int link)
                  (unsigned long)g_obd.timeouts, (unsigned long)g_obd.negative,
                  g_obd.baro_kpa);
         ui_text(stats_lbl, buf);
+
+        /* once the particulate filter answers, its line replaces the PID
+         * list: that one has done its job when the link came up */
+        bool dpf = false;
+        for (int i = OBD_UDS_DPF_DP; i <= OBD_UDS_DPF_TEMP; i++) {
+            dpf |= g_obd.uds[i] == UDS_OK;
+        }
+        if (dpf) {
+            char f[5][16];
+            const float v[5] = { g_obd.dpf.soot_g, g_obd.dpf.soot_meas_g,
+                                 g_obd.dpf.dp_hpa, g_obd.dpf.dist_km,
+                                 g_obd.dpf.temp_c };
+            const char *fm[5] = { "%.2f g", "%.2f g", "%.0f hPa", "%.1f km",
+                                  "%.0f \xC2\xB0" "C" };
+            for (int i = 0; i < 5; i++) {
+                if (isnan(v[i])) snprintf(f[i], sizeof f[i], "--");
+                else             snprintf(f[i], sizeof f[i], fm[i], v[i]);
+            }
+            snprintf(buf, sizeof buf,
+                     "DPF  soot %s  (measured %s)   dp %s   since regen %s   "
+                     "filter %s", f[0], f[1], f[2], f[3], f[4]);
+            ui_text(pids_lbl, buf);
+            lv_obj_set_style_text_color(pids_lbl, C_GREY, 0);
+            return;
+        }
 
         int n = snprintf(buf, sizeof buf, "PIDs:");
         for (int p = 1; p <= 0xA0 && n < (int)sizeof buf - 4; p++) {

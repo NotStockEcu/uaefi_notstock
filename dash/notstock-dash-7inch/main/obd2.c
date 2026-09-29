@@ -19,6 +19,7 @@ bool obd_send(uint32_t id, const uint8_t d[8]);
 #define GIVE_UP_TIMEOUTS   6        /* in a row, before NO_ECU */
 #define BARO_EVERY         40       /* baro changes slowly: every 40th poll */
 #define UDS_GIVE_UP        3        /* unanswered UDS reads before REFUSED */
+#define DPF_EVERY          4        /* DPF values: every 4th round */
 
 volatile obd_status_t g_obd;
 
@@ -39,12 +40,23 @@ static const uint16_t WANT[] = {
     UDS(OBD_UDS_EGT),
     0x0D,   /* speed */
     0x33,   /* barometric pressure (only every BARO_EVERY) */
+    UDS(OBD_UDS_DPF_SOOT),      /* the DPF ones only every DPF_EVERY */
+    UDS(OBD_UDS_DPF_DP),
+    UDS(OBD_UDS_DPF_SOOT_MEAS),
+    UDS(OBD_UDS_DPF_DIST),
+    UDS(OBD_UDS_DPF_TEMP),
 };
 
 const uint16_t obd_uds_did[OBD_UDS_N] = {
     [OBD_UDS_OIL] = 0x11BE,
     [OBD_UDS_EGT] = 0x10FB,
+    [OBD_UDS_DPF_DP] = 0x14F5,
+    [OBD_UDS_DPF_SOOT] = 0x114F,
+    [OBD_UDS_DPF_SOOT_MEAS] = 0x114E,
+    [OBD_UDS_DPF_DIST] = 0x1156,
+    [OBD_UDS_DPF_TEMP] = 0x1044,
 };
+/* the mode 01 PID a value stands in for, 0: none, always read over UDS */
 static const uint8_t UDS_PID[OBD_UDS_N] = {
     [OBD_UDS_OIL] = 0x5C,
     [OBD_UDS_EGT] = 0x78,
@@ -80,7 +92,8 @@ bool obd_supported(uint8_t pid)
 
 bool obd_uds_used(int i)
 {
-    return g_obd.state == OBD_POLLING && !obd_supported(UDS_PID[i]) &&
+    return g_obd.state == OBD_POLLING &&
+           (UDS_PID[i] == 0 || !obd_supported(UDS_PID[i])) &&
            g_obd.uds[i] != UDS_REFUSED;
 }
 
@@ -90,6 +103,8 @@ void obd_reset(void)
     memset(&z, 0, sizeof z);
     z.state = OBD_SCANNING;
     for (int i = 0; i < 4; i++) z.egt[i] = NAN;
+    z.dpf.dp_hpa = z.dpf.soot_g = z.dpf.soot_meas_g = NAN;
+    z.dpf.dist_km = z.dpf.temp_c = NAN;
     memcpy((void *)&g_obd, &z, sizeof z);
     s_deadline = 0;
     s_next = 0;
@@ -137,7 +152,11 @@ static void request_uds(uint32_t id, int i, int64_t now)
 
 static bool want_now(uint16_t w)
 {
-    if (w & 0x100) return obd_uds_used(w & 0xFF);
+    if (w & 0x100) {
+        int i = w & 0xFF;
+        if (UDS_PID[i] == 0 && s_polls % DPF_EVERY) return false;
+        return obd_uds_used(i);
+    }
     uint8_t pid = (uint8_t)w;
     if (!obd_supported(pid)) return false;
     if (pid == 0x0B && obd_supported(0x87)) return false;
@@ -167,9 +186,23 @@ static void answer_uds(const uint8_t *d, int n, int64_t now)
     uint16_t did = (uint16_t)(d[1] << 8 | d[2]);
     for (int i = 0; i < OBD_UDS_N; i++) {
         if (did != obd_uds_did[i]) continue;
-        float c = ((d[3] << 8) | d[4]) / 10.0f - 273.15f;   /* 0.1 K */
-        if (i == OBD_UDS_OIL) g_dash.oilt = c;
-        else                  g_dash.egt = c;
+        uint16_t u = (uint16_t)((d[3] << 8) | d[4]);
+        float kelvin = u / 10.0f - 273.15f;              /* 0.1 K */
+        switch (i) {
+        case OBD_UDS_OIL:       g_dash.oilt = kelvin; break;
+        case OBD_UDS_EGT:       g_dash.egt = kelvin; break;
+        case OBD_UDS_DPF_TEMP:  g_obd.dpf.temp_c = kelvin; break;
+        case OBD_UDS_DPF_DP:    g_obd.dpf.dp_hpa = (int16_t)u; break;
+        case OBD_UDS_DPF_SOOT:  g_obd.dpf.soot_g = (int16_t)u / 100.0f; break;
+        case OBD_UDS_DPF_SOOT_MEAS:
+            g_obd.dpf.soot_meas_g = (int16_t)u / 100.0f;
+            break;
+        case OBD_UDS_DPF_DIST:
+            if (n < 7) continue;
+            g_obd.dpf.dist_km = (((uint32_t)d[3] << 24) | ((uint32_t)d[4] << 16) |
+                                 ((uint32_t)d[5] << 8) | d[6]) / 1000.0f;
+            break;
+        }
         g_obd.uds[i] = UDS_OK;
         s_uds_miss[i] = 0;
         if (i == s_pending_uds) answered(now);
