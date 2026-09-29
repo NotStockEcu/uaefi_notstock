@@ -116,15 +116,28 @@ static lv_obj_t *build(void)
     return scr;
 }
 
+/* the VW measuring value standing in for a block's PID, -1 for none */
+static int uds_of(int b)
+{
+    if (b == B_OIL) return OBD_UDS_OIL;
+    if (b == B_EGT) return OBD_UDS_EGT;
+    return -1;
+}
+
 static void show_block(int b, float v, bool known)
 {
     uint8_t pid = pid_of(b);
+    int u = uds_of(b);
+    bool scanned = g_obd.state == OBD_POLLING;
+    bool via_uds = u >= 0 && scanned && !obd_supported(pid);
     char buf[16];
-    snprintf(buf, sizeof buf, "PID %02X", pid);
+    if (via_uds) snprintf(buf, sizeof buf, "UDS %04X", obd_uds_did[u]);
+    else         snprintf(buf, sizeof buf, "PID %02X", pid);
     ui_text(tag[b], buf);
 
-    bool scanned = g_obd.state == OBD_POLLING;
-    bool unsupported = scanned && !obd_supported(pid);
+    bool unsupported = scanned && !obd_supported(pid) &&
+                       (!via_uds || g_obd.uds[u] == UDS_REFUSED);
+    if (via_uds && g_obd.uds[u] != UDS_OK) known = false;
     if (unsupported) {
         lv_obj_add_flag(unit_row[b], LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(na[b], LV_OBJ_FLAG_HIDDEN);

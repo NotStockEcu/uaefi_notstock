@@ -67,7 +67,11 @@ int64_t esp_timer_get_time(void) { return s_now_us; }
 /* ------------------------------------------------ fake OBD-II engine ECU */
 /* Roughly what a T5.1 CAAC might offer: MAP on 0x0B but not 0x87, no oil
  * temperature, EGT on 0x78 (a two-frame ISO-TP answer). The gearbox (7E9)
- * answers the functional scan too, and first, to exercise the ECU pick. */
+ * answers the functional scan too, and first, to exercise the ECU pick.
+ * ecu=2 is the real T5.1 CAAC as the car answered: the PID list from the
+ * OBD test screen, no 33 / 5C / 78, oil and EGT only as VW measuring values
+ * over UDS 22 (DIDs 11BE and 10FB, as SNIFF logged them). ecu=3 is the same
+ * ECU refusing the UDS reads. */
 static int s_fake_ecu = 1;
 static struct { uint32_t id; uint8_t d[8]; } s_q[32];
 static int s_qn;
@@ -96,8 +100,39 @@ bool obd_send(uint32_t id, const uint8_t d[8])
         q_push(0x7E8, cf);
         return true;
     }
+    if (s_fake_ecu >= 2 && id == 0x7E0 && d[1] == 0x22) {
+        uint16_t did = (uint16_t)(d[2] << 8 | d[3]);
+        uint16_t raw = did == 0x11BE ? 0x0BC2 : did == 0x10FB ? 0x0FCB : 0;
+        if (raw && s_fake_ecu == 2) {
+            const uint8_t p[] = { 0x62, d[2], d[3], raw >> 8, raw & 0xFF };
+            sf(0x7E8, 5, p);
+        } else {
+            const uint8_t n[] = { 0x7F, 0x22, 0x31 };
+            sf(0x7E8, 3, n);
+        }
+        return true;
+    }
     if ((id != 0x7DF && id != 0x7E0) || d[1] != 0x01) return true;
     uint8_t pid = d[2];
+    if (s_fake_ecu >= 2) {
+        uint8_t p[8] = { 0x41, pid };
+        switch (pid) {
+        case 0x00: p[2]=0x98; p[3]=0x3B; p[4]=0xA0; p[5]=0x11; sf(0x7E8, 6, p); break;
+        case 0x20: p[2]=0xB0; p[3]=0x00; p[4]=0x00; p[5]=0x01; sf(0x7E8, 6, p); break;
+        case 0x40: p[2]=0x00; p[3]=0x02; p[4]=0x00; p[5]=0x00; sf(0x7E8, 6, p); break;
+        case 0x05: p[2]=35+40;  sf(0x7E8, 3, p); break;
+        case 0x0F: p[2]=19+40;  sf(0x7E8, 3, p); break;
+        case 0x0B: p[2]=105;    sf(0x7E8, 3, p); break;
+        case 0x0D: p[2]=0;      sf(0x7E8, 3, p); break;
+        case 0x0C: p[2]=(860*4)>>8; p[3]=(860*4)&0xFF; sf(0x7E8, 4, p); break;
+        default: {
+            const uint8_t n[] = { 0x7F, 0x01, 0x12 };
+            sf(0x7E8, 3, n);
+            break;
+        }
+        }
+        return true;
+    }
     if (id == 0x7DF && pid == 0x00) {           /* gearbox is quicker */
         const uint8_t p[] = { 0x41, 0x00, 0x18, 0x00, 0x00, 0x00 };
         sf(0x7E9, 6, p);

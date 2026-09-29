@@ -18,13 +18,15 @@ bool obd_send(uint32_t id, const uint8_t d[8]);
 #define RESCAN_US          2000000  /* after the ECU went silent */
 #define GIVE_UP_TIMEOUTS   6        /* in a row, before NO_ECU */
 #define BARO_EVERY         40       /* baro changes slowly: every 40th poll */
+#define UDS_GIVE_UP        3        /* unanswered UDS reads before REFUSED */
 
 volatile obd_status_t g_obd;
 
 /* What the dash wants, in polling order. 0x0B is skipped when 0x87 (the
  * wide-range MAP) is there: plain 0x0B stops at 255 kPa, which a TDI's boost
  * passes. */
-static const uint8_t WANT[] = {
+#define UDS(i) (0x100 | (i))  /* a WANT entry that is a VW measuring value */
+static const uint16_t WANT[] = {
     0x0C,   /* rpm */
     0x05,   /* coolant */
     0x87,   /* MAP, wide range */
@@ -32,15 +34,28 @@ static const uint8_t WANT[] = {
     0x0F,   /* intake air */
     0x0C,   /* rpm again: it is the liveliest proof the link is up */
     0x5C,   /* oil temperature */
+    UDS(OBD_UDS_OIL),
     0x78,   /* EGT bank 1 */
+    UDS(OBD_UDS_EGT),
     0x0D,   /* speed */
     0x33,   /* barometric pressure (only every BARO_EVERY) */
+};
+
+const uint16_t obd_uds_did[OBD_UDS_N] = {
+    [OBD_UDS_OIL] = 0x11BE,
+    [OBD_UDS_EGT] = 0x10FB,
+};
+static const uint8_t UDS_PID[OBD_UDS_N] = {
+    [OBD_UDS_OIL] = 0x5C,
+    [OBD_UDS_EGT] = 0x78,
 };
 #define N_WANT (sizeof WANT / sizeof WANT[0])
 
 static int64_t s_deadline;        /* reply due by, 0 when nothing in flight */
 static int64_t s_next;            /* earliest time for the next request */
 static uint8_t s_pending;         /* PID in flight */
+static int s_pending_uds = -1;    /* or OBD_UDS_* in flight */
+static int s_uds_miss[OBD_UDS_N]; /* unanswered reads in a row */
 static int s_scan_page;           /* 0..7 while scanning: PID 0x00 + 0x20*page */
 static int s_poll;                /* index into WANT */
 static int s_polls;
@@ -63,6 +78,12 @@ bool obd_supported(uint8_t pid)
     return (g_obd.supported[i] >> b) & 1;
 }
 
+bool obd_uds_used(int i)
+{
+    return g_obd.state == OBD_POLLING && !obd_supported(UDS_PID[i]) &&
+           g_obd.uds[i] != UDS_REFUSED;
+}
+
 void obd_reset(void)
 {
     obd_status_t z;
@@ -77,6 +98,8 @@ void obd_reset(void)
     s_polls = 0;
     s_silent = 0;
     s_len = s_have = 0;
+    s_pending_uds = -1;
+    memset(s_uds_miss, 0, sizeof s_uds_miss);
 }
 
 static void request(uint32_t id, uint8_t pid, int64_t now)
@@ -90,12 +113,32 @@ static void request(uint32_t id, uint8_t pid, int64_t now)
     g_obd.tx++;
     g_obd.last_pid = pid;
     s_pending = pid;
+    s_pending_uds = -1;
     s_deadline = now + REPLY_TIMEOUT_US;
     s_len = s_have = 0;
 }
 
-static bool want_now(uint8_t pid)
+/* UDS read data by identifier, a VW measuring value */
+static void request_uds(uint32_t id, int i, int64_t now)
 {
+    uint16_t did = obd_uds_did[i];
+    const uint8_t d[8] = { 0x03, 0x22, (uint8_t)(did >> 8), (uint8_t)did,
+                           0x55, 0x55, 0x55, 0x55 };
+    if (!obd_send(id, d)) {
+        s_next = now + GAP_US;
+        return;
+    }
+    g_obd.tx++;
+    s_pending = 0;
+    s_pending_uds = i;
+    s_deadline = now + REPLY_TIMEOUT_US;
+    s_len = s_have = 0;
+}
+
+static bool want_now(uint16_t w)
+{
+    if (w & 0x100) return obd_uds_used(w & 0xFF);
+    uint8_t pid = (uint8_t)w;
     if (!obd_supported(pid)) return false;
     if (pid == 0x0B && obd_supported(0x87)) return false;
     if (pid == 0x33 && g_obd.baro_kpa > 0 && s_polls % BARO_EVERY) return false;
@@ -108,9 +151,36 @@ static void update_boost(void)
     g_dash.boost = (g_dash.map - baro) / 100.0f;
 }
 
+static void answered(int64_t now)
+{
+    g_obd.rx++;
+    g_dash.last_rx_us = now;
+    s_silent = 0;
+    s_deadline = 0;
+    s_next = now + GAP_US;
+}
+
+/* UDS answer: d[0] = 0x62, d[1..2] = DID, data after */
+static void answer_uds(const uint8_t *d, int n, int64_t now)
+{
+    if (n < 5) return;
+    uint16_t did = (uint16_t)(d[1] << 8 | d[2]);
+    for (int i = 0; i < OBD_UDS_N; i++) {
+        if (did != obd_uds_did[i]) continue;
+        float c = ((d[3] << 8) | d[4]) / 10.0f - 273.15f;   /* 0.1 K */
+        if (i == OBD_UDS_OIL) g_dash.oilt = c;
+        else                  g_dash.egt = c;
+        g_obd.uds[i] = UDS_OK;
+        s_uds_miss[i] = 0;
+        if (i == s_pending_uds) answered(now);
+        else { g_obd.rx++; g_dash.last_rx_us = now; }
+    }
+}
+
 /* One complete mode 01 answer: d[0] = 0x41, d[1] = PID, data after. */
 static void answer(const uint8_t *d, int n, int64_t now)
 {
+    if (n >= 1 && d[0] == 0x62) { answer_uds(d, n, now); return; }
     if (n < 2 || d[0] != 0x41) return;
     uint8_t pid = d[1];
     const uint8_t *a = d + 2;
@@ -161,12 +231,12 @@ static void answer(const uint8_t *d, int n, int64_t now)
         }
     }
 
-    g_obd.rx++;
-    g_dash.last_rx_us = now;
-    s_silent = 0;
-    if (pid == s_pending) {
-        s_deadline = 0;
-        s_next = now + GAP_US;
+    if (pid == s_pending && s_pending_uds < 0) {
+        answered(now);
+    } else {
+        g_obd.rx++;
+        g_dash.last_rx_us = now;
+        s_silent = 0;
     }
 }
 
@@ -188,7 +258,15 @@ void obd_frame(uint32_t id, const uint8_t *d, int len, int64_t now_us)
         int n = d[0] & 0x0F;
         if (n > len - 1) n = len - 1;
         if (n >= 3 && d[1] == 0x7F) {              /* negative response */
+            if (d[3] == 0x78) {                    /* busy, answer follows */
+                s_deadline = now_us + REPLY_TIMEOUT_US;
+                return;
+            }
             g_obd.negative++;
+            if (d[2] == 0x22 && s_pending_uds >= 0) {
+                g_obd.uds[s_pending_uds] = UDS_REFUSED;
+            }
+            s_silent = 0;
             s_deadline = 0;
             s_next = now_us + GAP_US;
             return;
@@ -229,6 +307,10 @@ void obd_tick(int64_t now)
         s_deadline = 0;
         g_obd.timeouts++;
         s_silent++;
+        if (s_pending_uds >= 0 &&
+            ++s_uds_miss[s_pending_uds] >= UDS_GIVE_UP) {
+            g_obd.uds[s_pending_uds] = UDS_REFUSED;
+        }
         if (g_obd.state == OBD_SCANNING && s_scan_page > 0) {
             s_scan_page--;           /* ask for the same page again */
         }
@@ -264,11 +346,13 @@ void obd_tick(int64_t now)
 
     /* polling: next wanted PID that is supported */
     for (int tries = 0; tries < (int)N_WANT; tries++) {
-        uint8_t pid = WANT[s_poll];
+        uint16_t w = WANT[s_poll];
         s_poll = (s_poll + 1) % N_WANT;
         if (s_poll == 0) s_polls++;
-        if (want_now(pid)) {
-            request(g_obd.ecu_id ? g_obd.ecu_id - 8u : OBD_REQ_ENGINE, pid, now);
+        if (want_now(w)) {
+            uint32_t id = g_obd.ecu_id ? g_obd.ecu_id - 8u : OBD_REQ_ENGINE;
+            if (w & 0x100) request_uds(id, w & 0xFF, now);
+            else           request(id, (uint8_t)w, now);
             return;
         }
     }

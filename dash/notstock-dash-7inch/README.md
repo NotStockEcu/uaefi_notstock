@@ -40,10 +40,10 @@ any OBD scan tool, and shows a plain test screen instead of the selected look:
 | Block | OBD-II PID | Notes |
 | --- | --- | --- |
 | WATER | 05 | |
-| OIL | 5C | many VW ECUs do not offer it (the T5.1 does not): the block then says NOT SUPPORTED |
+| OIL | 5C, else VW UDS 22 11BE | the T5.1 has no 5C: its oil temperature comes as a VW measuring value |
 | BOOST | 87, else 0B, minus baro 33 | 0B stops at 255 kPa absolute, 87 does not |
 | INTAKE | 0F | |
-| EXHAUST | 78 | hottest of the bank 1 sensors; a two-frame ISO-TP answer |
+| EXHAUST | 78, else VW UDS 22 10FB | 78: hottest bank 1 sensor, a two-frame ISO-TP answer; T5.1: EGT sensor 1 |
 | ENGINE | 0C, 0D | rpm and speed: the quickest proof the data is live |
 
 Top line: SCANNING PIDs, LINK OK - POLLING, NO ECU ANSWER (retried every
@@ -74,8 +74,20 @@ terminated at one end.
 First result on the T5.1 CAAC (EDC17, ECU 7E8): supported PIDs 01 04 05 0B
 0C 0D 0F 10 11 13 1C 21 23 24 4F. Water, intake, boost (0B, no baro 33, so
 101.3 kPa is assumed) and rpm / speed work; oil (5C) and EGT (78) are not
-offered over OBD-II. They exist only as VW measuring values, read with UDS
-service 0x22 and a VW-specific DID, which is what SNIFF is for.
+offered over OBD-II. SNIFF next to VCDS found them as VW measuring values on
+the engine ECU, UDS service 22, both unsigned 16 bit in 0.1 K:
+
+| VCDS | DID | log sample |
+| --- | --- | --- |
+| IDE00196 Engine oil temperature | 11BE | 0x0BC6 = 3014 -> 28.2 degC (VCDS 28.3) |
+| IDE02229 Exhaust gas temperature sensor 1 | 10FB | 0x0FE1 = 4065 -> 133.4 degC, rising at idle |
+
+The dash polls them in the same round robin as the PIDs whenever the PID is
+missing; the tile then says `UDS 11BE` / `UDS 10FB` instead of the PID. An
+ECU that refuses a DID (7F 22) or ignores it three times in a row gets the
+block marked NOT SUPPORTED.
+
+![obd-t5](preview/obd-t5.png)
 
 ## SNIFF mode (finding the VW measuring values)
 

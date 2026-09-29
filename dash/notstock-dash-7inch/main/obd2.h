@@ -10,6 +10,12 @@
  * request in flight at a time. Answers longer than one frame (PID 78, EGT)
  * are reassembled with ISO-TP flow control.
  *
+ * What mode 01 does not offer is read as a VW measuring value with UDS
+ * "read data by identifier" (22 DID -> 62 DID data), same request and answer
+ * IDs. The DIDs were found with SNIFF while VCDS read them from a T5.1 CAAC
+ * (EDC17): 11BE engine oil temperature (IDE00196), 10FB exhaust gas
+ * temperature sensor 1 (IDE02229), both unsigned 16 bit, 0.1 K.
+ *
  * Decoded values go into g_dash like the rusEFI decoder's, so the LOG screen
  * and the link state work unchanged.
  */
@@ -28,6 +34,12 @@ typedef enum {
     OBD_NO_ECU,        /* nobody answered; the scan is retried */
 } obd_state_t;
 
+/* VW measuring values read with UDS 22, only when the matching mode 01 PID
+ * (5C oil, 78 EGT) is missing */
+enum { OBD_UDS_OIL, OBD_UDS_EGT, OBD_UDS_N };
+enum { UDS_UNKNOWN, UDS_OK, UDS_REFUSED };
+extern const uint16_t obd_uds_did[OBD_UDS_N];
+
 typedef struct {
     obd_state_t state;
     uint32_t supported[8];        /* PIDs 0x01..0x100, see obd_supported */
@@ -36,12 +48,16 @@ typedef struct {
     uint8_t  last_pid;
     float    baro_kpa;            /* from PID 33, 0 until read */
     float    egt[4];              /* PID 78 sensors, NAN when absent */
+    uint8_t  uds[OBD_UDS_N];      /* UDS_*, per VW measuring value */
 } obd_status_t;
 
 extern volatile obd_status_t g_obd;
 
 /* true when the scan found this PID supported */
 bool obd_supported(uint8_t pid);
+
+/* true when VW measuring value i (OBD_UDS_*) is read instead of its PID */
+bool obd_uds_used(int i);
 
 /* Called by the CAN task: every received frame, and on every loop turn to
  * send the next request when one is due. obd_reset starts over (protocol
