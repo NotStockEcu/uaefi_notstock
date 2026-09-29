@@ -40,7 +40,7 @@ any OBD scan tool, and shows a plain test screen instead of the selected look:
 | Block | OBD-II PID | Notes |
 | --- | --- | --- |
 | WATER | 05 | |
-| OIL | 5C | many VW ECUs do not offer it: the block then says NOT SUPPORTED |
+| OIL | 5C | many VW ECUs do not offer it (the T5.1 does not): the block then says NOT SUPPORTED |
 | BOOST | 87, else 0B, minus baro 33 | 0B stops at 255 kPa absolute, 87 does not |
 | INTAKE | 0F | |
 | EXHAUST | 78 | hottest of the bank 1 sensors; a two-frame ISO-TP answer |
@@ -67,12 +67,37 @@ runs it against a fake T5-like ECU (`python tools/preview.py proto=1`).
 | 4 or 5 | ground |
 | 16 | permanent +12 V; the dash then stays on with the ignition off, so use a switched 12 V for the 5 V buck if it lives in the car |
 
-**Remove the 120R jumper on the display.** The OBD bus is already terminated
-at both ends inside the car.
+**Keep the 120R jumper on the display.** On the owner's T5.1 nothing
+answered without it: the diagnostic branch behind the gateway is only
+terminated at one end.
 
-If oil or EGT come back NOT SUPPORTED, the ECU only offers them as VW
-measuring values (UDS / VCDS channels), not as OBD-II PIDs. That is the next
-step once the link itself is proven.
+First result on the T5.1 CAAC (EDC17, ECU 7E8): supported PIDs 01 04 05 0B
+0C 0D 0F 10 11 13 1C 21 23 24 4F. Water, intake, boost (0B, no baro 33, so
+101.3 kPa is assumed) and rpm / speed work; oil (5C) and EGT (78) are not
+offered over OBD-II. They exist only as VW measuring values, read with UDS
+service 0x22 and a VW-specific DID, which is what SNIFF is for.
+
+## SNIFF mode (finding the VW measuring values)
+
+Settings menu, **ECU protocol: SNIFF**. The dash sends nothing; it listens
+while VCDS reads the car through the same OBD port (a Y splitter, or the
+dash's CAN H / L spliced onto pins 6 / 14 behind the socket).
+
+![sniff](preview/sniff.png)
+
+- Every frame goes to the serial console as `SNF <seconds> <id> <len>
+  <bytes>`: run `idf.py -p COM4 monitor` on a laptop and save the output.
+- The screen collects every UDS read answer (0x62) by ECU and DID, with the
+  data bytes, the first two as a number, a count and the age. In VCDS open
+  the engine (01) or the cluster (17), Advanced Measuring Values, pick oil
+  temperature or an exhaust gas temperature: the row that changes when that
+  value changes is its DID.
+- The top lines list every CAN ID seen. 7E0/7E8 or 714/77E pairs mean UDS
+  on ISO-TP; IDs around 0x200 and 0x300 mean the ECU still speaks KWP2000 on
+  VW TP2.0, which the table does not decode but the console log keeps.
+
+`main/sniff.c` has no ESP-IDF in it; `python tools/preview.py proto=2` feeds
+it fake VCDS traffic.
 
 ## Looks
 

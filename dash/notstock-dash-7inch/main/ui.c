@@ -922,11 +922,13 @@ static const theme_t *const looks[LOOK_COUNT] = {
     [LOOK_LONK]     = &theme_lonk,
     [LOOK_HILL]     = &theme_hill,
     [LOOK_OBD]      = &theme_obd,
+    [LOOK_SNIFF]    = &theme_sniff,
 };
 
 static int wanted_look(void)
 {
     if (g_set.protocol == PROTO_OBD2) return LOOK_OBD;
+    if (g_set.protocol == PROTO_SNIFF) return LOOK_SNIFF;
     return g_set.look < LOOK_OBD ? g_set.look : LOOK_NOTSTOCK;
 }
 

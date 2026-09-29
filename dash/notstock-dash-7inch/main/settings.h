@@ -38,8 +38,9 @@ typedef struct {
 
 enum { FLASH_AREA_SCREEN, FLASH_AREA_DIAL };
 /* what is on the CAN bus: rusEFI's verbose broadcast, or an OBD-II ECU the
- * dash has to ask (VW T5.1 on the OBD port, see obd2.h) */
-enum { PROTO_RUSEFI, PROTO_OBD2 };
+ * dash has to ask (VW T5.1 on the OBD port, see obd2.h), or SNIFF: listen
+ * to what a tester like VCDS asks for (sniff.h) */
+enum { PROTO_RUSEFI, PROTO_OBD2, PROTO_SNIFF };
 enum { FLASH_COLOUR_RED, FLASH_COLOUR_WHITE, FLASH_COLOUR_BLUE,
        FLASH_COLOUR_AMBER };
 

@@ -40,6 +40,7 @@
 #include "ui_menu.h"
 #include "ui_log.h"
 #include "obd2.h"
+#include "sniff.h"
 void ui_log_sim_hold(int point);
 
 #define W 800
@@ -126,6 +127,32 @@ bool obd_send(uint32_t id, const uint8_t d[8])
     }
     return true;
 }
+/* ------------------------------------------------- fake VCDS for SNIFF */
+/* What VCDS reading two engine values and one cluster value might look
+ * like: single and multi-frame 0x62 answers, one refusal. */
+static void fake_tester(int step)
+{
+    static const struct { uint32_t id; uint8_t d[8]; } T[] = {
+        { 0x7E0, { 0x03, 0x22, 0xF4, 0x0C, 0x55, 0x55, 0x55, 0x55 } },
+        { 0x7E8, { 0x05, 0x62, 0xF4, 0x0C, 0x0D, 0x70, 0xAA, 0xAA } },
+        { 0x7E0, { 0x03, 0x22, 0x11, 0xBD, 0x55, 0x55, 0x55, 0x55 } },
+        { 0x7E8, { 0x10, 0x09, 0x62, 0x11, 0xBD, 0x0B, 0x9A, 0x0C } },
+        { 0x7E0, { 0x30, 0x00, 0x00, 0x55, 0x55, 0x55, 0x55, 0x55 } },
+        { 0x7E8, { 0x21, 0x40, 0x0A, 0xF1, 0xAA, 0xAA, 0xAA, 0xAA } },
+        { 0x714, { 0x03, 0x22, 0x22, 0x03, 0x55, 0x55, 0x55, 0x55 } },
+        { 0x77E, { 0x05, 0x62, 0x22, 0x03, 0x00, 0x7B, 0xAA, 0xAA } },
+        { 0x7E0, { 0x03, 0x22, 0x12, 0x34, 0x55, 0x55, 0x55, 0x55 } },
+        { 0x7E8, { 0x03, 0x7F, 0x22, 0x31, 0xAA, 0xAA, 0xAA, 0xAA } },
+    };
+    const int n = sizeof T / sizeof T[0];
+    int i = step % n;
+    uint8_t d[8];
+    memcpy(d, T[i].d, 8);
+    if (T[i].id == 0x77E) d[5] = (uint8_t)(0x70 + step / n % 16); /* warming */
+    sniff_frame(T[i].id, d, 8, s_now_us);
+    g_dash.last_rx_us = s_now_us;
+}
+
 bool rusefi_can_link_ok(void)
 {
     if (g_set.protocol) {
@@ -258,7 +285,10 @@ int main(int argc, char **argv)
     g_set.night = night != 0;
     g_set.look = (uint8_t)look;
     g_set.protocol = (uint8_t)proto;
-    if (proto) {
+    if (proto == PROTO_SNIFF) {
+        sniff_reset();
+        g_dash.last_rx_us = 0;
+    } else if (proto) {
         obd_reset();
         g_dash.last_rx_us = 0;
     }
@@ -284,7 +314,13 @@ int main(int argc, char **argv)
         if (t >= 1.0f && t < 1.0f + STEP_MS / 1000.0f) {
             for (int j = 0; j < 3; j++) *peak_field[j] = real[j];
         }
-        if (proto) {
+        if (proto == PROTO_SNIFF) {
+            for (int k = 0; k < STEP_MS / 5; k++) {
+                s_now_us += 5000;
+                static int step;
+                fake_tester(step++);
+            }
+        } else if (proto) {
             /* the CAN task runs every 5 ms on the panel */
             for (int k = 0; k < STEP_MS / 5; k++) {
                 s_now_us += 5000;

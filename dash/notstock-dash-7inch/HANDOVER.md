@@ -101,6 +101,8 @@ main/
   ui_log.c/h      LOG screen: 30 s ring buffer at 10 Hz, lv_chart, 8 channels
   obd2.c/h        OBD-II mode 01 client (VW T5.1 test), ISO-TP, no ESP-IDF
   ui_theme_obd.c  OBD-II test screen, forced while the protocol is OBD-II
+  sniff.c/h        SNIFF mode: listen to VCDS, log frames, table of UDS 0x62 answers
+  ui_theme_sniff.c SNIFF screen, forced while the protocol is SNIFF
   ui_theme.h      look interface (build, update, flash disc) + shared helpers
   ui_theme_emo.c, ui_theme_lonk.c, ui_theme_hill.c   the other looks
   theme_art*.c/h  generated: their backgrounds, LONK lit band, HILL needle
@@ -223,8 +225,15 @@ exactly on its baked grey segment.
 `obd_frame()`, and `obd_tick()` sends the next request. `obd2.c` has no
 ESP-IDF in it; it sends through `obd_send()`, which the sim implements as a
 fake T5-like ECU (gearbox answers the scan first, no PID 5C, EGT as a
-two-frame ISO-TP answer, MAP on 0B only). Built for the owner's VW T5.1
-CAAC on the OBD port; not yet tried on the car.
+two-frame ISO-TP answer, MAP on 0B only). Tried on the owner's VW T5.1
+CAAC: link works with the display's 120R fitted; oil and EGT are not OBD-II
+PIDs there (list in README).
+
+**SNIFF mode** (third ECU protocol) is how the VW DIDs for oil and EGT get
+found: the dash listens while VCDS reads measuring values, logs every frame
+to the console (`SNF ...`) and tabulates UDS 0x62 answers by ECU and DID
+(`sniff.c`, `ui_theme_sniff.c`). Next step once the DIDs are known: poll
+them with 0x22 from `obd2.c` next to the mode 01 PIDs.
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still

@@ -42,6 +42,7 @@ SCENES = {
     "look-hill": "look=3 rpm=4300 speed=112 clt=88 iat=31 boost=0.62 afr=12.9 map=163",
     "obd": "proto=1",
     "obd-noecu": "proto=1 ecu=0",
+    "sniff": "proto=2",
     "menu": "screen=menu",
     "log": "screen=log demo=1 t=31",
     "log-hold": "screen=log demo=1 t=31 hold=190",

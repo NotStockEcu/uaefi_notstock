@@ -10,6 +10,7 @@
 
 #include "rusefi_can.h"
 #include "obd2.h"
+#include "sniff.h"
 #include "board.h"
 #include "settings.h"
 
@@ -135,9 +136,15 @@ static void can_task(void *arg)
         /* protocol can change from the menu at any time */
         if (g_set.protocol != proto) {
             proto = g_set.protocol;
+            g_obd.state = OBD_IDLE;
             if (proto == PROTO_OBD2) {
                 obd_reset();
                 ESP_LOGI(TAG, "protocol OBD-II, polling the engine ECU");
+            } else if (proto == PROTO_SNIFF) {
+                sniff_reset();
+                sniff_echo = true;
+                ESP_LOGI(TAG, "SNIFF: listening only, every frame printed as "
+                              "SNF <s> <id> <len> <bytes>");
             } else {
                 g_obd.state = OBD_IDLE;
                 ESP_LOGI(TAG, "protocol rusEFI verbose CAN");
@@ -149,6 +156,11 @@ static void can_task(void *arg)
             if (proto == PROTO_OBD2) {
                 obd_frame(msg.identifier, msg.data, msg.data_length_code,
                           esp_timer_get_time());
+            } else if (proto == PROTO_SNIFF) {
+                /* never transmits: only the ACK bit, like any node */
+                sniff_frame(msg.identifier, msg.data, msg.data_length_code,
+                            esp_timer_get_time());
+                g_dash.last_rx_us = esp_timer_get_time();
             } else {
                 decode(&msg);
             }
@@ -176,7 +188,7 @@ void rusefi_can_start(void)
      * OBD-II it sends one request at a time, hence the small TX queue. */
     twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
         PIN_TWAI_TX, PIN_TWAI_RX, TWAI_MODE_NORMAL);
-    g.rx_queue_len = 32;
+    g.rx_queue_len = 64;          /* SNIFF prints each frame, give it slack */
     g.tx_queue_len = 4;
 
 #if CAN_BITRATE_500
