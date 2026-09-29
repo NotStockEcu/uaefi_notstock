@@ -33,9 +33,13 @@ typedef struct {
     bool     demo;              /* run off the synthetic generator */
     uint8_t  log_mask;          /* LOG screen channels shown, bit per channel */
     uint8_t  look;              /* LOOK_*, see ui_theme.h */
+    uint8_t  protocol;          /* PROTO_* */
 } settings_t;
 
 enum { FLASH_AREA_SCREEN, FLASH_AREA_DIAL };
+/* what is on the CAN bus: rusEFI's verbose broadcast, or an OBD-II ECU the
+ * dash has to ask (VW T5.1 on the OBD port, see obd2.h) */
+enum { PROTO_RUSEFI, PROTO_OBD2 };
 enum { FLASH_COLOUR_RED, FLASH_COLOUR_WHITE, FLASH_COLOUR_BLUE,
        FLASH_COLOUR_AMBER };
 

@@ -608,6 +608,8 @@ static void demo_fill(dash_data_t *d)
     d->injduty = clampf(rpm / 8000.0f * 70.0f + boost * 12.0f, 0, 100);
     d->timing  = 32.0f - clampf(boost, 0, 2) * 9.0f - rpm / 8000.0f * 6.0f;
     d->lambda  = d->afr / 14.7f;
+    d->oilt    = 95.0f + 7.0f * sinf(t / 13.0f);
+    d->egt     = 320.0f + 420.0f * clampf(rpm / 7500.0f, 0, 1);
 }
 
 /* ------------------------------------------------------------- alarm flash */
@@ -919,11 +921,13 @@ static const theme_t *const looks[LOOK_COUNT] = {
     [LOOK_EMO]      = &theme_emo,
     [LOOK_LONK]     = &theme_lonk,
     [LOOK_HILL]     = &theme_hill,
+    [LOOK_OBD]      = &theme_obd,
 };
 
 static int wanted_look(void)
 {
-    return g_set.look < LOOK_COUNT ? g_set.look : LOOK_NOTSTOCK;
+    if (g_set.protocol == PROTO_OBD2) return LOOK_OBD;
+    return g_set.look < LOOK_OBD ? g_set.look : LOOK_NOTSTOCK;
 }
 
 static const theme_t *cur_theme(void)

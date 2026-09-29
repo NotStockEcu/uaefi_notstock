@@ -6,7 +6,10 @@
  *               PACK_MULT_VOLTAGE 1000, PACK_MULT_PERCENT 100
  * All frames little-endian, 8 bytes, 11-bit IDs.
  */
+#include <string.h>
+
 #include "rusefi_can.h"
+#include "obd2.h"
 #include "board.h"
 #include "settings.h"
 
@@ -87,6 +90,13 @@ static void decode(const twai_message_t *m)
         g_dash.vbat = u16(d, 6) / MULT_VOLTAGE;
         break;
 
+    case 9:     /* Egts: 8 sensors, 5 degC per bit; show the hottest */
+        g_dash.egt = 0;
+        for (int i = 0; i < 8; i++) {
+            if (d[i] * 5.0f > g_dash.egt) g_dash.egt = d[i] * 5.0f;
+        }
+        break;
+
     case 7:     /* Fueling3 */
         g_dash.lambda = u16(d, 0) / MULT_LAMBDA;
         g_dash.afr    = g_dash.lambda * set_stoich();
@@ -106,13 +116,44 @@ bool rusefi_can_link_ok(void)
     return t != 0 && (esp_timer_get_time() - t) < LINK_TIMEOUT_US;
 }
 
+/* OBD-II requests go out through here, see obd2.c */
+bool obd_send(uint32_t id, const uint8_t d[8])
+{
+    twai_message_t m = {
+        .identifier = id,
+        .data_length_code = 8,
+    };
+    memcpy(m.data, d, 8);
+    return twai_transmit(&m, 0) == ESP_OK;
+}
+
 static void can_task(void *arg)
 {
     twai_message_t msg;
+    int proto = -1;
     while (1) {
-        if (twai_receive(&msg, pdMS_TO_TICKS(200)) == ESP_OK) {
-            decode(&msg);
+        /* protocol can change from the menu at any time */
+        if (g_set.protocol != proto) {
+            proto = g_set.protocol;
+            if (proto == PROTO_OBD2) {
+                obd_reset();
+                ESP_LOGI(TAG, "protocol OBD-II, polling the engine ECU");
+            } else {
+                g_obd.state = OBD_IDLE;
+                ESP_LOGI(TAG, "protocol rusEFI verbose CAN");
+            }
         }
+
+        /* short wait: in OBD-II mode the loop also paces the requests */
+        if (twai_receive(&msg, pdMS_TO_TICKS(5)) == ESP_OK && !msg.rtr) {
+            if (proto == PROTO_OBD2) {
+                obd_frame(msg.identifier, msg.data, msg.data_length_code,
+                          esp_timer_get_time());
+            } else {
+                decode(&msg);
+            }
+        }
+        if (proto == PROTO_OBD2) obd_tick(esp_timer_get_time());
 
         /* A stuck bus latches the controller into bus-off. Recover so the
          * dash comes back on its own after a wiring glitch. */
@@ -131,11 +172,12 @@ void rusefi_can_start(void)
 {
     /* NORMAL mode, not LISTEN_ONLY: on a two-node bus (ECU + dash) the dash
      * has to acknowledge frames, otherwise rusEFI racks up TX errors and
-     * eventually goes bus-off. The dash never queues a transmission. */
+     * eventually goes bus-off. With rusEFI the dash never transmits; with
+     * OBD-II it sends one request at a time, hence the small TX queue. */
     twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
         PIN_TWAI_TX, PIN_TWAI_RX, TWAI_MODE_NORMAL);
     g.rx_queue_len = 32;
-    g.tx_queue_len = 0;
+    g.tx_queue_len = 4;
 
 #if CAN_BITRATE_500
     twai_timing_config_t t = TWAI_TIMING_CONFIG_500KBITS();

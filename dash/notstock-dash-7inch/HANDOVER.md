@@ -99,6 +99,8 @@ main/
   ui.c/h          the dash screen, alarm overlay, hidden menu trigger
   ui_menu.c/h     the settings screen; DASH_VERSION lives in the header
   ui_log.c/h      LOG screen: 30 s ring buffer at 10 Hz, lv_chart, 8 channels
+  obd2.c/h        OBD-II mode 01 client (VW T5.1 test), ISO-TP, no ESP-IDF
+  ui_theme_obd.c  OBD-II test screen, forced while the protocol is OBD-II
   ui_theme.h      look interface (build, update, flash disc) + shared helpers
   ui_theme_emo.c, ui_theme_lonk.c, ui_theme_hill.c   the other looks
   theme_art*.c/h  generated: their backgrounds, LONK lit band, HILL needle
@@ -215,6 +217,14 @@ clipped, so its width follows the rpm and a change redraws a thin strip.
 
 **EMO segments are whole degrees** (272 / 16 = 17), so each `lv_arc` lands
 exactly on its baked grey segment.
+
+**OBD-II mode** (menu, ECU protocol). The CAN task in `rusefi_can.c` checks
+`g_set.protocol` every loop: rusEFI frames go to `decode()`, OBD-II frames to
+`obd_frame()`, and `obd_tick()` sends the next request. `obd2.c` has no
+ESP-IDF in it; it sends through `obd_send()`, which the sim implements as a
+fake T5-like ECU (gearbox answers the scan first, no PID 5C, EGT as a
+two-frame ISO-TP answer, MAP on 0B only). Built for the owner's VW T5.1
+CAAC on the OBD port; not yet tried on the car.
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still

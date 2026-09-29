@@ -29,6 +29,51 @@ flashes is the shift light, see below. The one piece of text that can appear
 is `NO CAN` (red) or `DEMO` (yellow) in the bottom left corner, and only while
 the needles are not showing live data.
 
+## OBD-II mode (VW T5.1 CAAC and other OBD cars)
+
+Settings menu, **ECU protocol: OBD-II**, SAVE & CLOSE. The dash then stops
+listening for rusEFI and instead asks the car's engine ECU for values, like
+any OBD scan tool, and shows a plain test screen instead of the selected look:
+
+![obd](preview/obd.png)
+
+| Block | OBD-II PID | Notes |
+| --- | --- | --- |
+| WATER | 05 | |
+| OIL | 5C | many VW ECUs do not offer it: the block then says NOT SUPPORTED |
+| BOOST | 87, else 0B, minus baro 33 | 0B stops at 255 kPa absolute, 87 does not |
+| INTAKE | 0F | |
+| EXHAUST | 78 | hottest of the bank 1 sensors; a two-frame ISO-TP answer |
+| ENGINE | 0C, 0D | rpm and speed: the quickest proof the data is live |
+
+Top line: SCANNING PIDs, LINK OK - POLLING, NO ECU ANSWER (retried every
+2 s) or DEMO DATA. Bottom lines: the ECU ID that answers (7E8 is the engine),
+request / answer / timeout / refused counters, barometric pressure, and every
+PID the ECU says it supports. That list is the thing to send when a block
+stays empty.
+
+How it talks: 500 kbit, 11-bit IDs, first a functional scan on 0x7DF (01 00,
+01 20, ... which PIDs exist), then one request at a time straight to the
+engine (0x7E0 -> 0x7E8), round robin over the supported PIDs the dash wants,
+about 20 answers a second. The protocol lives in `main/obd2.c`; `tools/sim`
+runs it against a fake T5-like ECU (`python tools/preview.py proto=1`).
+
+### Wiring on the VW (OBD port under the dash)
+
+| OBD pin | To |
+| --- | --- |
+| 6 | CAN H |
+| 14 | CAN L |
+| 4 or 5 | ground |
+| 16 | permanent +12 V; the dash then stays on with the ignition off, so use a switched 12 V for the 5 V buck if it lives in the car |
+
+**Remove the 120R jumper on the display.** The OBD bus is already terminated
+at both ends inside the car.
+
+If oil or EGT come back NOT SUPPORTED, the ECU only offers them as VW
+measuring values (UDS / VCDS channels), not as OBD-II PIDs. That is the next
+step once the link itself is proven.
+
 ## Looks
 
 Settings menu, **Look**: NOTSTOCK (the default, described above), EMO,
@@ -234,7 +279,7 @@ The hit area is invisible apart from three dim dots; nothing about normal
 driving opens it. Values apply live as you adjust them, SAVE & CLOSE writes
 them to NVS so they survive a power cut, DEFAULTS puts everything back.
 
-The build stamp sits bottom right of that screen: `NOT STOCK v3.0` over the
+The build stamp sits bottom right of that screen: `NOT STOCK v3.1` over the
 compile date, the LVGL version and the IDF version. `DASH_VERSION` in
 `main/ui_menu.h` is the bit to bump.
 

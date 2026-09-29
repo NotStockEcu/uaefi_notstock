@@ -40,6 +40,8 @@ SCENES = {
     "look-emo": "look=1 rpm=5650 speed=135 clt=96 iat=38 boost=0.85 afr=12.4 map=186",
     "look-lonk": "look=2 rpm=5500 speed=134 clt=90 iat=34 boost=0.85 afr=12.4 map=186",
     "look-hill": "look=3 rpm=4300 speed=112 clt=88 iat=31 boost=0.62 afr=12.9 map=163",
+    "obd": "proto=1",
+    "obd-noecu": "proto=1 ecu=0",
     "menu": "screen=menu",
     "log": "screen=log demo=1 t=31",
     "log-hold": "screen=log demo=1 t=31 hold=190",

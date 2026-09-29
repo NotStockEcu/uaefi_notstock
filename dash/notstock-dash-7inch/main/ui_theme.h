@@ -14,7 +14,9 @@
 #include "lvgl.h"
 #include "rusefi_can.h"
 
-enum { LOOK_NOTSTOCK, LOOK_EMO, LOOK_LONK, LOOK_HILL, LOOK_COUNT };
+/* LOOK_OBD is not in the menu's Look list: it is the OBD-II test screen,
+ * shown whenever the ECU protocol is OBD-II (ui_theme_obd.c). */
+enum { LOOK_NOTSTOCK, LOOK_EMO, LOOK_LONK, LOOK_HILL, LOOK_OBD, LOOK_COUNT };
 
 /* link state handed to update(): what the "NO CAN / DEMO" text should say */
 enum { LINK_NONE, LINK_OK, LINK_DEMO };
@@ -27,7 +29,7 @@ typedef struct {
     lv_coord_t flash_cx, flash_cy, flash_r;
 } theme_t;
 
-extern const theme_t theme_emo, theme_lonk, theme_hill;
+extern const theme_t theme_emo, theme_lonk, theme_hill, theme_obd;
 
 /* ---- shared helpers, implemented in ui.c ---- */
 lv_obj_t *ui_screen(lv_color_t bg);

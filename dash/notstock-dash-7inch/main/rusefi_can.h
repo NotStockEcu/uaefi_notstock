@@ -17,6 +17,7 @@
 typedef struct {
     float rpm, speed, boost, map, afr, lambda;
     float clt, iat, oilt, oilp, fuelp, vbat, timing, injduty, tps;
+    float egt;                  /* hottest exhaust gas temperature, degC */
     bool fan, cel, revlimit, als;
     int64_t last_rx_us;
 } dash_data_t;
