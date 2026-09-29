@@ -43,7 +43,7 @@ typedef struct {
 /* The shift-flash rows set the flash; the limit rows below them set the
  * level at which that gauge's own readout turns red. */
 static const row_cfg_t rows[] = {
- { "ECU protocol",     "",    T_LIST,   &g_set.protocol,        false, 0, 1, 1, 1, { "rusEFI", "OBD-II" } },
+ { "ECU protocol",     "",    T_LIST,   &g_set.protocol,        false, 0, 2, 1, 1, { "rusEFI", "OBD-II", "SNIFF" } },
  { "Look",             "",    T_LIST,   &g_set.look,            false, 0, 3, 1, 1, { "NOTSTOCK", "EMO", "LONK", "HILL" } },
  { "Shift flash",      "",    T_BOOL,   &g_set.flash_enable,    false, 0, 1, 1, 1, {0} },
  { "Shift flash at",   "rpm", T_INT,    &g_set.rpm_flash,       true,  0, 9000, 100, 1, {0} },
