@@ -17,6 +17,7 @@
  *   switch=a,b,..  after the run, switch to these looks in turn (as SAVE
  *                  in the menu would) and render the last one
  *   proto=1        OBD-II: the test screen, fed by a fake VW T5 engine ECU
+ *   obdpage=1      OBD-II: the DPF page instead of the test blocks
  *                  below through the real obd2.c (ecu=0: nobody answers)
  *   night=1        night mode
  *   area=0|1       shift flash on the whole screen / on the rev counter
@@ -41,6 +42,7 @@
 #include "ui_log.h"
 #include "obd2.h"
 #include "sniff.h"
+#include "ui_theme.h"
 void ui_log_sim_hold(int point);
 
 #define W 800
@@ -106,10 +108,17 @@ bool obd_send(uint32_t id, const uint8_t d[8])
         uint16_t raw = did == 0x11BE ? 0x0BC2 : did == 0x10FB ? 0x0FCB :
                        did == 0x14F5 ? 0x0005 : did == 0x114F ? 0x04CC :
                        did == 0x114E ? 0xFEB4 : did == 0x1044 ? 0x0E34 : 0;
-        if (did == 0x1156 && s_fake_ecu == 2) {
+        /* ecu=4: a full filter; ecu=5: regenerating */
+        if (s_fake_ecu == 4 && did == 0x114F) raw = 2610;          /* 26.1 g */
+        if (s_fake_ecu == 5 && did == 0x114F) raw = 1640;          /* 16.4 g */
+        if (s_fake_ecu == 5 && did == 0x1044) raw = 8760;          /* 603 C */
+        if (did == 0x1156 && s_fake_ecu >= 4) {
             const uint8_t p[] = { 0x62, 0x11, 0x56, 0x00, 0x04, 0x30, 0x23 };
             sf(0x7E8, 7, p);
-        } else if (raw && s_fake_ecu == 2) {
+        } else if (did == 0x1156 && s_fake_ecu == 2) {
+            const uint8_t p[] = { 0x62, 0x11, 0x56, 0x00, 0x04, 0x30, 0x23 };
+            sf(0x7E8, 7, p);
+        } else if (raw && (s_fake_ecu == 2 || s_fake_ecu >= 4)) {
             const uint8_t p[] = { 0x62, d[2], d[3], raw >> 8, raw & 0xFF };
             sf(0x7E8, 5, p);
         } else {
@@ -252,7 +261,7 @@ int main(int argc, char **argv)
     float peak[3] = { NAN, NAN, NAN };
     volatile float *peak_field[3] = { &g_dash.clt, &g_dash.iat, &g_dash.boost };
     const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
-    int night = 0, area = 0, colour = 0, look = 0, proto = 0;
+    int night = 0, area = 0, colour = 0, look = 0, proto = 0, obdpage = 0;
     bool menu = false, logscr = false;
     int hold = -1;
     const char *sw = NULL;
@@ -285,6 +294,7 @@ int main(int argc, char **argv)
         if (strcmp(k, "night") == 0)  { night = atoi(v); used = true; }
         if (strcmp(k, "proto") == 0)  { proto = atoi(v); used = true; }
         if (strcmp(k, "ecu") == 0)    { s_fake_ecu = atoi(v); used = true; }
+        if (strcmp(k, "obdpage") == 0) { obdpage = atoi(v); used = true; }
         if (strcmp(k, "look") == 0)   { look = atoi(v); used = true; }
         if (strcmp(k, "switch") == 0) { sw = v; used = true; }
         if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
@@ -337,6 +347,7 @@ int main(int argc, char **argv)
     g_set.flash_colour = (uint8_t)colour;
     g_dash.last_rx_us = 1;
     ui_create();
+    if (obdpage) ui_obd_page(obdpage);
     if (menu) {
         ui_menu_refresh();
         lv_scr_load(ui_menu_screen());

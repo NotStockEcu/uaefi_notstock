@@ -34,6 +34,9 @@ typedef struct {
 extern const theme_t theme_emo, theme_lonk, theme_hill, theme_obd,
                      theme_sniff;
 
+/* OBD-II screen page: 0 TEST, 1 DPF (what a swipe or the tabs do) */
+void ui_obd_page(int p);
+
 /* ---- shared helpers, implemented in ui.c ---- */
 lv_obj_t *ui_screen(lv_color_t bg);
 lv_obj_t *ui_label(lv_obj_t *par, const lv_font_t *font, lv_color_t col,

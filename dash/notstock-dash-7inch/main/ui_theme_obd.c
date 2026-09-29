@@ -1,6 +1,10 @@
 /* OBD-II test screen: plain blocks, made to prove the link to an OBD ECU
  * (VW T5.1 CAAC) before anything prettier is built on it.
  *
+ * Two pages, swipe left / right or tap the tabs at the top: TEST (the
+ * blocks below) and DPF (the particulate filter's measuring values, a first
+ * go at what the round gauge's DPF page will show).
+ *
  * Shown instead of the selected look whenever the menu's ECU protocol is
  * OBD-II. Each block says which PID it reads and whether the ECU supports
  * it; the top line is the protocol state, the bottom line the raw counters
@@ -45,6 +49,36 @@ static const struct {
 
 static lv_obj_t *val[B_COUNT], *unit_row[B_COUNT], *na[B_COUNT], *tag[B_COUNT];
 static lv_obj_t *state_lbl, *stats_lbl, *pids_lbl, *speed_lbl;
+static lv_obj_t *pg[2], *tab[2], *title_lbl;
+static int page;
+
+/* DPF page */
+#define SOOT_MAX     40.0f     /* arc full scale, g */
+#define SOOT_WARN    24.0f     /* guess until a regeneration is seen */
+#define REGEN_TEMP   400.0f    /* filter hotter than this: regenerating */
+
+enum { T_MEAS, T_DP, T_DIST, T_TEMP, T_COUNT };
+static const struct { const char *label, *unit, *fmt; } TILE[T_COUNT] = {
+    [T_MEAS] = { "SOOT MEASURED", "g",            "%.2f" },
+    [T_DP]   = { "DIFF PRESSURE", "hPa",          "%.0f" },
+    [T_DIST] = { "SINCE REGEN",   "km",           "%.1f" },
+    [T_TEMP] = { "FILTER TEMP",   "\xC2\xB0" "C", "%.0f" },
+};
+/* the filter drawing, in the soot tile */
+#define C_DPF_EMPTY  lv_color_hex(0x24282D)
+#define C_DPF_CELL   lv_color_hex(0x0B0C0E)
+#define DPF_X        40
+#define DPF_Y        70
+#define DPF_W        300
+#define DPF_H        170
+#define DPF_BORDER   6
+#define DPF_IN_W     (DPF_W - 2 * DPF_BORDER)
+#define DPF_IN_H     (DPF_H - 2 * DPF_BORDER)
+static lv_obj_t *dpf_body, *dpf_fill, *dpf_pipe[2];
+static lv_obj_t *soot_val, *soot_state;
+static int soot_level = -1;
+static lv_obj_t *tile_val[T_COUNT], *regen_box, *regen_lbl, *dpf_foot;
+static int regen_on = -1;
 static int warn[B_COUNT];
 static uint32_t shown_rx = UINT32_MAX;
 
@@ -84,15 +118,211 @@ static void build_block(lv_obj_t *scr, int b, lv_coord_t x, lv_coord_t y,
     warn[b] = -1;
 }
 
+/* ------------------------------------------------------------ pages */
+static void show_page(int p)
+{
+    page = p;
+    for (int i = 0; i < 2; i++) {
+        if (i == p) lv_obj_clear_flag(pg[i], LV_OBJ_FLAG_HIDDEN);
+        else        lv_obj_add_flag(pg[i], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_style_text_color(tab[i], i == p ? C_W : C_DIM, 0);
+        lv_obj_set_style_border_width(tab[i], i == p ? 2 : 0, 0);
+    }
+    lv_label_set_text(title_lbl, p ? "DPF STATUS" : "OBD-II TEST");
+}
+
+void ui_obd_page(int p)
+{
+    if (pg[0]) show_page(p ? 1 : 0);
+}
+
+static void gesture_cb(lv_event_t *e)
+{
+    (void)e;
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+    if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) show_page(!page);
+}
+
+static void tab_cb(lv_event_t *e)
+{
+    show_page((int)(intptr_t)lv_event_get_user_data(e));
+}
+
+static void build_tabs(lv_obj_t *scr)
+{
+    static const char *const NAME[2] = { "TEST", "DPF" };
+    for (int i = 0; i < 2; i++) {
+        tab[i] = ui_label(scr, &dash_orb_14, C_DIM, NAME[i], 215 + i * 90,
+                          14, 80, LV_TEXT_ALIGN_CENTER);
+        lv_obj_set_style_pad_ver(tab[i], 4, 0);
+        lv_obj_set_style_border_side(tab[i], LV_BORDER_SIDE_BOTTOM, 0);
+        lv_obj_set_style_border_color(tab[i], C_Y, 0);
+        lv_obj_add_flag(tab[i], LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_ext_click_area(tab[i], 12);
+        lv_obj_add_event_cb(tab[i], tab_cb, LV_EVENT_CLICKED,
+                            (void *)(intptr_t)i);
+    }
+}
+
+static void build_dpf(lv_obj_t *par)
+{
+    /* soot mass: a big particulate filter on the left that fills up */
+    lv_obj_t *t = ui_rect(par, 8, 50, 380, 382, C_TILE);
+    lv_obj_set_style_border_color(t, C_EDGE, 0);
+    lv_obj_set_style_border_width(t, 2, 0);
+    lv_obj_set_style_radius(t, 8, 0);
+    ui_label(t, &dash_orb_18, C_GREY, "SOOT", 14, 12, 0, LV_TEXT_ALIGN_LEFT);
+    ui_label(t, &dash_orb_14, C_DIM, "UDS 114F  calculated", 150, 14, 214,
+             LV_TEXT_ALIGN_RIGHT);
+
+    for (int i = 0; i < 2; i++) {             /* inlet and outlet pipe */
+        dpf_pipe[i] = ui_rect(t, i ? DPF_X + DPF_W - 4 : 10, DPF_Y + 62,
+                              DPF_X - 6, 46, C_GREY);
+        lv_obj_set_style_radius(dpf_pipe[i], 4, 0);
+    }
+    dpf_body = ui_rect(t, DPF_X, DPF_Y, DPF_W, DPF_H, C_DPF_EMPTY);
+    lv_obj_set_style_radius(dpf_body, 26, 0);
+    lv_obj_set_style_border_width(dpf_body, DPF_BORDER, 0);
+    lv_obj_set_style_border_color(dpf_body, C_GREY, 0);
+    lv_obj_set_style_clip_corner(dpf_body, true, 0);
+    lv_obj_set_style_shadow_color(dpf_body, lv_color_hex(0xFF9A1F), 0);
+    lv_obj_set_style_shadow_width(dpf_body, 0, 0);
+    /* soot, from the inlet side */
+    dpf_fill = ui_rect(dpf_body, 0, 0, 0, DPF_IN_H, C_GREY);
+    /* the filter's cells, cut out of the fill */
+    for (int r = 0; r < 3; r++) {
+        for (int c = 0; c < 7; c++) {
+            lv_obj_t *h = ui_rect(dpf_body, 18 + c * 38 - 9, 30 + r * 50 - 9,
+                                  18, 18, C_DPF_CELL);
+            lv_obj_set_style_radius(h, LV_RADIUS_CIRCLE, 0);
+        }
+    }
+
+    soot_val = ui_label(t, &obd_60, C_W, "--", 0, DPF_Y + DPF_H + 18, 330,
+                        LV_TEXT_ALIGN_CENTER);
+    ui_label(t, &dash_orb_18, C_GREY, "g", 250, DPF_Y + DPF_H + 52, 40,
+             LV_TEXT_ALIGN_LEFT);
+    soot_state = ui_label(t, &dash_orb_14, C_DIM, "", 0, DPF_Y + DPF_H + 92,
+                          376, LV_TEXT_ALIGN_CENTER);
+
+    /* four tiles on the right */
+    for (int i = 0; i < T_COUNT; i++) {
+        lv_coord_t x = 400 + (i % 2) * 198, y = 50 + (i / 2) * 160;
+        lv_obj_t *b = ui_rect(par, x, y, 190, 150, C_TILE);
+        lv_obj_set_style_border_color(b, C_EDGE, 0);
+        lv_obj_set_style_border_width(b, 2, 0);
+        lv_obj_set_style_radius(b, 8, 0);
+        ui_label(b, &dash_orb_14, C_GREY, TILE[i].label, 12, 12, 0,
+                 LV_TEXT_ALIGN_LEFT);
+        tile_val[i] = ui_label(b, &dash_orb_40, C_W, "--", 0, 52, 186,
+                               LV_TEXT_ALIGN_CENTER);
+        ui_label(b, &dash_orb_14, C_GREY, TILE[i].unit, 0, 104, 186,
+                 LV_TEXT_ALIGN_CENTER);
+    }
+
+    /* regeneration: lit while the filter is hot */
+    regen_box = ui_rect(par, 400, 372, 388, 60, C_TILE);
+    lv_obj_set_style_border_color(regen_box, C_EDGE, 0);
+    lv_obj_set_style_border_width(regen_box, 2, 0);
+    lv_obj_set_style_radius(regen_box, 8, 0);
+    regen_lbl = ui_label(regen_box, &dash_orb_18, C_DIM, "NO REGENERATION", 0,
+                         19, 384, LV_TEXT_ALIGN_CENTER);
+
+    dpf_foot = ui_label(par, &dash_lbl_13, C_GREY, "", 14, 448, 772,
+                        LV_TEXT_ALIGN_LEFT);
+}
+
+static void update_dpf(const dash_data_t *d, bool live)
+{
+    char buf[200];
+    const volatile float *v[T_COUNT] = {
+        [T_MEAS] = &g_obd.dpf.soot_meas_g, [T_DP] = &g_obd.dpf.dp_hpa,
+        [T_DIST] = &g_obd.dpf.dist_km,     [T_TEMP] = &g_obd.dpf.temp_c,
+    };
+    for (int i = 0; i < T_COUNT; i++) {
+        float x = *v[i];
+        if (!live || isnan(x)) ui_text(tile_val[i], "--");
+        else {
+            snprintf(buf, sizeof buf, TILE[i].fmt, x);
+            ui_text(tile_val[i], buf);
+        }
+    }
+
+    float s = live ? g_obd.dpf.soot_g : NAN;
+    float temp = live ? g_obd.dpf.temp_c : NAN;
+    int r = !isnan(temp) && temp >= REGEN_TEMP;
+
+    if (isnan(s)) {
+        ui_text(soot_val, "--");
+        lv_obj_set_width(dpf_fill, 0);
+        bool refused = g_obd.uds[OBD_UDS_DPF_SOOT] == UDS_REFUSED;
+        ui_text(soot_state, refused ? "NOT SUPPORTED" : "");
+    } else {
+        snprintf(buf, sizeof buf, "%.1f", s);
+        ui_text(soot_val, buf);
+        lv_obj_set_width(dpf_fill, (lv_coord_t)lroundf(
+            ui_clampf(s / SOOT_MAX, 0, 1) * DPF_IN_W));
+        snprintf(buf, sizeof buf, "%.0f %% OF %.0f g", s / SOOT_WARN * 100,
+                 SOOT_WARN);
+        ui_text(soot_state, buf);
+    }
+
+    /* 0 clean, 1 getting full, 2 over the warn level, 3 regenerating */
+    int lvl = r ? 3 : isnan(s) ? 0 : s >= SOOT_WARN ? 2 :
+              s >= SOOT_WARN * 0.7f ? 1 : 0;
+    if (lvl != soot_level) {
+        static const uint32_t FILL[4] = { 0x8A9096, 0xE0A020, 0xE22424,
+                                          0xFF9A1F };
+        static const uint32_t EDGE[4] = { 0x8A9096, 0x8A9096, 0xE22424,
+                                          0xFFB347 };
+        soot_level = lvl;
+        lv_obj_set_style_bg_color(dpf_fill, lv_color_hex(FILL[lvl]), 0);
+        lv_obj_set_style_border_color(dpf_body, lv_color_hex(EDGE[lvl]), 0);
+        for (int i = 0; i < 2; i++) {
+            lv_obj_set_style_bg_color(dpf_pipe[i], lv_color_hex(EDGE[lvl]), 0);
+        }
+        /* regenerating: the whole filter glows */
+        lv_obj_set_style_shadow_width(dpf_body, r ? 40 : 0, 0);
+        lv_obj_set_style_bg_color(dpf_body, r ? lv_color_hex(0x3A2006)
+                                              : C_DPF_EMPTY, 0);
+        lv_obj_set_style_text_color(soot_val, lvl == 2 ? C_RED : C_W, 0);
+    }
+
+    if (r != regen_on) {
+        regen_on = r;
+        ui_text(regen_lbl, r ? "REGENERATING" : "NO REGENERATION");
+        lv_obj_set_style_text_color(regen_lbl, r ? lv_color_hex(0x111111)
+                                                 : C_DIM, 0);
+        lv_obj_set_style_bg_color(regen_box, r ? lv_color_hex(0xFF9A1F)
+                                               : C_TILE, 0);
+    }
+
+    char egt[16], rpm[16];
+    if (!live || isnan(d->egt)) snprintf(egt, sizeof egt, "--");
+    else snprintf(egt, sizeof egt, "%.0f \xC2\xB0" "C", d->egt);
+    if (!live) snprintf(rpm, sizeof rpm, "--");
+    else snprintf(rpm, sizeof rpm, "%.0f", d->rpm);
+    snprintf(buf, sizeof buf,
+             "EXHAUST %s   RPM %s   warn at %.0f g (a guess for now)   "
+             "REGENERATING above %.0f \xC2\xB0" "C filter",
+             egt, rpm, SOOT_WARN, REGEN_TEMP);
+    ui_text(dpf_foot, buf);
+}
+
 static lv_obj_t *build(void)
 {
     lv_obj_t *scr = ui_screen(C_BG);
 
-    lv_obj_t *title = ui_label(scr, &dash_orb_18, C_Y, "OBD-II TEST", 14, 14,
-                               0, LV_TEXT_ALIGN_LEFT);
-    lv_obj_set_style_text_letter_space(title, 2, 0);
-    state_lbl = ui_label(scr, &dash_orb_14, C_GREY, "", 250, 17, 400,
+    title_lbl = ui_label(scr, &dash_orb_18, C_Y, "OBD-II TEST", 14, 14,
+                         0, LV_TEXT_ALIGN_LEFT);
+    lv_obj_set_style_text_letter_space(title_lbl, 2, 0);
+    state_lbl = ui_label(scr, &dash_orb_14, C_GREY, "", 400, 17, 356,
                          LV_TEXT_ALIGN_RIGHT);
+    build_tabs(scr);
+
+    for (int i = 0; i < 2; i++) pg[i] = ui_box(scr, 0, 0, 800, 480);
+    lv_obj_t *root = scr;
+    scr = pg[0];                    /* the TEST page's widgets */
 
     const lv_coord_t w = 252, h = 186, gx = 12, gy = 10;
     for (int b = 0; b < B_COUNT; b++) {
@@ -111,7 +341,15 @@ static lv_obj_t *build(void)
     lv_label_set_long_mode(pids_lbl, LV_LABEL_LONG_CLIP);
     lv_obj_set_height(pids_lbl, 18);
 
+    build_dpf(pg[1]);
+    scr = root;
+    /* the pages cover the whole screen: keep the tabs tappable */
+    for (int i = 0; i < 2; i++) lv_obj_move_foreground(tab[i]);
+    show_page(page);
+
     shown_rx = UINT32_MAX;
+    soot_level = regen_on = -1;
+    lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);
     ui_corners(scr);
     return scr;
 }
@@ -166,6 +404,8 @@ static void update(const dash_data_t *d, int link)
 {
     char buf[160];
     bool live = link != LINK_NONE;
+
+    update_dpf(d, live);
 
     show_block(B_CLT, d->clt, live);
     show_block(B_OIL, d->oilt, live);

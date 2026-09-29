@@ -94,7 +94,21 @@ Values), polled every 4th round since it moves slowly:
 | IDE04653 simulated DPF surface temperature | 1044 | 16 bit, 0.1 K | 0x0E34 -> 90.5 degC (VCDS 91.5, a little later) |
 
 Once they answer, the bottom line of the test screen shows them instead of
-the PID list.
+the PID list, and the second page of the OBD-II screen (swipe left / right,
+or tap the TEST / DPF tabs at the top) shows them properly:
+
+![obd-dpf](preview/obd-dpf.png)
+
+- A particulate filter drawing that fills up from the inlet side with the
+  calculated soot mass (full width at 40 g). Grey while clean, amber from
+  70 % of the warn level, red over it (24 g: a guess until a regeneration
+  shows where this ECU starts one; `SOOT_WARN` in `ui_theme_obd.c`).
+- Tiles: measured soot, differential pressure, distance since regeneration,
+  filter temperature.
+- **Regenerating** (filter hotter than 400 degC): the whole filter glows
+  orange and the bar below it says so.
+
+![obd-dpf-regen](preview/obd-dpf-regen.png)
 
 The dash polls them in the same round robin as the PIDs whenever the PID is
 missing; the tile then says `UDS 11BE` / `UDS 10FB` instead of the PID. An

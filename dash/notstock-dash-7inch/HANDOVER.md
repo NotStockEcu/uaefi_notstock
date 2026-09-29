@@ -237,7 +237,11 @@ to the console (`SNF ...`) and tabulates UDS 0x62 answers by ECU and DID
 missing (WANT entries with bit 8 set are UDS). `tools/sim` ecu=2 is the T5.1
 as it answered, ecu=3 the same refusing the DIDs. The DPF DIDs (14F5, 114F,
 114E, 1156, 1044, table in README) have no PID behind them and are polled
-every DPF_EVERY-th round; values land in `g_obd.dpf`.
+every DPF_EVERY-th round; values land in `g_obd.dpf`. The OBD-II screen has
+two pages (`pg[]` in `ui_theme_obd.c`, swipe or tabs): TEST and DPF; the DPF
+page is the draft for the round gauge's DPF page. sim: `obdpage=1`, fake
+ECU `ecu=4` full filter, `ecu=5` regenerating. A beep on regeneration waits
+for the round gauge (the 7" board has no buzzer).
 
 **Every limit treats 0 as off.** The low-pressure limits and their arming
 logic went with the oil and fuel pressure tiles in v2.0; the decoder still
