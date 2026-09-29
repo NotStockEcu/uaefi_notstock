@@ -15,8 +15,9 @@
 #define RND_W RND_SIZE
 #define RND_H RND_SIZE
 
+/* page order; must match PAGES in tools/gen_faces.py */
 enum { RND_WATER, RND_OIL, RND_BOOST, RND_INTAKE, RND_EXHAUST, RND_RPM,
-       RND_COUNT };
+       RND_DPF, RND_COUNT };
 
 /* live values, NAN where unknown; link false: nothing from the car */
 typedef struct {

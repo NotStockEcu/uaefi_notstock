@@ -21,9 +21,12 @@ SCENES = {
     "intake": "page=3",
     "exhaust": "page=4",
     "rpm": "page=5",
+    "dpf": "page=6",
     "oil-warn": "page=1 oil=134",
     "no-data": "link=0",
     "swipe": "swipe=left t=0.2",
+    "boost-warn": "page=2 boost=2.31",
+    "exhaust-hot": "page=4 exhaust=684",
 }
 
 
@@ -48,9 +51,11 @@ def main():
         return
     pngs = [render(n, a) for n, a in SCENES.items()]
     n = Image.open(pngs[0]).size[0]
-    sheet = Image.new("RGB", (n * 3, n * 3), (42, 42, 42))
+    cols = 4
+    rows = (len(pngs) + cols - 1) // cols
+    sheet = Image.new("RGB", (n * cols, n * rows), (42, 42, 42))
     for i, p in enumerate(pngs):
-        sheet.paste(Image.open(p), ((i % 3) * n, (i // 3) * n))
+        sheet.paste(Image.open(p), ((i % cols) * n, (i // cols) * n))
     sheet.save(os.path.join(OUT, "sheet.png"))
     print("preview/*.png, preview/sheet.png")
 

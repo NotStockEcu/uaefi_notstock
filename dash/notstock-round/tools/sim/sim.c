@@ -52,9 +52,9 @@ int main(int argc, char **argv)
         return 1;
     }
     static const char *const KEY[RND_COUNT] = {
-        "water", "oil", "boost", "intake", "exhaust", "rpm",
+        "water", "oil", "boost", "intake", "exhaust", "rpm", "dpf",
     };
-    rnd_data_t d = { .v = { 86, 92, 1.12f, 31, 412, 2350 }, .link = true };
+    rnd_data_t d = { .v = { 86, 92, 1.12f, 31, 412, 2350, 34 }, .link = true };
     int page = 0;
     float t_end = 1.5f;
     const char *swipe = NULL;
