@@ -32,7 +32,7 @@ LV_FONT_DECLARE(rnd_18);
 
 #define CX       (RND_W / 2)
 #define RING_W   18          /* value arc width */
-#define TICK_D   414         /* diameter of the tick meter */
+#define TICK_D   (RND_W - 52) /* diameter of the tick meter */
 #define SWEEP    270
 #define ROT      135         /* scale starts bottom left */
 
@@ -204,13 +204,13 @@ void ui_round_create(void)
     lv_obj_set_size(center, RND_W, RND_H);
     lv_obj_clear_flag(center, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
 
-    title_lbl = label(center, &rnd_26, C_TITLE, 118);
+    title_lbl = label(center, &rnd_26, C_TITLE, CX - 115);
     lv_obj_set_style_text_letter_space(title_lbl, 4, 0);
     val_lbl = label(center, &rnd_112, C_W, 0);
-    unit_lbl = label(center, &rnd_26, C_GREY, 298);
-    peak_lbl = label(center, &rnd_18, C_DIM, 336);
+    unit_lbl = label(center, &rnd_26, C_GREY, CX + 65);
+    peak_lbl = label(center, &rnd_18, C_DIM, CX + 103);
     lv_obj_set_style_text_letter_space(peak_lbl, 2, 0);
-    note_lbl = label(scr, &rnd_18, C_DIM, 372);
+    note_lbl = label(scr, &rnd_18, C_DIM, CX + 139);
 
     for (int i = 0; i < RND_COUNT; i++) {
         dot[i] = lv_obj_create(scr);
@@ -224,7 +224,7 @@ void ui_round_create(void)
     lv_obj_t *row = lv_obj_create(scr);
     lv_obj_remove_style_all(row);
     lv_obj_set_size(row, 200, 10);
-    lv_obj_align(row, LV_ALIGN_TOP_MID, 0, 418);
+    lv_obj_align(row, LV_ALIGN_TOP_MID, 0, CX + 185);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
                           LV_FLEX_ALIGN_CENTER);

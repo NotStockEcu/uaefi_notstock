@@ -47,9 +47,10 @@ def main():
         print(render("custom", " ".join(sys.argv[1:])))
         return
     pngs = [render(n, a) for n, a in SCENES.items()]
-    sheet = Image.new("RGB", (466 * 3, 466 * 3), (42, 42, 42))
+    n = Image.open(pngs[0]).size[0]
+    sheet = Image.new("RGB", (n * 3, n * 3), (42, 42, 42))
     for i, p in enumerate(pngs):
-        sheet.paste(Image.open(p), ((i % 3) * 466, (i // 3) * 466))
+        sheet.paste(Image.open(p), ((i % 3) * n, (i // 3) * n))
     sheet.save(os.path.join(OUT, "sheet.png"))
     print("preview/*.png, preview/sheet.png")
 

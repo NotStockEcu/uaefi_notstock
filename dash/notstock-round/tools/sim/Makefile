@@ -3,12 +3,14 @@
 ROOT     := ../..
 LVGL_DIR ?= $(ROOT)/managed_components/lvgl__lvgl
 OUT      ?= build
+# panel: 480 for the Waveshare 2.1" LCD, 466 for a 1.32" AMOLED
+SIZE     ?= 480
 
 CC      ?= cc
 CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -DLV_CONF_SKIP -DLV_LVGL_H_INCLUDE_SIMPLE \
            -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(256U*1024U)' \
-           -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 \
+           -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 -DRND_SIZE=$(SIZE) \
            -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
 APP_SRC  := sim.c $(ROOT)/main/ui_round.c $(wildcard $(ROOT)/main/fonts/*.c)

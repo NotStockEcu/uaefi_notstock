@@ -1,14 +1,18 @@
 # NOT STOCK round gauge
 
-One value at a time on a 1.32" round AMOLED (466 x 466, QSPI, ESP32-S3),
-swipe left / right for the next: water, oil, boost, intake, exhaust, engine
+One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
 rpm. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
 
+Target board: **Waveshare ESP32-S3-Touch-LCD-2.1** (480 x 480, ST7701 on
+RGB like the 7" dash, CST820 touch). The UI is laid out from the centre and
+also builds for a 1.32" AMOLED at 466 x 466 (`-DRND_SIZE=466`, sim
+`make SIZE=466`).
+
 **State: UI mock-up only.** `main/ui_round.c` is real LVGL 8.4 code and runs
-in the PC simulator; the panel driver, touch and CAN come once the board is
-on the bench (its exact driver ICs and free pins are not known yet).
+in the PC simulator; panel, touch and CAN drivers come once the board is on
+the bench.
 
 ![sheet](preview/sheet.png)
 
