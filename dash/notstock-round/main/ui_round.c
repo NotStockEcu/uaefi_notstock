@@ -6,7 +6,7 @@
  * Here: which page is shown, the value smoothed onto the scale (so after a
  * page change or at power-up the needle or arc sweeps up on its own), the
  * peaks, the swipes, the long press for the menu, the double tap for night
- * and the boot logo.
+ * the boot logo, and the page names and units in either language.
  *
  * Boot: the NOT STOCK badge (tools/gen_splash.py) fades in on black, holds,
  * and cross-fades into the gauges, which sweep up as they come in.
@@ -46,10 +46,31 @@ static const struct { int extra; lv_opa_t opa; } GLOW[N_ARC] = {
     { 30, 18 }, { 14, 45 }, { 0, LV_OPA_COVER },
 };
 
-const char *const rnd_page_name[RND_COUNT] = {
-    [RND_WATER] = "WATER", [RND_OIL] = "OIL", [RND_BOOST] = "BOOST",
-    [RND_INTAKE] = "INTAKE", [RND_EXHAUST] = "EXHAUST", [RND_RPM] = "ENGINE",
+static const char *const NAME[RND_LANG_COUNT][RND_WARN_COUNT] = {
+    [RND_LANG_EN] = {
+        [RND_WATER] = "WATER", [RND_OIL] = "OIL", [RND_BOOST] = "BOOST",
+        [RND_INTAKE] = "INTAKE", [RND_EXHAUST] = "EXHAUST",
+        [RND_RPM] = "ENGINE", [RND_WARN_SOOT] = "DPF SOOT",
+    },
+    [RND_LANG_CS] = {
+        [RND_WATER] = "VODA", [RND_OIL] = "OLEJ", [RND_BOOST] = "TURBO",
+        [RND_INTAKE] = "SÁNÍ", [RND_EXHAUST] = "VÝFUK",
+        [RND_RPM] = "OTÁČKY", [RND_WARN_SOOT] = "SAZE DPF",
+    },
 };
+
+const char *rnd_page_name(int pg)
+{
+    int l = g_rnd_set.lang < RND_LANG_COUNT ? g_rnd_set.lang : RND_LANG_EN;
+    return pg >= 0 && pg < RND_WARN_COUNT ? NAME[l][pg] : "";
+}
+
+const char *rnd_unit(int pg)
+{
+    if (pg == RND_WARN_SOOT) return "g";
+    if (pg == RND_RPM) return TR("rpm", "ot/min");
+    return pg >= 0 && pg < RND_COUNT ? FACE_PAGE[pg].unit : "";
+}
 
 static lv_obj_t *scr;
 static const rnd_look_t *look;
@@ -323,13 +344,41 @@ void rnd_night_toggle(void)
         lv_obj_center(toast_lbl);
     }
     if (g_rnd_set.night) {
-        snprintf(buf, sizeof buf, "NIGHT %d%%", g_rnd_set.night_level);
+        snprintf(buf, sizeof buf, "%s %d%%", TR("NIGHT", "NOC"),
+                 g_rnd_set.night_level);
     } else {
-        snprintf(buf, sizeof buf, "DAY");
+        snprintf(buf, sizeof buf, "%s", TR("DAY", "DEN"));
     }
     lv_label_set_text(toast_lbl, buf);
     lv_obj_set_style_opa(toast, LV_OPA_COVER, 0);
     lv_obj_fade_out(toast, 400, 1000);
+}
+
+/* ------------------------------------------------------------ language */
+/* Every screen sets its fixed text when it is built, so a new language
+ * builds them all again. Run from lv_async_call: the tap that picked the
+ * language comes from a button on one of the screens deleted here. */
+static void lang_rebuild(void *arg)
+{
+    (void)arg;
+    lv_obj_t *tmp = lv_obj_create(NULL);    /* nothing of ours is shown */
+    lv_scr_load(tmp);
+    if (toast) {
+        lv_obj_del(toast);
+        toast = NULL;
+    }
+    rnd_menu_create();                      /* each drops its old screens */
+    rnd_dpf_create();
+    rnd_set_create();
+    look = NULL;
+    rnd_look_apply();
+    rnd_set_open();
+    lv_obj_del(tmp);
+}
+
+void rnd_lang_apply(void)
+{
+    lv_async_call(lang_rebuild, NULL);
 }
 
 void rnd_swiped(void)
@@ -425,7 +474,8 @@ static void gauge_update(const rnd_data_t *d)
     float target = 0;
     if (isnan(v)) {
         snprintf(text, sizeof text, "--");
-        snprintf(pk, sizeof pk, "%s", d->link ? "NOT READ" : "NO DATA");
+        snprintf(pk, sizeof pk, "%s", d->link ? TR("NOT READ", "NENAČTENO")
+                                              : TR("NO DATA", "BEZ DAT"));
         view.alert = true;
         view.big = true;
     } else {

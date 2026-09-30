@@ -3,8 +3,9 @@
 
 Everything static on a page is baked into one RGB565 image: the radial
 background, the bezel line, the groove the value arc runs in,
-ticks, scale numbers, the icon and the title. LVGL then only draws the value
-arc (with its glow), the readout and the page dots on top, so the look can
+ticks, scale numbers and the icon. LVGL then draws the value arc (with its
+glow), the page title and unit (they depend on the language), the readout
+and the page dots on top, so the look can
 have gradients and antialiased artwork without costing a frame.
 
 The scale geometry is shared with ui_round.c through faces.h. The page table
@@ -58,7 +59,6 @@ C_MINOR = (92, 98, 106)
 C_MAJOR = (225, 229, 234)
 C_NUM = (170, 176, 184)
 C_ICON = (235, 238, 242)
-C_TITLE = (150, 156, 164)
 
 
 # ------------------------------------------------------------------- icons
@@ -270,13 +270,11 @@ def draw_face(p, size):
             y = c + rt * math.sin(a)
             d.text((x, y), txt, font=font, fill=C_NUM, anchor="mm")
 
-    # icon and title above the readout
+    # icon above the readout; the title is live (it depends on the language)
     ipx = int(0.23 * R)
     m = icon_mask(p[9], ipx)
     ink = Image.new("RGB", m.size, C_ICON)
     img.paste(ink, (int(c - ipx / 2), int(c - 0.53 * R)), m)
-    tf = ImageFont.truetype(FONT_BOLD, int(0.075 * R))
-    _spaced(d, (c, c - 0.26 * R), p[1], tf, C_TITLE, 0.02 * R)
     if p[10]:
         nf = ImageFont.truetype(FONT_BOLD, int(0.07 * R))
         d.text((c, c + 0.60 * R), p[10], font=nf, fill=C_MINOR, anchor="mm")
@@ -288,15 +286,6 @@ def draw_face(p, size):
     out = Image.new("RGB", (size, size), (0, 0, 0))
     out.paste(img, (0, 0), mask)
     return out
-
-
-def _spaced(d, centre, text, font, fill, gap):
-    widths = [d.textlength(ch, font=font) for ch in text]
-    total = sum(widths) + gap * (len(text) - 1)
-    x = centre[0] - total / 2
-    for ch, w in zip(text, widths):
-        d.text((x, centre[1]), ch, font=font, fill=fill, anchor="lm")
-        x += w + gap
 
 
 # ------------------------------------------------------------------ RETRO
@@ -363,13 +352,11 @@ def draw_face_retro(p, size):
             d.text((c + rt * math.cos(a), c + rt * math.sin(a)),
                    fmt_label(v, div), font=font, fill=C_INK, anchor="mm")
 
-    # icon, title, scale note
+    # icon and scale note; title and unit are live (language)
     ipx = int(0.19 * R)
     m = icon_mask(p[9], ipx)
     img.paste(Image.new("RGB", m.size, C_INK),
               (int(c - ipx / 2), int(c - 0.47 * R)), m)
-    tf = ImageFont.truetype(FONT_BARLOW_S, int(0.095 * R))
-    _spaced(d, (c, c - 0.19 * R), p[1], tf, C_INK_DIM, 0.025 * R)
     if p[10]:
         nf = ImageFont.truetype(FONT_BARLOW_S, int(0.075 * R))
         d.text((c, c - 0.08 * R), p[10], font=nf, fill=C_INK_DIM,
@@ -382,8 +369,6 @@ def draw_face_retro(p, size):
                          box[2] + 0.02 * R, box[3] + 0.02 * R],
                         radius=0.05 * R, fill=(58, 58, 60))
     d.rounded_rectangle(box, radius=0.04 * R, fill=(0, 0, 0))
-    uf = ImageFont.truetype(FONT_BARLOW_S, int(0.085 * R))
-    d.text((c, c + 0.64 * R), p[2], font=uf, fill=C_INK_DIM, anchor="mm")
 
     img = img.resize((size, size), Image.LANCZOS)
 
@@ -565,6 +550,7 @@ def main():
          "#define FACE_ARC_W    %d" % round(ARC_W * R),
          "#define FACE_GROOVE_W %d     /* the baked groove, for the red zone */" % round(GROOVE_W * R),
          "#define FACE_COUNT    %d" % len(PAGES),
+         "#define FACE_TITLE_Y  %d     /* live page title, centre above the centre */" % round(0.26 * R),
          "",
          "/* RETRO: the red band, the ticks' outer end, the readout window */",
          "#define RETRO_ZONE_R  %d" % round(RETRO_ZONE_R * R),
@@ -573,6 +559,8 @@ def main():
          "#define RETRO_WIN_TOP %d     /* from the centre */" % round(RETRO_WIN[0] * R),
          "#define RETRO_WIN_BOT %d" % round(RETRO_WIN[1] * R),
          "#define RETRO_WIN_W   %d" % round(RETRO_WIN[2] * R),
+         "#define RETRO_TITLE_Y %d     /* live title, above the centre */" % round(0.19 * R),
+         "#define RETRO_UNIT_Y  %d     /* live unit, below the centre */" % round(0.64 * R),
          "",
          "/* FUTURO: the lit segments */",
          "#define FUTURO_SEG_R  %d" % round(FUTURO_SEG_R * R),

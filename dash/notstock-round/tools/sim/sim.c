@@ -13,6 +13,7 @@
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
+ *               [lang=0|1]          RND_LANG_*: English, Czech
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
  */
@@ -137,6 +138,7 @@ int main(int argc, char **argv)
         }
         if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
         if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
+        if (strcmp(k, "lang") == 0)  { g_rnd_set.lang = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);

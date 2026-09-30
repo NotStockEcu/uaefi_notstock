@@ -51,6 +51,14 @@ SCENES = {
     "boot-in": "boot=1 t=0.6",
     "boot-logo": "boot=1 t=2.0",
     "boot-cross": "boot=1 t=3.2",
+    "cz-water": "lang=1",
+    "cz-retro-rpm": "lang=1 look=1 page=5",
+    "cz-futuro-intake": "lang=1 look=2 page=3",
+    "cz-menu": "lang=1 screen=menu",
+    "cz-settings": "lang=1 screen=settings",
+    "cz-dpf": "lang=1 screen=dpf",
+    "cz-regen-start": "lang=1 regen=start t=2",
+    "cz-pages": "lang=1 screen=pages limit=2",
 }
 
 

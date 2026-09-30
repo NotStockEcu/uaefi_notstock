@@ -1,7 +1,7 @@
 /* RETRO look: a mechanical instrument of the VDO kind. Pre-rendered dial per
  * page (tools/gen_faces.py: chrome bezel, black dial, white print, glass
- * sheen, the readout window's frame); live: the red band from the warn
- * limit, a red needle with its shadow and a black hub, a thin tell-tale
+ * sheen, the readout window's frame); live: title and unit, the red band
+ * from the warn limit, a red needle with its shadow and a black hub, a thin tell-tale
  * needle left at the peak, and the value in the window. */
 #include "ui_round_int.h"
 
@@ -15,7 +15,7 @@
 #define C_BAND       lv_color_hex(0xC81E1E)
 
 static lv_obj_t *face, *zone, *needle, *shadow, *tell, *hub, *cap;
-static lv_obj_t *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_COUNT];
+static lv_obj_t *title, *unit_lbl, *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_COUNT];
 static lv_point_t pn[2], ps[2], pt[2];
 static float zone_at, needle_at, tell_at;
 static int warn_on, regen_on;
@@ -56,6 +56,15 @@ static void build(lv_obj_t *scr)
     zone = rnd_zone_at(scr, RETRO_ZONE_R, RETRO_ZONE_W, C_BAND);
     lv_obj_set_style_arc_rounded(zone, false, LV_PART_MAIN);
 
+    /* title above the hub, unit under the window */
+    title = rnd_label(scr, &rnd_barlow_23, lv_color_hex(0xA0A09C),
+                      CX - RETRO_TITLE_Y -
+                      lv_font_get_line_height(&rnd_barlow_23) / 2);
+    lv_obj_set_style_text_letter_space(title, 6, 0);
+    unit_lbl = rnd_label(scr, &rnd_barlow_20, lv_color_hex(0xA0A09C),
+                         CX + RETRO_UNIT_Y -
+                         lv_font_get_line_height(&rnd_barlow_20) / 2);
+
     /* the readout in the window */
     win_lbl = rnd_label(scr, &rnd_barlow_46, lv_color_white(), 0);
     lv_obj_set_y(win_lbl, CX + (RETRO_WIN_TOP + RETRO_WIN_BOT) / 2 -
@@ -76,6 +85,8 @@ static void build(lv_obj_t *scr)
 static void page(int pg)
 {
     lv_img_set_src(face, face_retro_img[pg]);
+    lv_label_set_text(title, rnd_page_name(pg));
+    lv_label_set_text(unit_lbl, rnd_unit(pg));
     zone_at = needle_at = tell_at = NAN;
     warn_on = regen_on = -1;
     rnd_dots_set(dot, pg, lv_color_white(), lv_color_hex(0x55575A));
@@ -123,7 +134,8 @@ static void draw(const rnd_view_t *v)
     }
     if (v->regen != regen_on) {
         regen_on = v->regen;
-        lv_label_set_text(regen_lbl, v->regen ? "DPF REGEN" : "");
+        lv_label_set_text(regen_lbl, v->regen ? TR("DPF REGEN", "REGEN. DPF")
+                                                 : "");
     }
 }
 

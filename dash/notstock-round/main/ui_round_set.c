@@ -3,8 +3,9 @@
  * SETTINGS (from the menu): LOOK, PAGES (which gauges and in what order),
  * NIGHT (the backlight at night, the double
  * tap's level; tap for the next step), BEEP on / off (the regeneration
- * beeps; the popup comes either way), LIMITS. A long press goes one level back and
- * stores the settings.
+ * beeps; the popup comes either way), LIMITS, and the language (tap: English
+ * / Czech; every screen is built again in it). A long press goes one level
+ * back and stores the settings.
  *
  * LIMITS: one warn limit at a time, big, with - and + either side (hold to
  * repeat); swipe for the next one, the dots say which. Over its limit a
@@ -19,14 +20,15 @@
 
 rnd_settings_t g_rnd_set;
 
+/* names and units: rnd_page_name(), rnd_unit() */
 const rnd_limit_t RND_LIMIT[RND_WARN_COUNT] = {
-    [RND_WATER]     = { "WATER",    "\xC2\xB0" "C", 60,  130,  1,    105,  0 },
-    [RND_OIL]       = { "OIL",      "\xC2\xB0" "C", 80,  150,  1,    130,  0 },
-    [RND_BOOST]     = { "BOOST",    "bar",          0.5f, 2.5f, 0.05f, 2.2f, 2 },
-    [RND_INTAKE]    = { "INTAKE",   "\xC2\xB0" "C", 20,  100,  1,    60,   0 },
-    [RND_EXHAUST]   = { "EXHAUST",  "\xC2\xB0" "C", 300, 1000, 10,   750,  0 },
-    [RND_RPM]       = { "ENGINE",   "rpm",          2000, 5000, 100, 4500, 0 },
-    [RND_WARN_SOOT] = { "DPF SOOT", "g",            5,   40,   1,    24,   0 },
+    [RND_WATER]     = { 60,   130,  1,     105,  0 },
+    [RND_OIL]       = { 80,   150,  1,     130,  0 },
+    [RND_BOOST]     = { 0.5f, 2.5f, 0.05f, 2.2f, 2 },
+    [RND_INTAKE]    = { 20,   100,  1,     60,   0 },
+    [RND_EXHAUST]   = { 300,  1000, 10,    750,  0 },
+    [RND_RPM]       = { 2000, 5000, 100,   4500, 0 },
+    [RND_WARN_SOOT] = { 5,    40,   1,     24,   0 },
 };
 
 void rnd_settings_defaults(void)
@@ -38,6 +40,7 @@ void rnd_settings_defaults(void)
     g_rnd_set.night_level = 30;
     for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
     g_rnd_set.hidden = 0;
+    g_rnd_set.lang = RND_LANG_EN;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
     }
@@ -83,12 +86,13 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr, *pg_scr;
-static lv_obj_t *beep_lbl, *night_lbl, *look_pill[RND_LOOK_COUNT];
+static lv_obj_t *beep_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
 
 static void show_night(void)
 {
     char buf[24];
-    snprintf(buf, sizeof buf, "NIGHT  %d%%", g_rnd_set.night_level);
+    snprintf(buf, sizeof buf, "%s  %d%%", TR("NIGHT", "NOC"),
+             g_rnd_set.night_level);
     lv_label_set_text(night_lbl, buf);
 }
 
@@ -109,7 +113,8 @@ static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
 
 static void show_beep(void)
 {
-    lv_label_set_text(beep_lbl, g_rnd_set.beep ? "BEEP   ON" : "BEEP   OFF");
+    lv_label_set_text(beep_lbl, g_rnd_set.beep ? TR("BEEP   ON", "PÍPÁNÍ   ZAP")
+                                               : TR("BEEP   OFF", "PÍPÁNÍ   VYP"));
     lv_obj_set_style_text_color(beep_lbl, g_rnd_set.beep ? C_W : C_DIM, 0);
 }
 
@@ -118,6 +123,14 @@ void rnd_set_open(void)
     show_beep();
     show_night();
     lv_scr_load(set_scr);
+}
+
+/* the language's own name, so whoever cannot read the other one finds it */
+static void lang_toggle(lv_event_t *e)
+{
+    (void)e;
+    g_rnd_set.lang = (uint8_t)((g_rnd_set.lang + 1) % RND_LANG_COUNT);
+    rnd_lang_apply();
 }
 
 static void set_back(lv_event_t *e)
@@ -178,12 +191,14 @@ static void show_pages(void)
     bool on = !(g_rnd_set.hidden >> p & 1);
     lv_img_set_src(pg_icon, page_icon[p]);
     lv_obj_set_style_img_recolor(pg_icon, on ? C_W : C_DIM, 0);
-    lv_label_set_text(pg_name, rnd_page_name[p]);
+    lv_label_set_text(pg_name, rnd_page_name(p));
     lv_obj_set_style_text_color(pg_name, on ? C_W : C_DIM, 0);
-    lv_label_set_text(pg_state_lbl, on ? "SHOWN" : "HIDDEN");
+    lv_label_set_text(pg_state_lbl, on ? TR("SHOWN", "ZOBRAZENO")
+                                       : TR("HIDDEN", "SKRYTO"));
     lv_obj_set_style_text_color(pg_state_lbl, on ? C_W : C_DIM, 0);
     lv_obj_set_style_border_color(pg_state, on ? C_W : C_EDGE, 0);
-    snprintf(buf, sizeof buf, "POSITION %d / %d", pg_at + 1, RND_COUNT);
+    snprintf(buf, sizeof buf, "%s %d / %d", TR("POSITION", "POZICE"),
+             pg_at + 1, RND_COUNT);
     lv_label_set_text(pg_pos, buf);
     for (int i = 0; i < RND_COUNT; i++) {
         bool h = g_rnd_set.hidden >> g_rnd_set.order[i] & 1;
@@ -242,11 +257,12 @@ static void show_limit(void)
 {
     const rnd_limit_t *l = &RND_LIMIT[lim];
     char buf[24];
-    lv_label_set_text(lim_name, l->name);
+    lv_label_set_text(lim_name, rnd_page_name(lim));
     snprintf(buf, sizeof buf, "%.*f", l->dec, g_rnd_set.warn[lim]);
     lv_label_set_text(lim_val, buf);
-    lv_label_set_text(lim_unit, l->unit);
-    snprintf(buf, sizeof buf, "DEFAULT %.*f", l->dec, l->def);
+    lv_label_set_text(lim_unit, rnd_unit(lim));
+    snprintf(buf, sizeof buf, "%s %.*f", TR("DEFAULT", "VÝCHOZÍ"), l->dec,
+             l->def);
     lv_label_set_text(lim_def, buf);
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         lv_obj_set_width(lim_dot[i], i == lim ? 22 : 8);
@@ -334,23 +350,40 @@ static void text_button(lv_obj_t *par, lv_coord_t x, const char *t,
     lv_obj_center(l);
 }
 
+#define SET_Y0   94          /* the settings pills: first one, spacing */
+#define SET_DY   54
+#define SET_H    48
+
 void rnd_set_create(void)
 {
     lv_obj_t *l;
+    const char *back = TR("LONG PRESS: BACK", "PODRŽ: ZPĚT");
 
-    set_scr = screen(set_back, "SETTINGS");
-    pill(set_scr, 88, go_look, &l);
-    lv_label_set_text(l, "LOOK");
-    pill(set_scr, 150, go_pages, &l);
-    lv_label_set_text(l, "PAGES");
-    pill(set_scr, 212, night_step, &night_lbl);
-    pill(set_scr, 274, beep_toggle, &beep_lbl);
-    pill(set_scr, 336, go_limits, &l);
-    lv_label_set_text(l, "LIMITS");
-    l = rnd_label(set_scr, &rnd_18, C_DIM, 410);
-    lv_label_set_text(l, "LONG PRESS: BACK");
+    /* rebuilt for a new language: drop the old screens (none is shown) */
+    lv_obj_t *old[] = { set_scr, look_scr, pg_scr, lim_scr };
+    for (size_t i = 0; i < sizeof old / sizeof old[0]; i++) {
+        if (old[i]) lv_obj_del(old[i]);
+    }
 
-    look_scr = screen(sub_back, "LOOK");
+    set_scr = screen(set_back, TR("SETTINGS", "NASTAVENÍ"));
+    pill(set_scr, SET_Y0 + 0 * SET_DY, go_look, &l);
+    lv_label_set_text(l, TR("LOOK", "VZHLED"));
+    pill(set_scr, SET_Y0 + 1 * SET_DY, go_pages, &l);
+    lv_label_set_text(l, TR("PAGES", "STRÁNKY"));
+    pill(set_scr, SET_Y0 + 2 * SET_DY, night_step, &night_lbl);
+    pill(set_scr, SET_Y0 + 3 * SET_DY, beep_toggle, &beep_lbl);
+    pill(set_scr, SET_Y0 + 4 * SET_DY, go_limits, &l);
+    lv_label_set_text(l, TR("LIMITS", "LIMITY"));
+    pill(set_scr, SET_Y0 + 5 * SET_DY, lang_toggle, &lang_lbl);
+    lv_label_set_text(lang_lbl, TR("ENGLISH", "ČEŠTINA"));
+    /* six pills: a little lower than the others (the title is child 0) */
+    for (uint32_t i = 1; i < lv_obj_get_child_cnt(set_scr); i++) {
+        lv_obj_set_height(lv_obj_get_child(set_scr, i), SET_H);
+    }
+    l = rnd_label(set_scr, &rnd_18, C_DIM, SET_Y0 + 6 * SET_DY + 4);
+    lv_label_set_text(l, back);
+
+    look_scr = screen(sub_back, TR("LOOK", "VZHLED"));
     for (int i = 0; i < RND_LOOK_COUNT; i++) {
         look_pill[i] = pill(look_scr, 110 + i * 90, look_pick, &l);
         lv_obj_remove_event_cb(look_pill[i], look_pick);
@@ -359,9 +392,9 @@ void rnd_set_create(void)
         lv_label_set_text(l, LOOK_NAME[i]);
     }
     l = rnd_label(look_scr, &rnd_18, C_DIM, 390);
-    lv_label_set_text(l, "LONG PRESS: BACK");
+    lv_label_set_text(l, back);
 
-    pg_scr = screen(sub_back, "PAGES");
+    pg_scr = screen(sub_back, TR("PAGES", "STRÁNKY"));
     lv_obj_add_event_cb(pg_scr, pg_gesture, LV_EVENT_GESTURE, NULL);
     pg_icon = lv_img_create(pg_scr);
     lv_obj_align(pg_icon, LV_ALIGN_TOP_MID, 0, 98);
@@ -369,12 +402,13 @@ void rnd_set_create(void)
     pg_name = rnd_label(pg_scr, &rnd_26, C_W, 160);
     lv_obj_set_style_text_letter_space(pg_name, 3, 0);
     pg_state = pill(pg_scr, CX - 28, pg_toggle, &pg_state_lbl);
-    lv_obj_set_width(pg_state, 190);
+    lv_obj_set_width(pg_state, 230);     /* ZOBRAZENO */
     text_button(pg_scr, 20, "<", pg_move, -1);
     text_button(pg_scr, RND_W - 20 - 84, ">", pg_move, +1);
     pg_pos = rnd_label(pg_scr, &rnd_18, C_GREY, CX + 52);
     l = rnd_label(pg_scr, &rnd_18, C_DIM, CX + 84);
-    lv_label_set_text(l, "< > MOVE    SWIPE: NEXT");
+    lv_label_set_text(l, TR("< > MOVE    SWIPE: NEXT",
+                            "< > POSUN    PŘEJEĎ: DALŠÍ"));
     lv_obj_t *prow = lv_obj_create(pg_scr);
     lv_obj_remove_style_all(prow);
     lv_obj_set_size(prow, 240, 10);
@@ -393,7 +427,7 @@ void rnd_set_create(void)
         lv_obj_clear_flag(pg_dot[i], LV_OBJ_FLAG_CLICKABLE);
     }
 
-    lim_scr = screen(sub_back, "LIMITS");
+    lim_scr = screen(sub_back, TR("LIMITS", "LIMITY"));
     lv_obj_add_event_cb(lim_scr, lim_gesture, LV_EVENT_GESTURE, NULL);
     lim_name = rnd_label(lim_scr, &rnd_26, C_W, 118);
     lv_obj_set_style_text_letter_space(lim_name, 3, 0);
@@ -403,7 +437,7 @@ void rnd_set_create(void)
     step_button(lim_scr, 20, -1);
     step_button(lim_scr, RND_W - 20 - 84, +1);
     l = rnd_label(lim_scr, &rnd_18, C_DIM, CX + 132);
-    lv_label_set_text(l, "SWIPE: NEXT");
+    lv_label_set_text(l, TR("SWIPE: NEXT", "PŘEJEĎ: DALŠÍ"));
 
     lv_obj_t *row = lv_obj_create(lim_scr);
     lv_obj_remove_style_all(row);

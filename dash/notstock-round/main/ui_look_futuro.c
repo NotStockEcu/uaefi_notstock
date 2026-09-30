@@ -84,8 +84,8 @@ static void page(int pg)
     char buf[16];
     const face_page_t *p = &FACE_PAGE[pg];
     lv_img_set_src(icon, page_icon[pg]);
-    lv_label_set_text(title, rnd_page_name[pg]);
-    lv_label_set_text(unit_lbl, p->unit);
+    lv_label_set_text(title, rnd_page_name(pg));
+    lv_label_set_text(unit_lbl, rnd_unit(pg));
     snprintf(buf, sizeof buf, "%g", p->lo);
     lv_label_set_text(lo_lbl, buf);
     snprintf(buf, sizeof buf, "%g", p->hi);
@@ -132,7 +132,8 @@ static void draw(const rnd_view_t *v)
                                 0);
     if (v->regen != regen_on) {
         regen_on = v->regen;
-        lv_label_set_text(regen_lbl, v->regen ? "DPF REGEN" : "");
+        lv_label_set_text(regen_lbl, v->regen ? TR("DPF REGEN", "REGEN. DPF")
+                                                 : "");
     }
 }
 

@@ -1,6 +1,7 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * settings: look, pages, night level, beep on/off, warn limits). Double tap:
+ * settings: look, pages, night level, beep on/off, warn limits, language
+ * English / Czech). Double tap:
  * night
  * (backlight down to the night level) and back to day.
  * A particulate filter regeneration pops up over whatever is shown, with a
@@ -43,6 +44,7 @@ typedef struct {
  * rnd_settings_save() is called, on leaving the settings screens. */
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
 enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
+enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
 
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
@@ -52,6 +54,7 @@ typedef struct {
     uint8_t order[RND_COUNT];         /* the pages in swipe order */
     uint8_t hidden;                   /* bit per page (RND_*): left out */
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
+    uint8_t lang;                     /* RND_LANG_* */
 } rnd_settings_t;
 
 extern rnd_settings_t g_rnd_set;

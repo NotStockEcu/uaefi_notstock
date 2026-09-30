@@ -8,6 +8,13 @@ LV_FONT_DECLARE(rnd_84);
 LV_FONT_DECLARE(rnd_26);
 LV_FONT_DECLARE(rnd_18);
 LV_FONT_DECLARE(rnd_barlow_46);
+LV_FONT_DECLARE(rnd_barlow_23);
+LV_FONT_DECLARE(rnd_barlow_20);
+
+/* the text in the language picked in SETTINGS; the fonts carry the Czech
+ * capitals (tools/gen_fonts.sh), so Czech text is upper case */
+#define TR(en, cs) (g_rnd_set.lang == RND_LANG_CS ? (cs) : (en))
+void rnd_lang_apply(void);        /* g_rnd_set.lang changed: rebuild */
 
 #define C_W      lv_color_hex(0xFFFFFF)
 #define C_GREY   lv_color_hex(0x8A9096)
@@ -31,7 +38,6 @@ lv_obj_t *rnd_label(lv_obj_t *par, const lv_font_t *f, lv_color_t c,
 
 /* warn limits: what the settings screen may set them to */
 typedef struct {
-    const char *name, *unit;
     float lo, hi, step, def;
     int dec;
 } rnd_limit_t;
@@ -69,8 +75,10 @@ typedef struct {
 extern const rnd_look_t rnd_look_notstock, rnd_look_retro, rnd_look_futuro;
 void rnd_look_apply(void);                  /* g_rnd_set.look changed */
 
-/* page names (WATER, OIL, ...) */
-extern const char *const rnd_page_name[RND_COUNT];
+/* page names (WATER, OIL, ...) and units, in the current language; the
+ * limits' names too (RND_WARN_SOOT: the DPF soot) */
+const char *rnd_page_name(int page);
+const char *rnd_unit(int page);
 
 /* the shown pages in order: how many, and where a page is among them */
 int rnd_pages_shown(void);

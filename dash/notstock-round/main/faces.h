@@ -9,6 +9,7 @@
 #define FACE_ARC_W    15
 #define FACE_GROOVE_W 22     /* the baked groove, for the red zone */
 #define FACE_COUNT    6
+#define FACE_TITLE_Y  62     /* live page title, centre above the centre */
 
 /* RETRO: the red band, the ticks' outer end, the readout window */
 #define RETRO_ZONE_R  216
@@ -17,6 +18,8 @@
 #define RETRO_WIN_TOP 79     /* from the centre */
 #define RETRO_WIN_BOT 120
 #define RETRO_WIN_W   120
+#define RETRO_TITLE_Y 46     /* live title, above the centre */
+#define RETRO_UNIT_Y  154     /* live unit, below the centre */
 
 /* FUTURO: the lit segments */
 #define FUTURO_SEG_R  224

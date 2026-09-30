@@ -86,6 +86,7 @@ static lv_obj_t *menu_item(const char *text, lv_coord_t y, lv_event_cb_t cb)
 
 void rnd_menu_create(void)
 {
+    if (menu) lv_obj_del(menu);           /* rebuilt for a new language */
     menu = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(menu, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(menu, LV_OPA_COVER, 0);
@@ -96,18 +97,19 @@ void rnd_menu_create(void)
     lv_obj_set_style_text_letter_space(t, 4, 0);
     lv_label_set_text(t, "MENU");
 
-    menu_item("GAUGES", 110, go_gauges);
-    lv_obj_t *d = menu_item("DPF STATUS", 200, go_dpf);
+    menu_item(TR("GAUGES", "BUDÍKY"), 110, go_gauges);
+    lv_obj_t *d = menu_item(TR("DPF STATUS", "STAV DPF"), 200, go_dpf);
     lv_obj_align(lv_obj_get_child(d, 0), LV_ALIGN_CENTER, 26, 0);
     menu_dpf_icon = lv_img_create(d);
     lv_img_set_src(menu_dpf_icon, &icon_dpf_40);
     lv_obj_align(menu_dpf_icon, LV_ALIGN_LEFT_MID, 14, 0);
-    lv_obj_set_style_img_recolor(menu_dpf_icon, C_GREY, 0);
+    lv_obj_set_style_img_recolor(menu_dpf_icon,
+                                 rnd_regen_active() ? C_REGEN : C_GREY, 0);
     lv_obj_set_style_img_recolor_opa(menu_dpf_icon, LV_OPA_COVER, 0);
-    menu_item("SETTINGS", 290, go_settings);
+    menu_item(TR("SETTINGS", "NASTAVENÍ"), 290, go_settings);
 
     lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 390);
-    lv_label_set_text(h, "LONG PRESS: BACK");
+    lv_label_set_text(h, TR("LONG PRESS: BACK", "PODRŽ: ZPĚT"));
 }
 
 /* ------------------------------------------------------ DPF status screen */
@@ -169,8 +171,16 @@ static lv_obj_t *rect(lv_obj_t *par, lv_coord_t x, lv_coord_t y, lv_coord_t w,
 #define BODY_B   5
 #define FILL_W   (BODY_W - 2 * BODY_B)
 
+static void popup_drop(void);
+
 void rnd_dpf_create(void)
 {
+    if (dpf) {                            /* rebuilt for a new language */
+        lv_obj_del(dpf);
+        popup_drop();
+        zone_at = dpf_shown = NAN;
+        dpf_level = -1;
+    }
     dpf = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(dpf, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(dpf, LV_OPA_COVER, 0);
@@ -186,7 +196,7 @@ void rnd_dpf_create(void)
 
     lv_obj_t *t = rnd_label(dpf, &rnd_18, C_GREY, 58);
     lv_obj_set_style_text_letter_space(t, 4, 0);
-    lv_label_set_text(t, "DPF STATUS");
+    lv_label_set_text(t, TR("DPF STATUS", "STAV DPF"));
 
     /* the filter: pipes, body, soot filling from the inlet, cells */
     for (int i = 0; i < 2; i++) {
@@ -212,16 +222,19 @@ void rnd_dpf_create(void)
     soot_lbl = rnd_label(dpf, &rnd_84, C_W, 196);
     meas_lbl = rnd_label(dpf, &rnd_18, C_GREY, 290);
 
-    static const char *const CAP[V_COUNT] = { "DP hPa", "TEMP \xC2\xB0" "C",
-                                              "REGEN km" };
+    const char *const CAP[V_COUNT] = {
+        "DP hPa",
+        TR("TEMP \xC2\xB0" "C", "TEPL \xC2\xB0" "C"),
+        TR("REGEN km", "OD REG km"),
+    };
     for (int i = 0; i < V_COUNT; i++) {
         lv_coord_t x = CX - 165 + i * 110;
         v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, 322);
         lv_obj_set_width(v_lbl[i], 110);
         lv_obj_set_x(v_lbl[i], x);
         lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, 356);
-        lv_obj_set_width(c, 110);
-        lv_obj_set_x(c, x);
+        lv_obj_set_width(c, 130);         /* wider than the column: CS */
+        lv_obj_set_x(c, x - 10);
         lv_label_set_text(c, CAP[i]);
     }
 
@@ -263,9 +276,10 @@ void rnd_dpf_update(const rnd_data_t *d)
 
     fmt_or_dash(soot_lbl, "%.1f", s, live);
     if (!live || isnan(d->dpf.soot_meas_g)) {
-        lv_label_set_text(meas_lbl, live ? "g" : "NO DATA");
+        lv_label_set_text(meas_lbl, live ? "g" : TR("NO DATA", "BEZ DAT"));
     } else {
-        snprintf(buf, sizeof buf, "g   MEASURED %.2f g", d->dpf.soot_meas_g);
+        snprintf(buf, sizeof buf, "g   %s %.2f g", TR("MEASURED", "MĚŘENO"),
+                 d->dpf.soot_meas_g);
         lv_label_set_text(meas_lbl, buf);
     }
     fmt_or_dash(v_lbl[V_DP], "%.0f", d->dpf.dp_hpa, live);
@@ -302,12 +316,12 @@ void rnd_dpf_update(const rnd_data_t *d)
                                                     : C_GREY, 0);
     }
     if (regen) {
-        lv_label_set_text(pill_lbl, "REGENERATING");
+        lv_label_set_text(pill_lbl, TR("REGENERATING", "REGENERACE"));
     } else if (isnan(s)) {
         lv_label_set_text(pill_lbl, "");
     } else {
-        snprintf(buf, sizeof buf, "%.0f %% OF %.0f g", s / SOOT_WARN * 100,
-                 SOOT_WARN);
+        snprintf(buf, sizeof buf, "%.0f %% %s %.0f g", s / SOOT_WARN * 100,
+                 TR("OF", "Z"), SOOT_WARN);
         lv_label_set_text(pill_lbl, buf);
     }
 }
@@ -330,6 +344,13 @@ static void popup_close(void)
         lv_timer_del(pop_timer);
         pop_timer = NULL;
     }
+}
+
+static void popup_drop(void)
+{
+    popup_close();
+    if (popup) lv_obj_del(popup);
+    popup = NULL;                 /* built again, in the new language */
 }
 
 static void popup_click(lv_event_t *e)
@@ -368,12 +389,12 @@ static void popup_build(void)
     lv_label_set_text(l, "DPF");
     l = rnd_label(popup, &rnd_26, C_W, 244);
     lv_obj_set_style_text_letter_space(l, 3, 0);
-    lv_label_set_text(l, "REGENERATION");
+    lv_label_set_text(l, TR("REGENERATION", "REGENERACE"));
     pop_state = rnd_label(popup, &rnd_26, C_REGEN, 284);
     lv_obj_set_style_text_letter_space(pop_state, 3, 0);
     pop_soot = rnd_label(popup, &rnd_18, C_GREY, 336);
     l = rnd_label(popup, &rnd_18, C_DIM, 392);
-    lv_label_set_text(l, "TAP TO CLOSE");
+    lv_label_set_text(l, TR("TAP TO CLOSE", "ŤUKNI: ZAVŘÍT"));
     lv_obj_add_flag(popup, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -385,14 +406,16 @@ static void popup_show(bool started, float soot)
     lv_obj_set_style_border_color(popup, c, 0);
     lv_obj_set_style_img_recolor(pop_icon, c, 0);
     lv_obj_set_style_text_color(pop_state, c, 0);
-    lv_label_set_text(pop_state, started ? "STARTED" : "FINISHED");
+    lv_label_set_text(pop_state, started ? TR("STARTED", "ZAHÁJENA")
+                                         : TR("FINISHED", "UKONČENA"));
     if (isnan(soot)) {
         lv_label_set_text(pop_soot, "");
     } else if (started || isnan(soot_at_start)) {
-        snprintf(buf, sizeof buf, "SOOT %.1f g", soot);
+        snprintf(buf, sizeof buf, "%s %.1f g", TR("SOOT", "SAZE"), soot);
         lv_label_set_text(pop_soot, buf);
     } else {
-        snprintf(buf, sizeof buf, "SOOT %.1f g -> %.1f g", soot_at_start, soot);
+        snprintf(buf, sizeof buf, "%s %.1f g -> %.1f g", TR("SOOT", "SAZE"),
+                 soot_at_start, soot);
         lv_label_set_text(pop_soot, buf);
     }
     lv_obj_clear_flag(popup, LV_OBJ_FLAG_HIDDEN);

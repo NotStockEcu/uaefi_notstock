@@ -23,7 +23,8 @@ the bench.
 
 - **Pre-rendered faces** (`tools/gen_faces.py` -> `main/faces.c`): radial
   background, bezel line, the groove the value arc runs in, ticks, scale
-  numbers, the page's icon and title. The red zone above the warn limit is
+  numbers, the page's icon. The title and unit are drawn live, since they
+  follow the language. The red zone above the warn limit is
   drawn live over the groove, since the limit is a setting. One
   RGB565 image per page, 450 kB each in flash; nothing of it costs a frame.
 - **Drawn live by LVGL** on top: the value arc with a two-layer glow, the
@@ -132,6 +133,22 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   gauge goes red over its limit and its red zone starts there; the DPF soot
   limit is what the DPF screen measures fullness against. Ranges, steps and
   defaults: `RND_LIMIT[]` in `ui_round_set.c`.
+- **ENGLISH / ČEŠTINA**: the language, tap to switch. It shows in its own
+  name, so it can be found either way. Every screen is built again in the
+  new one at once (`rnd_lang_apply()`); kept over power-off.
+
+## Czech
+
+![cz](preview/cz-water.png) ![cz](preview/cz-retro-rpm.png)
+![cz](preview/cz-settings.png) ![cz](preview/cz-dpf.png)
+
+All text goes through `TR("ENGLISH", "ČESKY")` (`ui_round_int.h`), page
+names and units through `rnd_page_name()` / `rnd_unit()` (`ui_round.c`):
+VODA, OLEJ, TURBO, SÁNÍ, VÝFUK, OTÁČKY (ot/min), SAZE DPF. The UI is upper
+case, so the fonts carry the Czech capitals only. Orbitron has no
+Č Ď Ě Ň Ř Ť Ů: `tools/patch_font.py` builds them from its own C D E N R T U
+and the caron / ring of Š and Å, into a renamed temporary copy (Orbitron
+is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 
 ## Bluetooth
 
@@ -160,4 +177,6 @@ and the board's outline first.
 
 Writes `preview/*.png`. After changing pages or artwork:
 `python tools/gen_faces.py` (add `--size 466` for the AMOLED). Fonts:
-`sh tools/gen_fonts.sh` (Orbitron, SIL OFL, `assets/fonts`).
+`sh tools/gen_fonts.sh` (Orbitron and Barlow Condensed, SIL OFL,
+`assets/fonts`; needs lv_font_conv and fontTools). Czech in the sim:
+`lang=1`.

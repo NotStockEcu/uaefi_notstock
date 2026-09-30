@@ -1,11 +1,11 @@
 /* NOTSTOCK look: a pre-rendered face per page (tools/gen_faces.py:
- * background, groove, scale, icon, title), the red zone over the groove,
- * a glowing value arc, the readout, the peak and the page dots. */
+ * background, groove, scale, icon), the page title, the red zone over the
+ * groove, a glowing value arc, the readout, the peak and the page dots. */
 #include "ui_round_int.h"
 
 #include <math.h>
 
-static lv_obj_t *face, *center, *zone, *arc[N_ARC];
+static lv_obj_t *face, *center, *title, *zone, *arc[N_ARC];
 static lv_obj_t *val_lbl, *unit_lbl, *peak_lbl, *regen_lbl, *dot[RND_COUNT];
 static float zone_at;
 static int warn_on, regen_on, big_on;
@@ -23,6 +23,9 @@ static void build(lv_obj_t *scr)
     lv_obj_remove_style_all(center);
     lv_obj_set_size(center, RND_W, RND_H);
     lv_obj_clear_flag(center, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    title = rnd_label(center, &rnd_18, lv_color_hex(0x969CA4),
+                      CX - FACE_TITLE_Y - lv_font_get_line_height(&rnd_18) / 2);
+    lv_obj_set_style_text_letter_space(title, 5, 0);
     val_lbl = rnd_label(center, &rnd_112, C_W, 0);
     unit_lbl = rnd_label(center, &rnd_26, C_GREY, CX + 68);
     peak_lbl = rnd_label(center, &rnd_18, C_DIM, CX + 106);
@@ -36,7 +39,8 @@ static void build(lv_obj_t *scr)
 static void page(int pg)
 {
     lv_img_set_src(face, face_img[pg]);
-    lv_label_set_text(unit_lbl, FACE_PAGE[pg].unit);
+    lv_label_set_text(title, rnd_page_name(pg));
+    lv_label_set_text(unit_lbl, rnd_unit(pg));
     lv_label_set_text(peak_lbl, "");
     zone_at = NAN;
     warn_on = regen_on = big_on = -1;
@@ -69,7 +73,8 @@ static void draw(const rnd_view_t *v)
     }
     if (v->regen != regen_on) {
         regen_on = v->regen;
-        lv_label_set_text(regen_lbl, v->regen ? "DPF REGEN" : "");
+        lv_label_set_text(regen_lbl, v->regen ? TR("DPF REGEN", "REGEN. DPF")
+                                                 : "");
     }
 }
 
