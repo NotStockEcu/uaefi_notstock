@@ -21,12 +21,17 @@ SCENES = {
     "intake": "page=3",
     "exhaust": "page=4",
     "rpm": "page=5",
-    "dpf": "page=6",
     "oil-warn": "page=1 oil=134",
     "no-data": "link=0",
     "swipe": "swipe=left t=0.2",
     "boost-warn": "page=2 boost=2.31",
     "exhaust-hot": "page=4 exhaust=684",
+    "menu": "screen=menu",
+    "dpf": "screen=dpf",
+    "dpf-full": "screen=dpf soot=26.1",
+    "dpf-regen": "screen=dpf regen=start t=24",
+    "regen-start": "regen=start t=2",
+    "regen-end": "regen=end t=2",
 }
 
 

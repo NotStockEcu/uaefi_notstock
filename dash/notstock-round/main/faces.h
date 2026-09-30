@@ -7,7 +7,7 @@
 #define FACE_SWEEP    270
 #define FACE_ARC_R    219     /* centre line of the value arc */
 #define FACE_ARC_W    15
-#define FACE_COUNT    7
+#define FACE_COUNT    6
 
 /* one row per page, in page order */
 typedef struct {
@@ -22,7 +22,10 @@ static const face_page_t FACE_PAGE[FACE_COUNT] = {
     { "\xC2\xB0" "C", 0.0f, 100.0f, 60.0f },   /* INTAKE */
     { "\xC2\xB0" "C", 0.0f, 1000.0f, 750.0f },   /* EXHAUST */
     { "rpm", 0.0f, 5000.0f, 4500.0f },   /* RPM */
-    { "%", 0.0f, 100.0f, 80.0f },   /* DPF */
 };
 
 extern const lv_img_dsc_t *const face_img[FACE_COUNT];
+
+/* A8 icons, recolour with img_recolor */
+extern const lv_img_dsc_t icon_dpf_120;
+extern const lv_img_dsc_t icon_dpf_40;

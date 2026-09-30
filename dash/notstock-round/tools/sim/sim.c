@@ -1,7 +1,10 @@
-/* PC render of the round gauge UI (main/ui_round.c) into a PPM, masked to
+/* PC render of the round gauge UI (main/ui_round*.c) into a PPM, masked to
  * the round panel. Usage:
  *   sim out.ppm [page=N] [water=V] [oil=V] [boost=V] [intake=V]
  *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right]
+ *               [screen=menu|dpf] [soot=G] [filter=C]
+ *               [regen=start|end]   filter temperature crosses the
+ *                                   regeneration threshold half way through
  */
 #include <math.h>
 #include <stdio.h>
@@ -28,6 +31,11 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
     lv_disp_flush_ready(drv);
 }
 
+void rnd_beep(int n)
+{
+    fprintf(stderr, "beep x%d\n", n);
+}
+
 static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
@@ -52,9 +60,14 @@ int main(int argc, char **argv)
         return 1;
     }
     static const char *const KEY[RND_COUNT] = {
-        "water", "oil", "boost", "intake", "exhaust", "rpm", "dpf",
+        "water", "oil", "boost", "intake", "exhaust", "rpm",
     };
-    rnd_data_t d = { .v = { 86, 92, 1.12f, 31, 412, 2350, 34 }, .link = true };
+    rnd_data_t d = {
+        .v = { 86, 92, 1.12f, 31, 412, 2350 },
+        .dpf = { 12.28f, -3.32f, 5, 274.5f, 90.5f },   /* the T5.1's log */
+        .link = true,
+    };
+    const char *screen = NULL, *regen = NULL;
     int page = 0;
     float t_end = 1.5f;
     const char *swipe = NULL;
@@ -76,6 +89,10 @@ int main(int argc, char **argv)
         if (strcmp(k, "link") == 0)  { d.link = atoi(v) != 0; used = true; }
         if (strcmp(k, "t") == 0)     { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "swipe") == 0) { swipe = v; used = true; }
+        if (strcmp(k, "screen") == 0) { screen = v; used = true; }
+        if (strcmp(k, "regen") == 0) { regen = v; used = true; }
+        if (strcmp(k, "soot") == 0)  { d.dpf.soot_g = strtof(v, NULL); used = true; }
+        if (strcmp(k, "filter") == 0) { d.dpf.temp_c = strtof(v, NULL); used = true; }
         if (!used) fprintf(stderr, "unknown input '%s'\n", argv[i]);
     }
 
@@ -98,7 +115,23 @@ int main(int argc, char **argv)
 
     ui_round_create();
     if (page) ui_round_page(page);
-    run(t_end, &d);
+    if (screen) {
+        extern lv_obj_t *rnd_dpf_screen(void);
+        extern void rnd_menu_open(void);
+        if (strcmp(screen, "dpf") == 0)  lv_scr_load(rnd_dpf_screen());
+        if (strcmp(screen, "menu") == 0) rnd_menu_open();
+    }
+    if (regen) {
+        /* first half on one side of the threshold, then the other */
+        bool start = strcmp(regen, "start") == 0;
+        d.dpf.temp_c = start ? 310 : 560;
+        run(t_end / 2, &d);
+        d.dpf.temp_c = start ? 585 : 290;
+        if (!start) d.dpf.soot_g = 3.4f;
+        run(t_end / 2, &d);
+    } else {
+        run(t_end, &d);
+    }
 
     if (swipe) {
         /* a finger across the middle, then let the new page settle */

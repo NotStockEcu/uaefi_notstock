@@ -44,8 +44,10 @@ PAGES = [
     ("INTAKE",  "INTAKE",  "°C", 0,  100, 5,   20,  1,    60,   "intake",  None),
     ("EXHAUST", "EXHAUST", "°C", 0, 1000, 50,  200, 100,  750,  "exhaust", "x100"),
     ("RPM",     "ENGINE",  "rpm",     0, 5000, 250, 1000, 1000, 4500, "rpm",    "x1000"),
-    ("DPF",     "DPF",     "%",       0,  100, 5,   20,  1,    80,   "dpf",     None),
 ]
+
+# icons the UI draws itself (recoloured A8 images): name, size in px
+UI_ICONS = [("dpf", 120), ("dpf", 40)]
 
 C_BG_IN = (22, 25, 30)
 C_BG_OUT = (0, 0, 0)
@@ -342,6 +344,20 @@ def main():
                      % (name, name))
         lines.append("};")
         lines.append("")
+    for name, px in UI_ICONS:
+        m = icon_mask(name, px)
+        cname = "icon_%s_%d" % (name, px)
+        data = list(m.tobytes())
+        lines.append("static const uint8_t %s_px[%d] = {" % (cname, len(data)))
+        for i in range(0, len(data), 24):
+            lines.append("    " + ", ".join("%d" % v for v in data[i:i + 24]) + ",")
+        lines.append("};")
+        lines.append("const lv_img_dsc_t %s = {" % cname)
+        lines.append("    .header.cf = LV_IMG_CF_ALPHA_8BIT, .header.w = %d, "
+                     ".header.h = %d," % (px, px))
+        lines.append("    .data_size = sizeof %s_px, .data = %s_px," % (cname, cname))
+        lines.append("};")
+        lines.append("")
     lines.append("const lv_img_dsc_t *const face_img[FACE_COUNT] = {")
     lines.append("    " + ", ".join("&" + n for n in names) + ",")
     lines.append("};")
@@ -374,7 +390,11 @@ def main():
         h.append('    { "%s", %s, %s, %s },   /* %s */'
                  % (unit, num(float(p[3])), num(float(p[4])), num(float(p[8])), p[0]))
     h += ["};", "",
-          "extern const lv_img_dsc_t *const face_img[FACE_COUNT];", ""]
+          "extern const lv_img_dsc_t *const face_img[FACE_COUNT];",
+          "",
+          "/* A8 icons, recolour with img_recolor */"]
+    h += ["extern const lv_img_dsc_t icon_%s_%d;" % (n, px) for n, px in UI_ICONS]
+    h += [""]
     open(os.path.join(MAIN, "faces.h"), "w").write("\n".join(h))
 
     # icon sheet for the docs
