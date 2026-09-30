@@ -55,7 +55,13 @@ void rnd_settings_defaults(void);
 void rnd_beep(int n);                 /* n short beeps, must not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
 
-void ui_round_create(void);
+/* builds every screen; boot: the NOT STOCK logo first, fading in from black
+ * and then into the gauges (RND_BOOT_MS in all), else the gauges at once */
+void ui_round_create(bool boot);
+#define RND_BOOT_IN_MS    1200    /* logo out of black */
+#define RND_BOOT_HOLD_MS  1500
+#define RND_BOOT_X_MS     900     /* logo into the gauges */
+#define RND_BOOT_MS (RND_BOOT_IN_MS + RND_BOOT_HOLD_MS + RND_BOOT_X_MS)
 void ui_round_update(const rnd_data_t *d);   /* call at ~30 Hz */
 void ui_round_page(int page);                 /* what a swipe does */
 int  ui_round_current(void);

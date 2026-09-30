@@ -37,6 +37,9 @@ SCENES = {
     "limits": "screen=limits limit=0",
     "limits-boost": "screen=limits limit=2",
     "water-limit-90": "warn0=90",
+    "boot-in": "boot=1 t=0.6",
+    "boot-logo": "boot=1 t=2.0",
+    "boot-cross": "boot=1 t=3.2",
 }
 
 

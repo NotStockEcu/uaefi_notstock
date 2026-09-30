@@ -7,6 +7,7 @@
  *                                   regeneration threshold half way through
  *               [screen=settings|look|limits] [limit=N] [beep=0|1]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
+ *               [boot=1]            start with the logo; t= picks the moment
  */
 #include <math.h>
 #include <stdio.h>
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
         .link = true,
     };
     const char *screen = NULL, *regen = NULL;
-    int limit = 0;
+    int limit = 0, boot = 0;
     rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
@@ -102,6 +103,7 @@ int main(int argc, char **argv)
         if (strcmp(k, "swipe") == 0) { swipe = v; used = true; }
         if (strcmp(k, "screen") == 0) { screen = v; used = true; }
         if (strcmp(k, "limit") == 0) { limit = atoi(v); used = true; }
+        if (strcmp(k, "boot") == 0)  { boot = atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);
@@ -131,7 +133,7 @@ int main(int argc, char **argv)
     indev.read_cb = touch_cb;
     lv_indev_drv_register(&indev);
 
-    ui_round_create();
+    ui_round_create(boot != 0);
     if (page) ui_round_page(page);
     if (screen) {
         extern lv_obj_t *rnd_dpf_screen(void);

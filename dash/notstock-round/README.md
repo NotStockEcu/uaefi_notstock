@@ -43,6 +43,21 @@ script (unit box 0..100), so they scale to any size.
 Only one device may poll the OBD port: with the 7" dash on OBD-II as well,
 one of the two has to listen only.
 
+## Boot
+
+![boot-in](preview/boot-in.png) ![boot-logo](preview/boot-logo.png) ![boot-cross](preview/boot-cross.png)
+
+The owner's NOT STOCK. / NOT STABLE. badge fills the round panel: it comes
+out of black (1.2 s, eased), holds (1.5 s) and cross-fades into the gauges
+(0.9 s), whose arc sweeps up as they appear. `ui_round_create(true)`; the
+timings are `RND_BOOT_*` in `ui_round.h`. The logo is `tools/gen_splash.py`
+from `assets/splash.png` (the same file and keying as the 7" dash), 456 px,
+406 kB of RGB565 in flash.
+
+On the panel the cross-fade is a full-screen blend per frame; if LVGL is too
+slow for it there, the 7" dash's way (blending straight in the framebuffer,
+`boot_anim.c`) is the fallback.
+
 ## Menu and DPF status
 
 ![menu](preview/menu.png) ![dpf](preview/dpf.png)

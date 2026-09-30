@@ -10,6 +10,9 @@
  * A page change swaps the face image; the arc then sweeps up from the bottom
  * of the new scale on its own, because the shown value is smoothed towards
  * the live one, and the readout fades in. A long press opens the menu.
+ *
+ * Boot: the NOT STOCK badge (tools/gen_splash.py) fades in on black, holds,
+ * and cross-fades into the gauges, whose arc sweeps up as they come in.
  */
 #include "ui_round_int.h"
 
@@ -141,6 +144,41 @@ lv_obj_t *rnd_gauge_screen(void)
     return scr;
 }
 
+/* ---------------------------------------------------------------- boot */
+LV_IMG_DECLARE(splash_logo);
+
+static void opa_cb(void *obj, int32_t v)
+{
+    lv_obj_set_style_opa(obj, (lv_opa_t)v, 0);
+}
+
+static void boot(void)
+{
+    lv_obj_t *s = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(s, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *logo = lv_img_create(s);
+    lv_img_set_src(logo, &splash_logo);
+    lv_obj_center(logo);
+    lv_obj_set_style_opa(logo, LV_OPA_TRANSP, 0);
+    lv_scr_load(s);
+
+    /* out of the dark: slow at first, like it is being lit */
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, logo);
+    lv_anim_set_exec_cb(&a, opa_cb);
+    lv_anim_set_values(&a, LV_OPA_TRANSP, LV_OPA_COVER);
+    lv_anim_set_time(&a, RND_BOOT_IN_MS);
+    lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
+    lv_anim_start(&a);
+
+    /* then into the gauges; the splash screen goes when done */
+    lv_scr_load_anim(scr, LV_SCR_LOAD_ANIM_FADE_IN, RND_BOOT_X_MS,
+                     RND_BOOT_IN_MS + RND_BOOT_HOLD_MS, true);
+}
+
 /* ---------------------------------------------------------------- pages */
 static void show_dots(void)
 {
@@ -183,7 +221,7 @@ static void long_cb(lv_event_t *e)
     rnd_menu_open();
 }
 
-void ui_round_create(void)
+void ui_round_create(bool boot_logo)
 {
     scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
@@ -236,7 +274,8 @@ void ui_round_create(void)
     rnd_menu_create();
     rnd_dpf_create();
     rnd_set_create();
-    lv_scr_load(scr);
+    if (boot_logo) boot();
+    else           lv_scr_load(scr);
 }
 
 /* ---------------------------------------------------------------- values */
