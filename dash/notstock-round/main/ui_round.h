@@ -1,6 +1,6 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * settings: look, boot logo, beep on/off, warn limits).
+ * settings: look, beep on/off, warn limits).
  * A particulate filter regeneration pops up over whatever is shown, with a
  * beep. ESP-free, so tools/sim renders it on a PC.
  *
@@ -41,12 +41,9 @@ typedef struct {
  * rnd_settings_save() is called, on leaving the settings screens. */
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
 enum { RND_LOOK_NOTSTOCK, RND_LOOK_COUNT };
-/* boot logos, in the order of LOGOS in tools/gen_splash.py */
-enum { RND_LOGO_NOTSTOCK, RND_LOGO_VW, RND_LOGO_COUNT };
 
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
-    uint8_t logo;                     /* RND_LOGO_*, shown at power-up */
     bool    beep;                     /* beep on regeneration start / end */
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
 } rnd_settings_t;
@@ -58,7 +55,7 @@ void rnd_settings_defaults(void);
 void rnd_beep(int n);                 /* n short beeps, must not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
 
-/* builds every screen; boot: the chosen logo first, fading in from black
+/* builds every screen; boot: the NOT STOCK logo first, fading in from black
  * and then into the gauges (RND_BOOT_MS in all), else the gauges at once */
 void ui_round_create(bool boot);
 #define RND_BOOT_IN_MS    1200    /* logo out of black */

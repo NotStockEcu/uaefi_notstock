@@ -8,7 +8,6 @@
  *               [screen=settings|look|limits] [limit=N] [beep=0|1]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
- *               [logo=N]            boot logo, RND_LOGO_*
  */
 #include <math.h>
 #include <stdio.h>
@@ -105,7 +104,6 @@ int main(int argc, char **argv)
         if (strcmp(k, "screen") == 0) { screen = v; used = true; }
         if (strcmp(k, "limit") == 0) { limit = atoi(v); used = true; }
         if (strcmp(k, "boot") == 0)  { boot = atoi(v); used = true; }
-        if (strcmp(k, "logo") == 0)  { g_rnd_set.logo = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);
