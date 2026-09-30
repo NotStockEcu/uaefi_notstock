@@ -1,7 +1,8 @@
 /* Round gauge UI: settings. See ui_round.h.
  *
- * SETTINGS (from the menu): LOOK, BEEP on / off (the regeneration beeps; the
- * popup comes either way), LIMITS. A long press goes one level back and
+ * SETTINGS (from the menu): LOOK, LOGO (at power-up; tap for the next),
+ * BEEP on / off (the regeneration beeps; the popup comes either way),
+ * LIMITS. A long press goes one level back and
  * stores the settings.
  *
  * LIMITS: one warn limit at a time, big, with - and + either side (hold to
@@ -31,6 +32,7 @@ void rnd_settings_defaults(void)
 {
     memset(&g_rnd_set, 0, sizeof g_rnd_set);
     g_rnd_set.look = RND_LOOK_NOTSTOCK;
+    g_rnd_set.logo = RND_LOGO_NOTSTOCK;
     g_rnd_set.beep = true;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
@@ -56,7 +58,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 {
     lv_obj_t *b = lv_obj_create(par);
     lv_obj_remove_style_all(b);
-    lv_obj_set_size(b, 300, 70);
+    lv_obj_set_size(b, 340, 64);
     lv_obj_align(b, LV_ALIGN_TOP_MID, 0, y);
     lv_obj_set_style_radius(b, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(b, C_PANEL, 0);
@@ -77,7 +79,27 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr;
-static lv_obj_t *beep_lbl, *look_lbl, *look_pill;
+static lv_obj_t *beep_lbl, *logo_lbl, *look_lbl, *look_pill;
+
+static const char *const LOGO_NAME[RND_LOGO_COUNT] = {
+    [RND_LOGO_NOTSTOCK] = "NOTSTOCK",
+    [RND_LOGO_VW]       = "VW",
+};
+
+static void show_logo(void)
+{
+    char buf[32];
+    int l = g_rnd_set.logo < RND_LOGO_COUNT ? g_rnd_set.logo : 0;
+    snprintf(buf, sizeof buf, "LOGO  %s", LOGO_NAME[l]);
+    lv_label_set_text(logo_lbl, buf);
+}
+
+static void logo_next(lv_event_t *e)
+{
+    (void)e;
+    g_rnd_set.logo = (uint8_t)((g_rnd_set.logo + 1) % RND_LOGO_COUNT);
+    show_logo();
+}
 
 static void show_beep(void)
 {
@@ -88,6 +110,7 @@ static void show_beep(void)
 void rnd_set_open(void)
 {
     show_beep();
+    show_logo();
     lv_scr_load(set_scr);
 }
 
@@ -219,12 +242,13 @@ void rnd_set_create(void)
     lv_obj_t *l;
 
     set_scr = screen(set_back, "SETTINGS");
-    pill(set_scr, 110, go_look, &l);
+    pill(set_scr, 100, go_look, &l);
     lv_label_set_text(l, "LOOK");
-    pill(set_scr, 200, beep_toggle, &beep_lbl);
-    pill(set_scr, 290, go_limits, &l);
+    pill(set_scr, 176, logo_next, &logo_lbl);
+    pill(set_scr, 252, beep_toggle, &beep_lbl);
+    pill(set_scr, 328, go_limits, &l);
     lv_label_set_text(l, "LIMITS");
-    l = rnd_label(set_scr, &rnd_18, C_DIM, 390);
+    l = rnd_label(set_scr, &rnd_18, C_DIM, 414);
     lv_label_set_text(l, "LONG PRESS: BACK");
 
     look_scr = screen(sub_back, "LOOK");

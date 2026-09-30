@@ -47,12 +47,18 @@ one of the two has to listen only.
 
 ![boot-in](preview/boot-in.png) ![boot-logo](preview/boot-logo.png) ![boot-cross](preview/boot-cross.png)
 
-The owner's NOT STOCK. / NOT STABLE. badge fills the round panel: it comes
-out of black (1.2 s, eased), holds (1.5 s) and cross-fades into the gauges
+The logo picked in SETTINGS -> LOGO fills the round panel: the owner's NOT
+STOCK. / NOT STABLE. badge, or a VW roundel. It comes out of black (1.2 s, eased), holds (1.5 s) and cross-fades into the gauges
 (0.9 s), whose arc sweeps up as they appear. `ui_round_create(true)`; the
-timings are `RND_BOOT_*` in `ui_round.h`. The logo is `tools/gen_splash.py`
-from `assets/splash.png` (the same file and keying as the 7" dash), 456 px,
-406 kB of RGB565 in flash.
+timings are `RND_BOOT_*` in `ui_round.h`. The logos come from
+`tools/gen_splash.py`: NOT STOCK from `assets/splash.png` (the same file and
+keying as the 7" dash), VW drawn there (the flat 2019 roundel; VW's
+trademark, fine on the owner's own van, not on anything sold). 456 px,
+406 kB of RGB565 each in flash. Another car's logo: a function on `LOGOS`
+there, a name on `RND_LOGO_*` in `ui_round.h` and `LOGO_NAME[]` in
+`ui_round_set.c`.
+
+![logo-vw](preview/logo-vw.png)
 
 On the panel the cross-fade is a full-screen blend per frame; if LVGL is too
 slow for it there, the 7" dash's way (blending straight in the framebuffer,
@@ -94,6 +100,7 @@ Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
 - **LOOK**: NOTSTOCK for now, more to come.
+- **LOGO**: the boot logo, tap for the next: NOTSTOCK, VW.
 - **BEEP ON / OFF**: the regeneration beeps. The popup comes either way.
 - **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A

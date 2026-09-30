@@ -11,7 +11,8 @@
  * of the new scale on its own, because the shown value is smoothed towards
  * the live one, and the readout fades in. A long press opens the menu.
  *
- * Boot: the NOT STOCK badge (tools/gen_splash.py) fades in on black, holds,
+ * Boot: the logo picked in the settings (NOT STOCK badge, VW, ...; see
+ * tools/gen_splash.py) fades in on black, holds,
  * and cross-fades into the gauges, whose arc sweeps up as they come in.
  */
 #include "ui_round_int.h"
@@ -145,7 +146,7 @@ lv_obj_t *rnd_gauge_screen(void)
 }
 
 /* ---------------------------------------------------------------- boot */
-LV_IMG_DECLARE(splash_logo);
+extern const lv_img_dsc_t *const boot_logo[RND_LOGO_COUNT];
 
 static void opa_cb(void *obj, int32_t v)
 {
@@ -159,7 +160,8 @@ static void boot(void)
     lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
     lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *logo = lv_img_create(s);
-    lv_img_set_src(logo, &splash_logo);
+    lv_img_set_src(logo, boot_logo[g_rnd_set.logo < RND_LOGO_COUNT ?
+                                   g_rnd_set.logo : RND_LOGO_NOTSTOCK]);
     lv_obj_center(logo);
     lv_obj_set_style_opa(logo, LV_OPA_TRANSP, 0);
     lv_scr_load(s);

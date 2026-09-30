@@ -40,6 +40,8 @@ SCENES = {
     "boot-in": "boot=1 t=0.6",
     "boot-logo": "boot=1 t=2.0",
     "boot-cross": "boot=1 t=3.2",
+    "boot-vw-logo": "boot=1 logo=1 t=2.0",
+    "boot-vw-cross": "boot=1 logo=1 t=3.2",
 }
 
 
