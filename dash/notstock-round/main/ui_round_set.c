@@ -77,7 +77,13 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr;
-static lv_obj_t *beep_lbl, *look_lbl, *look_pill;
+static lv_obj_t *beep_lbl, *look_pill[RND_LOOK_COUNT];
+
+static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
+    [RND_LOOK_NOTSTOCK] = "NOTSTOCK",
+    [RND_LOOK_RETRO]    = "RETRO",
+    [RND_LOOK_FUTURO]   = "FUTURO",
+};
 
 static void show_beep(void)
 {
@@ -113,18 +119,19 @@ static void beep_toggle(lv_event_t *e)
     show_beep();
 }
 
-/* LOOK: only NOTSTOCK so far */
+/* LOOK: the picked one has a white rim; it applies at once */
 static void show_look(void)
 {
-    bool sel = g_rnd_set.look == RND_LOOK_NOTSTOCK;
-    lv_obj_set_style_border_color(look_pill, sel ? C_W : C_EDGE, 0);
-    lv_label_set_text(look_lbl, "NOTSTOCK");
+    for (int i = 0; i < RND_LOOK_COUNT; i++) {
+        lv_obj_set_style_border_color(look_pill[i], i == g_rnd_set.look ?
+                                      C_W : C_EDGE, 0);
+    }
 }
 
 static void look_pick(lv_event_t *e)
 {
-    (void)e;
-    g_rnd_set.look = RND_LOOK_NOTSTOCK;
+    g_rnd_set.look = (uint8_t)(intptr_t)lv_event_get_user_data(e);
+    rnd_look_apply();
     show_look();
 }
 
@@ -228,9 +235,13 @@ void rnd_set_create(void)
     lv_label_set_text(l, "LONG PRESS: BACK");
 
     look_scr = screen(sub_back, "LOOK");
-    look_pill = pill(look_scr, 150, look_pick, &look_lbl);
-    l = rnd_label(look_scr, &rnd_18, C_DIM, 250);
-    lv_label_set_text(l, "MORE LOOKS TO COME");
+    for (int i = 0; i < RND_LOOK_COUNT; i++) {
+        look_pill[i] = pill(look_scr, 110 + i * 90, look_pick, &l);
+        lv_obj_remove_event_cb(look_pill[i], look_pick);
+        lv_obj_add_event_cb(look_pill[i], look_pick, LV_EVENT_CLICKED,
+                            (void *)(intptr_t)i);
+        lv_label_set_text(l, LOOK_NAME[i]);
+    }
     l = rnd_label(look_scr, &rnd_18, C_DIM, 390);
     lv_label_set_text(l, "LONG PRESS: BACK");
 

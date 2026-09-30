@@ -20,3 +20,5 @@ conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 84 -o $O/rnd_
 conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 26 -o $O/rnd_26.c
 # scale numbers, peak line
 conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 18 -o $O/rnd_18.c
+# RETRO look: the readout window (Barlow Condensed, SIL OFL)
+conv --font $F/BarlowCondensed-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 46 -o $O/rnd_barlow_46.c

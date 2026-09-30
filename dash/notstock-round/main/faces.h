@@ -10,6 +10,18 @@
 #define FACE_GROOVE_W 22     /* the baked groove, for the red zone */
 #define FACE_COUNT    6
 
+/* RETRO: the red band, the ticks' outer end, the readout window */
+#define RETRO_ZONE_R  216
+#define RETRO_ZONE_W  7
+#define RETRO_TICK_R  209
+#define RETRO_WIN_TOP 79     /* from the centre */
+#define RETRO_WIN_BOT 120
+#define RETRO_WIN_W   120
+
+/* FUTURO: the lit segments */
+#define FUTURO_SEG_R  224
+#define FUTURO_SEG_L  34
+
 /* one row per page, in page order */
 typedef struct {
     const char *unit;
@@ -26,6 +38,9 @@ static const face_page_t FACE_PAGE[FACE_COUNT] = {
 };
 
 extern const lv_img_dsc_t *const face_img[FACE_COUNT];
+extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];
+extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */
+extern const lv_img_dsc_t face_futuro_bg;
 
 /* A8 icons, recolour with img_recolor */
 extern const lv_img_dsc_t icon_dpf_120;

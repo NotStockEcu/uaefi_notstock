@@ -40,7 +40,7 @@ typedef struct {
  * ui_round_create() (or keeps rnd_settings_defaults()) and stores it when
  * rnd_settings_save() is called, on leaving the settings screens. */
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
-enum { RND_LOOK_NOTSTOCK, RND_LOOK_COUNT };
+enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
 
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */

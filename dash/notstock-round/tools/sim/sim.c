@@ -8,6 +8,8 @@
  *               [screen=settings|look|limits] [limit=N] [beep=0|1]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
+ *               [look=N]            RND_LOOK_*: 0 NOTSTOCK, 1 RETRO, 2 FUTURO
+ *               [relook=N,M,...]    switch looks while running, as LOOK does
  */
 #include <math.h>
 #include <stdio.h>
@@ -79,6 +81,7 @@ int main(int argc, char **argv)
     };
     const char *screen = NULL, *regen = NULL;
     int limit = 0, boot = 0;
+    const char *relook = NULL;
     rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
@@ -104,6 +107,8 @@ int main(int argc, char **argv)
         if (strcmp(k, "screen") == 0) { screen = v; used = true; }
         if (strcmp(k, "limit") == 0) { limit = atoi(v); used = true; }
         if (strcmp(k, "boot") == 0)  { boot = atoi(v); used = true; }
+        if (strcmp(k, "look") == 0)  { g_rnd_set.look = (uint8_t)atoi(v); used = true; }
+        if (strcmp(k, "relook") == 0) { relook = v; used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);
@@ -154,6 +159,14 @@ int main(int argc, char **argv)
         run(t_end, &d);
     }
 
+    for (const char *q = relook; q && *q; ) {
+        extern void rnd_look_apply(void);
+        g_rnd_set.look = (uint8_t)atoi(q);
+        rnd_look_apply();
+        run(0.5f, &d);
+        q = strchr(q, ',');
+        if (q) q++;
+    }
     if (swipe) {
         /* a finger across the middle, then let the new page settle */
         int dir = strcmp(swipe, "left") == 0 ? -1 : 1;

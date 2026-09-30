@@ -86,6 +86,29 @@ glows orange, and the menu's DPF icon is orange.
 The beep is `rnd_beep()`, provided by the platform: on the Waveshare 2.1"
 the buzzer sits on the TCA9554 expander (EXIO8).
 
+## Looks
+
+SETTINGS -> LOOK, applies at once. Menu, DPF status and settings stay the
+same in every look.
+
+![retro](preview/retro-boost.png) ![futuro](preview/futuro-boost.png)
+
+- **NOTSTOCK**: the faces above, glowing value arc.
+- **RETRO** (`ui_look_retro.c`): a mechanical instrument of the VDO kind.
+  Chrome bezel, black dial, white print, a glass sheen, all pre-rendered
+  per page (`draw_face_retro` in `gen_faces.py`). Live: the red band from
+  the warn limit, a red needle with a shadow over a black hub, a thin
+  orange tell-tale needle left at the peak (none for rpm), and the value in
+  a small window (Barlow Condensed, SIL OFL).
+- **FUTURO** (`ui_look_futuro.c`): one shared background (black, a hex grid
+  fading to the rim, thin cyan rings) and 46 segments that light up to the
+  value, cyan into magenta; dim red past the warn limit, all red over it.
+  Icon and title on top, a pale neon readout, the scale's ends underneath.
+
+A look is three functions (`rnd_look_t` in `ui_round_int.h`: build, page,
+draw); `ui_round.c` hands it the page and a smoothed value every frame.
+Flash: NOTSTOCK and RETRO faces 2.8 MB each, FUTURO's background 450 kB.
+
 ## Settings
 
 ![settings](preview/settings.png) ![limits](preview/limits.png)
@@ -93,7 +116,7 @@ the buzzer sits on the TCA9554 expander (EXIO8).
 Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
-- **LOOK**: NOTSTOCK for now, more to come.
+- **LOOK**: NOTSTOCK, RETRO, FUTURO.
 - **BEEP ON / OFF**: the regeneration beeps. The popup comes either way.
 - **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A

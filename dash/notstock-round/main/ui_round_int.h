@@ -7,6 +7,7 @@ LV_FONT_DECLARE(rnd_112);
 LV_FONT_DECLARE(rnd_84);
 LV_FONT_DECLARE(rnd_26);
 LV_FONT_DECLARE(rnd_18);
+LV_FONT_DECLARE(rnd_barlow_46);
 
 #define C_W      lv_color_hex(0xFFFFFF)
 #define C_GREY   lv_color_hex(0x8A9096)
@@ -38,7 +39,40 @@ extern const rnd_limit_t RND_LIMIT[RND_WARN_COUNT];
 
 /* the red zone above a warn limit, on the faces' groove */
 lv_obj_t *rnd_zone(lv_obj_t *par);
+lv_obj_t *rnd_zone_at(lv_obj_t *par, int r, int w, lv_color_t c);
 void rnd_zone_set(lv_obj_t *zone, float frac);   /* 0..1 of the sweep */
+
+/* ---- looks: how the gauge pages are drawn (SETTINGS -> LOOK) ----------
+ * ui_round.c does the pages, the smoothing and the peaks, and hands each
+ * frame to the look as a rnd_view_t. A look builds its widgets on the empty
+ * gauge screen; switching looks cleans the screen and builds the new one. */
+typedef struct {
+    int   page;
+    bool  valid;          /* there is a value */
+    float frac;           /* smoothed position on the scale, 0..1 */
+    float peak_frac;      /* the peak's position, NAN: none (or not kept) */
+    float warn_frac;      /* red zone from here, >= 1: none */
+    bool  warn;           /* over the limit */
+    const char *text;     /* the readout, "--" without a value */
+    const char *peak;     /* "MAX 104", "NOT READ", "NO DATA" or "" */
+    bool  alert;          /* peak line is NOT READ / NO DATA */
+    bool  big;            /* readout fits the big font (3 digits or less) */
+    bool  regen;          /* the particulate filter is regenerating */
+} rnd_view_t;
+
+typedef struct {
+    void (*build)(lv_obj_t *scr);
+    void (*page)(int page);                 /* after a page change */
+    void (*draw)(const rnd_view_t *v);      /* every frame */
+} rnd_look_t;
+
+extern const rnd_look_t rnd_look_notstock, rnd_look_retro, rnd_look_futuro;
+void rnd_look_apply(void);                  /* g_rnd_set.look changed */
+
+/* page dots, shared by the looks */
+void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT]);
+void rnd_dots_set(lv_obj_t *d[RND_COUNT], int page, lv_color_t on,
+                  lv_color_t off);
 
 /* screens */
 lv_obj_t *rnd_gauge_screen(void);
