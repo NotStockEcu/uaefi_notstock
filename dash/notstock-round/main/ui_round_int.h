@@ -28,6 +28,18 @@ void rnd_arcs_set(lv_obj_t *a[N_ARC], float frac_1000, lv_color_t c);
 lv_obj_t *rnd_label(lv_obj_t *par, const lv_font_t *f, lv_color_t c,
                     lv_coord_t y);
 
+/* warn limits: what the settings screen may set them to */
+typedef struct {
+    const char *name, *unit;
+    float lo, hi, step, def;
+    int dec;
+} rnd_limit_t;
+extern const rnd_limit_t RND_LIMIT[RND_WARN_COUNT];
+
+/* the red zone above a warn limit, on the faces' groove */
+lv_obj_t *rnd_zone(lv_obj_t *par);
+void rnd_zone_set(lv_obj_t *zone, float frac);   /* 0..1 of the sweep */
+
 /* screens */
 lv_obj_t *rnd_gauge_screen(void);
 void rnd_menu_create(void);
@@ -35,6 +47,9 @@ void rnd_menu_open(void);
 void rnd_dpf_create(void);
 lv_obj_t *rnd_dpf_screen(void);
 void rnd_dpf_update(const rnd_data_t *d);
+void rnd_set_create(void);
+void rnd_set_open(void);
+void rnd_limits_changed(void);        /* redraw the zones */
 
 /* regeneration: popup, beep, and the flag the gauges show */
 #define REGEN_TEMP 400.0f    /* filter hotter than this: regenerating */

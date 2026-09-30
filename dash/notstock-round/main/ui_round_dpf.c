@@ -1,8 +1,8 @@
 /* Round gauge UI: the menu, the DPF status screen and the regeneration
  * popup. See ui_round.h.
  *
- * Menu: long press on any screen. GAUGES, DPF STATUS, SETTINGS (not there
- * yet). A long press in the menu goes back to the gauges.
+ * Menu: long press on any screen. GAUGES, DPF STATUS, SETTINGS
+ * (ui_round_set.c). A long press in the menu goes back to the gauges.
  *
  * DPF status: the soot mass on the outer arc and as a filter drawing that
  * fills up, the measured soot, differential pressure, filter temperature and
@@ -19,7 +19,7 @@
 #include <string.h>
 
 #define SOOT_MAX      40.0f    /* arc full scale and the filter's full width */
-#define SOOT_WARN     24.0f    /* a guess until a regeneration is seen */
+#define SOOT_WARN     (g_rnd_set.warn[RND_WARN_SOOT])
 #define REGEN_HYST    50.0f    /* regeneration over below REGEN_TEMP - this */
 #define POPUP_MS      10000
 
@@ -35,6 +35,12 @@ static void go_gauges(lv_event_t *e)
 {
     (void)e;
     lv_scr_load(rnd_gauge_screen());
+}
+
+static void go_settings(lv_event_t *e)
+{
+    (void)e;
+    rnd_set_open();
 }
 
 static void go_dpf(lv_event_t *e)
@@ -98,14 +104,15 @@ void rnd_menu_create(void)
     lv_obj_align(menu_dpf_icon, LV_ALIGN_LEFT_MID, 14, 0);
     lv_obj_set_style_img_recolor(menu_dpf_icon, C_GREY, 0);
     lv_obj_set_style_img_recolor_opa(menu_dpf_icon, LV_OPA_COVER, 0);
-    menu_item("SETTINGS", 290, NULL);
+    menu_item("SETTINGS", 290, go_settings);
 
     lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 390);
-    lv_label_set_text(h, "SETTINGS: SOON");
+    lv_label_set_text(h, "LONG PRESS: BACK");
 }
 
 /* ------------------------------------------------------ DPF status screen */
-static lv_obj_t *dpf, *dpf_arc[N_ARC], *body, *fill, *pipe[2];
+static lv_obj_t *dpf, *dpf_arc[N_ARC], *dpf_zone, *body, *fill, *pipe[2];
+static float zone_at = NAN;       /* the warn level the zone was drawn for */
 static lv_obj_t *soot_lbl, *meas_lbl, *pill, *pill_lbl;
 enum { V_DP, V_TEMP, V_DIST, V_COUNT };
 static lv_obj_t *v_lbl[V_COUNT];
@@ -172,9 +179,8 @@ void rnd_dpf_create(void)
     lv_obj_add_event_cb(dpf, go_menu, LV_EVENT_LONG_PRESSED, NULL);
 
     /* groove and red zone like the gauge faces, then the soot arc */
-    ring(dpf, 0, FACE_SWEEP, lv_color_hex(0x0C0E11), FACE_ARC_W + 8);
-    ring(dpf, (uint16_t)(FACE_SWEEP * SOOT_WARN / SOOT_MAX), FACE_SWEEP,
-         lv_color_hex(0x5A1414), FACE_ARC_W + 8);
+    ring(dpf, 0, FACE_SWEEP, lv_color_hex(0x0C0E11), FACE_GROOVE_W);
+    dpf_zone = rnd_zone(dpf);
     rnd_arcs(dpf, dpf_arc);
 
     lv_obj_t *t = rnd_label(dpf, &rnd_18, C_GREY, 58);
@@ -247,6 +253,11 @@ void rnd_dpf_update(const rnd_data_t *d)
     bool live = d->link;
     float s = live ? d->dpf.soot_g : NAN;
     bool regen = rnd_regen_active();
+    if (SOOT_WARN != zone_at) {           /* the limit is a setting */
+        zone_at = SOOT_WARN;
+        rnd_zone_set(dpf_zone, SOOT_WARN / SOOT_MAX);
+        dpf_level = -1;
+    }
     char buf[40];
 
     fmt_or_dash(soot_lbl, "%.1f", s, live);
@@ -400,6 +411,6 @@ void rnd_regen_watch(const rnd_data_t *d)
     float s = d->dpf.soot_g;
     if (regen) soot_at_start = s;
     popup_show(regen, s);
-    rnd_beep(regen ? 3 : 1);
+    if (g_rnd_set.beep) rnd_beep(regen ? 3 : 1);
     lv_obj_set_style_img_recolor(menu_dpf_icon, regen ? C_REGEN : C_GREY, 0);
 }

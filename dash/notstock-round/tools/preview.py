@@ -32,6 +32,11 @@ SCENES = {
     "dpf-regen": "screen=dpf regen=start t=24",
     "regen-start": "regen=start t=2",
     "regen-end": "regen=end t=2",
+    "settings": "screen=settings",
+    "look": "screen=look",
+    "limits": "screen=limits limit=0",
+    "limits-boost": "screen=limits limit=2",
+    "water-limit-90": "warn0=90",
 }
 
 

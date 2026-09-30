@@ -5,6 +5,8 @@
  *               [screen=menu|dpf] [soot=G] [filter=C]
  *               [regen=start|end]   filter temperature crosses the
  *                                   regeneration threshold half way through
+ *               [screen=settings|look|limits] [limit=N] [beep=0|1]
+ *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  */
 #include <math.h>
 #include <stdio.h>
@@ -35,6 +37,13 @@ void rnd_beep(int n)
 {
     fprintf(stderr, "beep x%d\n", n);
 }
+
+void rnd_settings_save(void)
+{
+    fprintf(stderr, "settings saved\n");
+}
+
+void rnd_sim_settings(const char *which, int limit);
 
 static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
@@ -68,6 +77,8 @@ int main(int argc, char **argv)
         .link = true,
     };
     const char *screen = NULL, *regen = NULL;
+    int limit = 0;
+    rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
     const char *swipe = NULL;
@@ -90,6 +101,13 @@ int main(int argc, char **argv)
         if (strcmp(k, "t") == 0)     { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "swipe") == 0) { swipe = v; used = true; }
         if (strcmp(k, "screen") == 0) { screen = v; used = true; }
+        if (strcmp(k, "limit") == 0) { limit = atoi(v); used = true; }
+        if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
+        if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
+            int n = atoi(k + 4);
+            if (n < RND_WARN_COUNT) g_rnd_set.warn[n] = strtof(v, NULL);
+            used = true;
+        }
         if (strcmp(k, "regen") == 0) { regen = v; used = true; }
         if (strcmp(k, "soot") == 0)  { d.dpf.soot_g = strtof(v, NULL); used = true; }
         if (strcmp(k, "filter") == 0) { d.dpf.temp_c = strtof(v, NULL); used = true; }
@@ -120,6 +138,7 @@ int main(int argc, char **argv)
         extern void rnd_menu_open(void);
         if (strcmp(screen, "dpf") == 0)  lv_scr_load(rnd_dpf_screen());
         if (strcmp(screen, "menu") == 0) rnd_menu_open();
+        rnd_sim_settings(screen, limit);
     }
     if (regen) {
         /* first half on one side of the threshold, then the other */

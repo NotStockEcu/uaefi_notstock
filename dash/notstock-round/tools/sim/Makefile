@@ -10,10 +10,10 @@ CC      ?= cc
 CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -DLV_CONF_SKIP -DLV_LVGL_H_INCLUDE_SIMPLE \
            -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(256U*1024U)' \
-           -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 -DRND_SIZE=$(SIZE) \
+           -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 -DRND_SIZE=$(SIZE) -DRND_SIM \
            -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
-APP_SRC  := sim.c $(ROOT)/main/ui_round.c $(ROOT)/main/ui_round_dpf.c $(ROOT)/main/faces.c $(wildcard $(ROOT)/main/fonts/*.c)
+APP_SRC  := sim.c $(ROOT)/main/ui_round.c $(ROOT)/main/ui_round_dpf.c $(ROOT)/main/ui_round_set.c $(ROOT)/main/faces.c $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')
 LVGL_OBJ := $(patsubst $(LVGL_DIR)/%.c,$(OUT)/lvgl/%.o,$(LVGL_SRC))
 

@@ -1,7 +1,7 @@
 # NOT STOCK round gauge
 
 One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
-rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, SETTINGS (to come). Data comes over CAN the same way as on the 7" dash
+rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, SETTINGS. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
 
@@ -21,8 +21,9 @@ the bench.
 ![icons](preview/icons.png)
 
 - **Pre-rendered faces** (`tools/gen_faces.py` -> `main/faces.c`): radial
-  background, bezel line, the groove the value arc runs in, the red zone
-  above the warn limit, ticks, scale numbers, the page's icon and title. One
+  background, bezel line, the groove the value arc runs in, ticks, scale
+  numbers, the page's icon and title. The red zone above the warn limit is
+  drawn live over the groove, since the limit is a setting. One
   RGB565 image per page, 450 kB each in flash; nothing of it costs a frame.
 - **Drawn live by LVGL** on top: the value arc with a two-layer glow, the
   readout (Orbitron Black 112, 84 for four digits), unit, peak since power-on
@@ -70,11 +71,27 @@ glows orange, and the menu's DPF icon is orange.
 The beep is `rnd_beep()`, provided by the platform: on the Waveshare 2.1"
 the buzzer sits on the TCA9554 expander (EXIO8).
 
+## Settings
+
+![settings](preview/settings.png) ![limits](preview/limits.png)
+
+Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
+stores them (`rnd_settings_save()`, the platform's NVS).
+
+- **LOOK**: NOTSTOCK for now, more to come.
+- **BEEP ON / OFF**: the regeneration beeps. The popup comes either way.
+- **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
+  the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A
+  gauge goes red over its limit and its red zone starts there; the DPF soot
+  limit is what the DPF screen measures fullness against. Ranges, steps and
+  defaults: `RND_LIMIT[]` in `ui_round_set.c`.
+
 ## Preview on the PC
 
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py page=2 boost=1.8
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py screen=dpf regen=start
+    LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py screen=limits limit=2
 
 Writes `preview/*.png`. After changing pages or artwork:
 `python tools/gen_faces.py` (add `--size 466` for the AMOLED). Fonts:

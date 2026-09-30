@@ -7,6 +7,7 @@
 #define FACE_SWEEP    270
 #define FACE_ARC_R    219     /* centre line of the value arc */
 #define FACE_ARC_W    15
+#define FACE_GROOVE_W 22     /* the baked groove, for the red zone */
 #define FACE_COUNT    6
 
 /* one row per page, in page order */

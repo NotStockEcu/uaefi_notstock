@@ -1,5 +1,6 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
- * for the next one. Long press anywhere: the menu (gauges, DPF status).
+ * for the next one. Long press anywhere: the menu (gauges, DPF status,
+ * settings: look, beep on/off, warn limits).
  * A particulate filter regeneration pops up over whatever is shown, with a
  * beep. ESP-free, so tools/sim renders it on a PC.
  *
@@ -9,6 +10,7 @@
  */
 #pragma once
 #include <stdbool.h>
+#include <stdint.h>
 #include "lvgl.h"
 
 #ifndef RND_SIZE
@@ -34,8 +36,24 @@ typedef struct {
     bool  link;
 } rnd_data_t;
 
-/* provided by the platform: n short beeps, must not block */
-void rnd_beep(int n);
+/* Settings. The UI edits g_rnd_set in place; the platform loads it before
+ * ui_round_create() (or keeps rnd_settings_defaults()) and stores it when
+ * rnd_settings_save() is called, on leaving the settings screens. */
+enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
+enum { RND_LOOK_NOTSTOCK, RND_LOOK_COUNT };
+
+typedef struct {
+    uint8_t look;                     /* RND_LOOK_* */
+    bool    beep;                     /* beep on regeneration start / end */
+    float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
+} rnd_settings_t;
+
+extern rnd_settings_t g_rnd_set;
+void rnd_settings_defaults(void);
+
+/* provided by the platform */
+void rnd_beep(int n);                 /* n short beeps, must not block */
+void rnd_settings_save(void);         /* store g_rnd_set */
 
 void ui_round_create(void);
 void ui_round_update(const rnd_data_t *d);   /* call at ~30 Hz */

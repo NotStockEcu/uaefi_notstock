@@ -2,7 +2,7 @@
 """Pre-render the round gauge faces into main/faces.c and main/faces.h.
 
 Everything static on a page is baked into one RGB565 image: the radial
-background, the bezel line, the groove the value arc runs in, the red zone,
+background, the bezel line, the groove the value arc runs in,
 ticks, scale numbers, the icon and the title. LVGL then only draws the value
 arc (with its glow), the readout and the page dots on top, so the look can
 have gradients and antialiased artwork without costing a frame.
@@ -52,8 +52,6 @@ UI_ICONS = [("dpf", 120), ("dpf", 40)]
 C_BG_IN = (22, 25, 30)
 C_BG_OUT = (0, 0, 0)
 C_GROOVE = (12, 14, 17)
-C_ZONE = (92, 14, 14)
-C_ZONE_EDGE = (200, 36, 36)
 C_MINOR = (92, 98, 106)
 C_MAJOR = (225, 229, 234)
 C_NUM = (170, 176, 184)
@@ -239,16 +237,13 @@ def draw_face(p, size):
     gr, gw = GROOVE_R * R, GROOVE_W * R
     box = [c - gr - gw / 2, c - gr - gw / 2, c + gr + gw / 2, c + gr + gw / 2]
     d.arc(box, START, START + SWEEP, fill=C_GROOVE, width=int(gw))
-    # red zone: tinted groove and a thin bright rim on its outside
-    a_w = value_angle(p, p[8])
-    d.arc(box, a_w, START + SWEEP, fill=C_ZONE, width=int(gw))
-    d.arc(box, a_w, START + SWEEP, fill=C_ZONE_EDGE, width=int(1.2 * SS))
-    # rounded groove ends
+    # rounded groove ends. The red zone above the warn limit is not baked
+    # in: the limit is a setting, so the UI draws the zone over the groove.
     for a in (START, START + SWEEP):
         x = c + gr * math.cos(math.radians(a))
         y = c + gr * math.sin(math.radians(a))
-        col = C_ZONE if a == START + SWEEP else C_GROOVE
-        d.ellipse([x - gw / 2, y - gw / 2, x + gw / 2, y + gw / 2], fill=col)
+        d.ellipse([x - gw / 2, y - gw / 2, x + gw / 2, y + gw / 2],
+                  fill=C_GROOVE)
 
     # ticks and numbers
     lo, hi, minor, major, div = p[3], p[4], p[5], p[6], p[7]
@@ -263,8 +258,6 @@ def draw_face(p, size):
         ln = (0.075 if is_major else 0.035) * R
         w = (0.017 if is_major else 0.009) * R
         col = C_MAJOR if is_major else C_MINOR
-        if v >= p[8] - 1e-9:
-            col = (230, 70, 70) if is_major else (130, 40, 40)
         d.line([(c + r_out * math.cos(a), c + r_out * math.sin(a)),
                 (c + (r_out - ln) * math.cos(a), c + (r_out - ln) * math.sin(a))],
                fill=col, width=int(w))
@@ -376,6 +369,7 @@ def main():
          "#define FACE_SWEEP    %d" % SWEEP,
          "#define FACE_ARC_R    %d     /* centre line of the value arc */" % round(GROOVE_R * R),
          "#define FACE_ARC_W    %d" % round(ARC_W * R),
+         "#define FACE_GROOVE_W %d     /* the baked groove, for the red zone */" % round(GROOVE_W * R),
          "#define FACE_COUNT    %d" % len(PAGES),
          "",
          "/* one row per page, in page order */",

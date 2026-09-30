@@ -40,7 +40,7 @@ static const struct { int extra; lv_opa_t opa; } GLOW[N_ARC] = {
     { 30, 18 }, { 14, 45 }, { 0, LV_OPA_COVER },
 };
 
-static lv_obj_t *scr, *face, *center;
+static lv_obj_t *scr, *face, *center, *zone;
 static lv_obj_t *arc[N_ARC];
 static lv_obj_t *val_lbl, *unit_lbl, *peak_lbl, *regen_lbl;
 static lv_obj_t *dot[RND_COUNT];
@@ -84,6 +84,45 @@ void rnd_arcs_set(lv_obj_t *a[N_ARC], float frac_1000, lv_color_t c)
     }
 }
 
+lv_obj_t *rnd_zone(lv_obj_t *par)
+{
+    lv_obj_t *a = lv_arc_create(par);
+    lv_obj_remove_style_all(a);
+    int d = 2 * FACE_ARC_R + FACE_GROOVE_W;
+    lv_obj_set_size(a, d, d);
+    lv_obj_center(a);
+    lv_obj_clear_flag(a, LV_OBJ_FLAG_CLICKABLE);
+    lv_arc_set_rotation(a, FACE_START);
+    lv_obj_set_style_arc_width(a, FACE_GROOVE_W, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(a, lv_color_hex(0x5A1414), LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(a, true, LV_PART_MAIN);
+    lv_obj_set_style_arc_opa(a, LV_OPA_TRANSP, LV_PART_INDICATOR);
+    return a;
+}
+
+void rnd_zone_set(lv_obj_t *z, float frac)
+{
+    if (!(frac < 1)) {                    /* off the scale, or NAN */
+        lv_obj_add_flag(z, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+    if (frac < 0) frac = 0;
+    lv_obj_clear_flag(z, LV_OBJ_FLAG_HIDDEN);
+    lv_arc_set_bg_angles(z, (uint16_t)lroundf(FACE_SWEEP * frac), FACE_SWEEP);
+}
+
+static void zone_update(void)
+{
+    const face_page_t *p = &FACE_PAGE[page];
+    rnd_zone_set(zone, (g_rnd_set.warn[page] - p->lo) / (p->hi - p->lo));
+}
+
+void rnd_limits_changed(void)
+{
+    zone_update();
+    warn_on = -1;
+}
+
 lv_obj_t *rnd_label(lv_obj_t *par, const lv_font_t *f, lv_color_t c,
                     lv_coord_t y)
 {
@@ -119,6 +158,7 @@ void ui_round_page(int p)
     lv_label_set_text(peak_lbl, "");
     shown = NAN;
     warn_on = -1;
+    zone_update();
     rnd_arcs_set(arc, 0, C_W);
     show_dots();
     lv_obj_fade_in(center, 250, 0);
@@ -156,6 +196,7 @@ void ui_round_create(void)
     lv_obj_set_pos(face, 0, 0);
     lv_obj_clear_flag(face, LV_OBJ_FLAG_CLICKABLE);
 
+    zone = rnd_zone(scr);
     rnd_arcs(scr, arc);
 
     /* the readout, faded in on a page change */
@@ -194,6 +235,7 @@ void ui_round_create(void)
 
     rnd_menu_create();
     rnd_dpf_create();
+    rnd_set_create();
     lv_scr_load(scr);
 }
 
@@ -249,7 +291,7 @@ static void gauge_update(const rnd_data_t *d)
     /* smoothed: after a page change the arc sweeps up from zero */
     if (isnan(shown)) shown = 0;
     shown += (target - shown) * 0.25f;
-    int w = !isnan(v) && v >= p->warn;
+    int w = !isnan(v) && v >= g_rnd_set.warn[page];
     rnd_arcs_set(arc, shown, w ? C_RED : C_W);
     if (w != warn_on) {
         warn_on = w;
