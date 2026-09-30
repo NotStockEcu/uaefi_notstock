@@ -1,7 +1,8 @@
 /* Round gauge UI: settings. See ui_round.h.
  *
- * SETTINGS (from the menu): LOOK, BEEP on / off (the regeneration beeps;
- * the popup comes either way), LIMITS. A long press goes one level back and
+ * SETTINGS (from the menu): LOOK, NIGHT (the backlight at night, the double
+ * tap's level; tap for the next step), BEEP on / off (the regeneration
+ * beeps; the popup comes either way), LIMITS. A long press goes one level back and
  * stores the settings.
  *
  * LIMITS: one warn limit at a time, big, with - and + either side (hold to
@@ -32,6 +33,8 @@ void rnd_settings_defaults(void)
     memset(&g_rnd_set, 0, sizeof g_rnd_set);
     g_rnd_set.look = RND_LOOK_NOTSTOCK;
     g_rnd_set.beep = true;
+    g_rnd_set.night = false;
+    g_rnd_set.night_level = 30;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
     }
@@ -56,7 +59,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 {
     lv_obj_t *b = lv_obj_create(par);
     lv_obj_remove_style_all(b);
-    lv_obj_set_size(b, 300, 70);
+    lv_obj_set_size(b, 300, 64);
     lv_obj_align(b, LV_ALIGN_TOP_MID, 0, y);
     lv_obj_set_style_radius(b, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(b, C_PANEL, 0);
@@ -77,7 +80,23 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr;
-static lv_obj_t *beep_lbl, *look_pill[RND_LOOK_COUNT];
+static lv_obj_t *beep_lbl, *night_lbl, *look_pill[RND_LOOK_COUNT];
+
+static void show_night(void)
+{
+    char buf[24];
+    snprintf(buf, sizeof buf, "NIGHT  %d%%", g_rnd_set.night_level);
+    lv_label_set_text(night_lbl, buf);
+}
+
+static void night_step(lv_event_t *e)
+{
+    (void)e;
+    int l = g_rnd_set.night_level + 10;
+    g_rnd_set.night_level = (uint8_t)(l > 50 ? 10 : l);
+    if (g_rnd_set.night) rnd_backlight_apply();     /* see it change */
+    show_night();
+}
 
 static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
     [RND_LOOK_NOTSTOCK] = "NOTSTOCK",
@@ -94,6 +113,7 @@ static void show_beep(void)
 void rnd_set_open(void)
 {
     show_beep();
+    show_night();
     lv_scr_load(set_scr);
 }
 
@@ -226,12 +246,13 @@ void rnd_set_create(void)
     lv_obj_t *l;
 
     set_scr = screen(set_back, "SETTINGS");
-    pill(set_scr, 110, go_look, &l);
+    pill(set_scr, 100, go_look, &l);
     lv_label_set_text(l, "LOOK");
-    pill(set_scr, 200, beep_toggle, &beep_lbl);
-    pill(set_scr, 290, go_limits, &l);
+    pill(set_scr, 176, night_step, &night_lbl);
+    pill(set_scr, 252, beep_toggle, &beep_lbl);
+    pill(set_scr, 328, go_limits, &l);
     lv_label_set_text(l, "LIMITS");
-    l = rnd_label(set_scr, &rnd_18, C_DIM, 390);
+    l = rnd_label(set_scr, &rnd_18, C_DIM, 414);
     lv_label_set_text(l, "LONG PRESS: BACK");
 
     look_scr = screen(sub_back, "LOOK");

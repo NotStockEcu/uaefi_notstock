@@ -126,7 +126,7 @@ lv_obj_t *rnd_dpf_screen(void)
 
 static void dpf_gesture(lv_event_t *e)
 {
-    (void)e;
+    rnd_swiped();                 /* a swipe: no tap */
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) go_gauges(NULL);
 }
@@ -177,6 +177,7 @@ void rnd_dpf_create(void)
     lv_obj_clear_flag(dpf, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(dpf, dpf_gesture, LV_EVENT_GESTURE, NULL);
     lv_obj_add_event_cb(dpf, go_menu, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
 
     /* groove and red zone like the gauge faces, then the soot arc */
     ring(dpf, 0, FACE_SWEEP, lv_color_hex(0x0C0E11), FACE_GROOVE_W);

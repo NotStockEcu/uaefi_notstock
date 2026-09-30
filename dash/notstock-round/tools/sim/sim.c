@@ -10,6 +10,8 @@
  *               [boot=1]            start with the logo; t= picks the moment
  *               [look=N]            RND_LOOK_*: 0 NOTSTOCK, 1 RETRO, 2 FUTURO
  *               [relook=N,M,...]    switch looks while running, as LOOK does
+ *               [dtap=N]            N double taps in the middle, then run t=
+ *               [night=1] [nightlvl=P]
  */
 #include <math.h>
 #include <stdio.h>
@@ -44,6 +46,13 @@ void rnd_beep(int n)
 void rnd_settings_save(void)
 {
     fprintf(stderr, "settings saved\n");
+}
+
+/* the backlight shows as darker pixels in the output */
+static int s_backlight = 100;
+void rnd_backlight(uint8_t percent)
+{
+    s_backlight = percent;
 }
 
 void rnd_sim_settings(const char *which, int limit);
@@ -82,6 +91,7 @@ int main(int argc, char **argv)
     const char *screen = NULL, *regen = NULL;
     int limit = 0, boot = 0;
     const char *relook = NULL;
+    int dtap = 0;
     rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
@@ -109,6 +119,9 @@ int main(int argc, char **argv)
         if (strcmp(k, "boot") == 0)  { boot = atoi(v); used = true; }
         if (strcmp(k, "look") == 0)  { g_rnd_set.look = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "relook") == 0) { relook = v; used = true; }
+        if (strcmp(k, "dtap") == 0)  { dtap = atoi(v); used = true; }
+        if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
+        if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);
@@ -167,6 +180,16 @@ int main(int argc, char **argv)
         q = strchr(q, ',');
         if (q) q++;
     }
+    for (int i = 0; i < dtap; i++) {
+        for (int k = 0; k < 2; k++) {       /* two short taps, 130 ms apart */
+            s_tx = W / 2;
+            s_ty = H / 2 + 40;
+            run(0.066f, &d);
+            s_tx = s_ty = -1;
+            run(0.066f, &d);
+        }
+        run(0.6f, &d);
+    }
     if (swipe) {
         /* a finger across the middle, then let the new page settle */
         int dir = strcmp(swipe, "left") == 0 ? -1 : 1;
@@ -195,6 +218,7 @@ int main(int argc, char **argv)
                 rgb[0] = (unsigned char)(c.ch.red << 3 | c.ch.red >> 2);
                 rgb[1] = (unsigned char)(c.ch.green << 2 | c.ch.green >> 4);
                 rgb[2] = (unsigned char)(c.ch.blue << 3 | c.ch.blue >> 2);
+                for (int k = 0; k < 3; k++) rgb[k] = rgb[k] * s_backlight / 100;
             }
             fwrite(rgb, 1, 3, f);
         }

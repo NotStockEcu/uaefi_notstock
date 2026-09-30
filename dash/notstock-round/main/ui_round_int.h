@@ -85,6 +85,12 @@ void rnd_set_create(void);
 void rnd_set_open(void);
 void rnd_limits_changed(void);        /* redraw the zones */
 
+/* day / night: a double tap on the gauges or the DPF screen */
+void rnd_tap_cb(lv_event_t *e);           /* on LV_EVENT_SHORT_CLICKED */
+void rnd_swiped(void);                    /* from a gesture handler */
+void rnd_backlight_apply(void);           /* from g_rnd_set */
+void rnd_night_toggle(void);
+
 /* regeneration: popup, beep, and the flag the gauges show */
 #define REGEN_TEMP 400.0f    /* filter hotter than this: regenerating */
 void rnd_regen_watch(const rnd_data_t *d);

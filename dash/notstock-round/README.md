@@ -1,7 +1,8 @@
 # NOT STOCK round gauge
 
 One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
-rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, SETTINGS. Data comes over CAN the same way as on the 7" dash
+rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, SETTINGS.
+Double tap: night (backlight down), double tap again: day. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
 
@@ -117,6 +118,10 @@ Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
 - **LOOK**: NOTSTOCK, RETRO, FUTURO.
+- **NIGHT 30 %**: the backlight at night, tap for the next step (10 to
+  50 %). Night itself is a double tap on the gauges or the DPF screen; a
+  toast says NIGHT 30 % or DAY for a second. Kept over power-off. The
+  backlight is the platform's `rnd_backlight()`.
 - **BEEP ON / OFF**: the regeneration beeps. The popup comes either way.
 - **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A

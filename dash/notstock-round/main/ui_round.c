@@ -5,7 +5,8 @@
  *
  * Here: which page is shown, the value smoothed onto the scale (so after a
  * page change or at power-up the needle or arc sweeps up on its own), the
- * peaks, the swipes, the long press for the menu, and the boot logo.
+ * peaks, the swipes, the long press for the menu, the double tap for night
+ * and the boot logo.
  *
  * Boot: the NOT STOCK badge (tools/gen_splash.py) fades in on black, holds,
  * and cross-fades into the gauges, which sweep up as they come in.
@@ -230,9 +231,75 @@ void rnd_look_apply(void)
     ui_round_page(page);
 }
 
+/* ------------------------------------------------------------ day / night */
+static uint32_t last_tap, last_swipe;
+static lv_obj_t *toast, *toast_lbl;
+
+void rnd_backlight_apply(void)
+{
+    rnd_backlight(g_rnd_set.night ? g_rnd_set.night_level : 100);
+}
+
+void rnd_night_toggle(void)
+{
+    char buf[24];
+    g_rnd_set.night = !g_rnd_set.night;
+    rnd_backlight_apply();
+    rnd_settings_save();
+
+    if (!toast) {
+        toast = lv_obj_create(lv_layer_top());
+        lv_obj_remove_style_all(toast);
+        lv_obj_set_size(toast, 230, 60);
+        lv_obj_center(toast);
+        lv_obj_set_style_radius(toast, LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_bg_color(toast, lv_color_black(), 0);
+        lv_obj_set_style_bg_opa(toast, LV_OPA_80, 0);
+        lv_obj_set_style_border_color(toast, C_EDGE, 0);
+        lv_obj_set_style_border_width(toast, 2, 0);
+        lv_obj_clear_flag(toast, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+        toast_lbl = lv_label_create(toast);
+        lv_obj_set_style_text_font(toast_lbl, &rnd_26, 0);
+        lv_obj_set_style_text_color(toast_lbl, C_W, 0);
+        lv_obj_set_style_text_letter_space(toast_lbl, 2, 0);
+        lv_obj_center(toast_lbl);
+    }
+    if (g_rnd_set.night) {
+        snprintf(buf, sizeof buf, "NIGHT %d%%", g_rnd_set.night_level);
+    } else {
+        snprintf(buf, sizeof buf, "DAY");
+    }
+    lv_label_set_text(toast_lbl, buf);
+    lv_obj_set_style_opa(toast, LV_OPA_COVER, 0);
+    lv_obj_fade_out(toast, 400, 1000);
+}
+
+void rnd_swiped(void)
+{
+    last_swipe = lv_tick_get();
+    last_tap = 0;
+}
+
+void rnd_tap_cb(lv_event_t *e)
+{
+    (void)e;
+    /* the end of a swipe is no tap */
+    if (last_swipe && lv_tick_elaps(last_swipe) < 400) {
+        last_tap = 0;
+        return;
+    }
+    if (last_tap && lv_tick_elaps(last_tap) < 400) {
+        last_tap = 0;
+        rnd_night_toggle();
+    } else {
+        last_tap = lv_tick_get();
+    }
+}
+
 static void gesture_cb(lv_event_t *e)
 {
     (void)e;
+    rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT)  ui_round_page(page + 1);
     if (dir == LV_DIR_RIGHT) ui_round_page(page - 1);
@@ -252,6 +319,8 @@ void ui_round_create(bool boot_logo_on)
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);
     lv_obj_add_event_cb(scr, long_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(scr, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
+    rnd_backlight_apply();
 
     for (int i = 0; i < RND_COUNT; i++) peak[i] = NAN;
     look = NULL;

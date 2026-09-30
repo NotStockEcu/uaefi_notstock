@@ -1,6 +1,7 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * settings: look, beep on/off, warn limits).
+ * settings: look, night level, beep on/off, warn limits). Double tap: night
+ * (backlight down to the night level) and back to day.
  * A particulate filter regeneration pops up over whatever is shown, with a
  * beep. ESP-free, so tools/sim renders it on a PC.
  *
@@ -45,6 +46,8 @@ enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
     bool    beep;                     /* beep on regeneration start / end */
+    bool    night;                    /* backlight at night_level */
+    uint8_t night_level;              /* % of full, 10..50 */
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
 } rnd_settings_t;
 
@@ -54,6 +57,7 @@ void rnd_settings_defaults(void);
 /* provided by the platform */
 void rnd_beep(int n);                 /* n short beeps, must not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
+void rnd_backlight(uint8_t percent);  /* 0..100 */
 
 /* builds every screen; boot: the NOT STOCK logo first, fading in from black
  * and then into the gauges (RND_BOOT_MS in all), else the gauges at once */

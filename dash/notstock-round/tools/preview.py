@@ -45,6 +45,8 @@ SCENES = {
     "futuro-boost": "look=2 page=2",
     "futuro-rpm": "look=2 page=5",
     "futuro-oil-warn": "look=2 page=1 oil=134",
+    "night-toast": "dtap=1",
+    "night-retro": "look=1 night=1",
     "boot-in": "boot=1 t=0.6",
     "boot-logo": "boot=1 t=2.0",
     "boot-cross": "boot=1 t=3.2",
