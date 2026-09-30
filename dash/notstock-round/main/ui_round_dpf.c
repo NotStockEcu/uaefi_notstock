@@ -395,6 +395,12 @@ static void popup_build(void)
     pop_soot = rnd_label(popup, &rnd_18, C_GREY, 336);
     l = rnd_label(popup, &rnd_18, C_DIM, 392);
     lv_label_set_text(l, TR("TAP TO CLOSE", "ŤUKNI: ZAVŘÍT"));
+    /* the labels are screen wide, but the popup's content starts inside
+     * its coloured border: fit them to the content, or they sit off centre */
+    for (uint32_t i = 0; i < lv_obj_get_child_cnt(popup); i++) {
+        lv_obj_t *c = lv_obj_get_child(popup, i);
+        if (c != pop_icon) lv_obj_set_width(c, LV_PCT(100));
+    }
     lv_obj_add_flag(popup, LV_OBJ_FLAG_HIDDEN);
 }
 
