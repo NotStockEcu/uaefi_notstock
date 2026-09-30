@@ -52,7 +52,7 @@ STOCK. / NOT STABLE. badge, or a VW roundel. It comes out of black (1.2 s, eased
 (0.9 s), whose arc sweeps up as they appear. `ui_round_create(true)`; the
 timings are `RND_BOOT_*` in `ui_round.h`. The logos come from
 `tools/gen_splash.py`: NOT STOCK from `assets/splash.png` (the same file and
-keying as the 7" dash), VW drawn there (the flat 2019 roundel; VW's
+keying as the 7" dash), VW drawn there (the 2012-2019 chrome roundel; VW's
 trademark, fine on the owner's own van, not on anything sold). 456 px,
 406 kB of RGB565 each in flash. Another car's logo: a function on `LOGOS`
 there, a name on `RND_LOGO_*` in `ui_round.h` and `LOGO_NAME[]` in
