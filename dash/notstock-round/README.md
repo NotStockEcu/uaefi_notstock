@@ -140,6 +140,17 @@ second, the particulate filter once a second (`docs/BLE.md`, packed by
 `main/ble_proto.c`). NOT STOCK Live (`../notstock-app`) shows and logs
 them in a browser.
 
+## In the van
+
+![t5](preview/mockup-t5-driver.png)
+
+A mock-up of the gauge in the VW T5.1's left outer air vent, held by a 3D
+printed grille (`tools/mockup_t5.py`, all three looks in
+`preview/mockup-t5-looks.png`). Stylised, not measured: the vent is taken
+as a rounded rectangle about 95 x 80 mm, the grille's round boss 70 mm, the
+display's active area 53 mm. The printable grille needs the real opening
+and the board's outline first.
+
 ## Preview on the PC
 
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py
