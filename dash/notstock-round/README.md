@@ -133,6 +133,13 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   limit is what the DPF screen measures fullness against. Ranges, steps and
   defaults: `RND_LIMIT[]` in `ui_round_set.c`.
 
+## Bluetooth
+
+The gauge will send its values over Bluetooth LE: gauges 10 times a
+second, the particulate filter once a second (`docs/BLE.md`, packed by
+`main/ble_proto.c`). NOT STOCK Live (`../notstock-app`) shows and logs
+them in a browser.
+
 ## Preview on the PC
 
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py

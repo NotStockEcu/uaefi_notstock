@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0c0e">
+<title>NOT STOCK Live</title>
+<!--
+  NOT STOCK Live: the round gauge's data over Bluetooth LE, in a browser.
+  Live values, the particulate filter, a chart and a CSV log.
+
+  Web Bluetooth: Chrome / Edge on Android, Windows, macOS, ChromeOS, Linux.
+  iPhone: Safari has no Web Bluetooth, use the Bluefy browser. The page has
+  to come over https (or localhost), not as a file.
+
+  Protocol: ../notstock-round/docs/BLE.md (and main/ble_proto.h there).
+  DEMO runs without a gauge, on made-up data with a regeneration in it.
+-->
+<style>
+:root {
+  --bg: #0b0c0e; --panel: #15181b; --edge: #262a2f; --text: #f2f3f5;
+  --dim: #8a9096; --faint: #4a4f55; --accent: #f5c518; --red: #ff3b3b;
+  --regen: #ff9a1f; --ok: #3ddc84;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+body { padding: 12px 16px calc(24px + env(safe-area-inset-bottom)); }
+header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 12px; }
+h1 { font-size: 18px; letter-spacing: 3px; margin: 0 auto 0 0; font-weight: 800; }
+h1 span { color: var(--accent); }
+.status { display: flex; align-items: center; gap: 6px; color: var(--dim);
+  font-size: 13px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); }
+.dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.dot.demo { background: var(--accent); }
+button { background: var(--panel); color: var(--text); border: 1px solid var(--edge);
+  border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600;
+  cursor: pointer; }
+button:hover { border-color: var(--dim); }
+button.primary { background: var(--accent); color: #111; border-color: var(--accent); }
+button.rec { border-color: var(--red); color: var(--red); }
+button.rec.on { background: var(--red); color: #fff; }
+button:disabled { opacity: .4; cursor: default; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px; }
+.card { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px;
+  padding: 12px 14px; }
+.tile .name { color: var(--dim); font-size: 12px; letter-spacing: 2px; font-weight: 700; }
+.tile .val { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums;
+  line-height: 1.1; margin-top: 4px; }
+.tile .unit { color: var(--dim); font-size: 14px; margin-left: 4px; font-weight: 600; }
+.tile .max { color: var(--faint); font-size: 12px; margin-top: 2px; }
+.tile.warn .val { color: var(--red); }
+.tile.warn { border-color: #5a1414; }
+section { margin-top: 14px; }
+section h2 { font-size: 12px; letter-spacing: 3px; color: var(--dim); margin: 0 0 8px;
+  font-weight: 700; }
+.dpf { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; align-items: center; }
+@media (max-width: 560px) { .dpf { grid-template-columns: 1fr; } }
+.filter { position: relative; height: 84px; margin: 4px 26px; border: 5px solid #8a9096;
+  border-radius: 18px; background: #24282d; overflow: hidden; }
+.filter .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: #8a9096;
+  transition: width .6s, background .3s; }
+.filter .cells { position: absolute; inset: 0; background-image:
+  radial-gradient(circle, #0b0c0e 5px, transparent 6px); background-size: 34px 25px;
+  background-position: 8px 4px; }
+.pipes { position: relative; }
+.pipes::before, .pipes::after { content: ""; position: absolute; top: 28px; width: 30px;
+  height: 28px; background: #8a9096; border-radius: 4px; }
+.pipes::before { left: 0; } .pipes::after { right: 0; }
+.dpf.regen .filter { border-color: var(--regen); box-shadow: 0 0 26px #ff9a1f88;
+  background: #3a2006; }
+.dpf.regen .pipes::before, .dpf.regen .pipes::after { background: var(--regen); }
+.soot { font-size: 44px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+.soot small { font-size: 16px; color: var(--dim); margin-left: 4px; }
+.sub { text-align: center; color: var(--dim); font-size: 13px; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
+.kv div:nth-child(odd) { color: var(--dim); }
+.kv div:nth-child(even) { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; margin-top: 10px; padding: 6px 12px; border-radius: 999px;
+  background: #22262b; color: var(--dim); font-weight: 800; letter-spacing: 2px;
+  font-size: 12px; }
+.dpf.regen .badge { background: var(--regen); color: #111; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip { border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 700;
+  border: 1px solid var(--edge); background: transparent; color: var(--faint); }
+.chip.on { color: #111; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row .spacer { flex: 1; }
+canvas { width: 100%; height: 240px; display: block; border-radius: 10px;
+  background: #0f1113; touch-action: none; }
+select { background: var(--panel); color: var(--text); border: 1px solid var(--edge);
+  border-radius: 8px; padding: 6px; font: inherit; }
+.note { color: var(--faint); font-size: 12px; margin-top: 8px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: var(--regen); color: #111; padding: 12px 18px; border-radius: 999px;
+  font-weight: 800; letter-spacing: 1px; display: none; box-shadow: 0 6px 30px #000a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>NOT <span>STOCK</span> LIVE</h1>
+  <div class="status"><div class="dot" id="dot"></div><span id="status">not connected</span></div>
+  <button class="primary" id="connect">Connect</button>
+  <button id="demo">Demo</button>
+  <button id="disconnect" disabled>Disconnect</button>
+</header>
+
+<div class="grid" id="tiles"></div>
+
+<section>
+  <h2>PARTICULATE FILTER</h2>
+  <div class="card dpf" id="dpf">
+    <div>
+      <div class="pipes"><div class="filter"><div class="fill" id="fill"></div><div class="cells"></div></div></div>
+      <div class="soot" id="soot">--<small>g</small></div>
+      <div class="sub" id="sootsub">soot, calculated</div>
+    </div>
+    <div>
+      <div class="kv">
+        <div>Soot measured</div><div id="meas">--</div>
+        <div>Differential pressure</div><div id="dp">--</div>
+        <div>Filter temperature</div><div id="ftemp">--</div>
+        <div>Since regeneration</div><div id="dist">--</div>
+        <div>Regenerations seen</div><div id="regens">--</div>
+      </div>
+      <div class="badge" id="badge">NO REGENERATION</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>CHART</h2>
+  <div class="card">
+    <div class="chips" id="chips"></div>
+    <canvas id="chart"></canvas>
+    <div class="row" style="margin-top:8px">
+      <select id="window">
+        <option value="60">1 min</option>
+        <option value="300" selected>5 min</option>
+        <option value="900">15 min</option>
+      </select>
+      <button id="hold">Hold</button>
+      <span class="spacer"></span>
+      <span class="note" id="cursor">tap the chart for values at that moment</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>LOG</h2>
+  <div class="card">
+    <div class="row">
+      <button class="rec" id="rec">&#9679; Record</button>
+      <span id="loginfo" class="note" style="margin:0">not recording</span>
+      <span class="spacer"></span>
+      <button id="csv" disabled>Download CSV</button>
+      <button id="clear" disabled>Clear</button>
+    </div>
+    <div class="note">10 rows a second, every gauge and the filter's last values. Stays in this tab until you download it.</div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+// ---- protocol: ../notstock-round/docs/BLE.md --------------------------
+const SVC = "6e6f7473-746f-636b-0000-000000000000";
+const CH_GAUGES = "6e6f7473-746f-636b-0000-000000000001";
+const CH_DPF    = "6e6f7473-746f-636b-0000-000000000002";
+const CH_INFO   = "6e6f7473-746f-636b-0000-000000000003";
+const NONE = -32768;
+
+const G = [   // key, name, unit, scale, decimals, limit, chart range, colour
+  { k: "water",   n: "WATER",   u: "°C",  s: 10,  d: 0, lim: 105,  lo: 40, hi: 140,  c: "#4fc3f7" },
+  { k: "oil",     n: "OIL",     u: "°C",  s: 10,  d: 0, lim: 130,  lo: 40, hi: 160,  c: "#f5c518" },
+  { k: "boost",   n: "BOOST",   u: "bar", s: 100, d: 2, lim: 2.2,  lo: 0,  hi: 2.5,  c: "#ff5ec4" },
+  { k: "intake",  n: "INTAKE",  u: "°C",  s: 10,  d: 0, lim: 60,   lo: 0,  hi: 100,  c: "#7ce38b" },
+  { k: "exhaust", n: "EXHAUST", u: "°C",  s: 1,   d: 0, lim: 750,  lo: 0,  hi: 1000, c: "#ff8a3d" },
+  { k: "rpm",     n: "ENGINE",  u: "rpm", s: 1,   d: 0, lim: 4500, lo: 0,  hi: 5000, c: "#e0e0e0" },
+];
+const SOOT_MAX = 40, SOOT_WARN = 24;
+
+function parseGauges(dv) {
+  if (dv.byteLength < 16 || dv.getUint8(0) !== 1) return null;
+  const out = { flags: dv.getUint8(1), seq: dv.getUint16(2, true) };
+  G.forEach((g, i) => {
+    const raw = g.k === "rpm" ? dv.getUint16(4 + 2 * i, true)
+                              : dv.getInt16(4 + 2 * i, true);
+    out[g.k] = (raw === NONE || raw === 0x8000) ? null : raw / g.s;
+  });
+  return out;
+}
+
+function parseDpf(dv) {
+  if (dv.byteLength < 14 || dv.getUint8(0) !== 1) return null;
+  const s = (o, k) => { const r = dv.getInt16(o, true); return r === NONE ? null : r / k; };
+  const u = (o, k) => { const r = dv.getUint16(o, true); return r === 0x8000 ? null : r / k; };
+  return { flags: dv.getUint8(1), soot: s(2, 100), meas: s(4, 100), dp: s(6, 1),
+           dist: u(8, 10), temp: s(10, 1), regens: dv.getUint16(12, true) };
+}
+
+// ---- state ----------------------------------------------------------------
+const hist = [];                 // {t, water, ..., rpm, soot, dp, ftemp}
+const HIST_MAX = 15 * 60 * 10;   // 15 min at 10 Hz
+const peak = {};
+let dpf = {}, regen = false, dev = null, demoTimer = null, t0 = performance.now();
+let log = null, hold = null, cursorT = null;
+const on = new Set(["water", "boost", "rpm"]);
+
+// ---- tiles ----------------------------------------------------------------
+const tiles = document.getElementById("tiles");
+G.forEach(g => {
+  const el = document.createElement("div");
+  el.className = "card tile"; el.id = "t-" + g.k;
+  el.innerHTML = `<div class="name">${g.n}</div>
+    <div><span class="val">--</span><span class="unit">${g.u}</span></div>
+    <div class="max">&nbsp;</div>`;
+  tiles.appendChild(el);
+});
+
+function fmt(v, d) { return v == null ? "--" : v.toFixed(d); }
+
+function showGauges(f) {
+  G.forEach(g => {
+    const el = document.getElementById("t-" + g.k), v = f[g.k];
+    el.querySelector(".val").textContent = fmt(v, g.d);
+    if (v != null && g.k !== "rpm" && (peak[g.k] == null || v > peak[g.k])) peak[g.k] = v;
+    el.querySelector(".max").textContent = peak[g.k] != null ? "max " + fmt(peak[g.k], g.d) : " ";
+    el.classList.toggle("warn", v != null && v >= g.lim);
+  });
+}
+
+function showDpf(p) {
+  dpf = p;
+  const card = document.getElementById("dpf");
+  const was = regen;
+  regen = !!(p.flags & 2);
+  card.classList.toggle("regen", regen);
+  document.getElementById("soot").innerHTML = fmt(p.soot, 1) + "<small>g</small>";
+  document.getElementById("sootsub").textContent = p.soot == null ? "soot, calculated"
+    : Math.round(p.soot / SOOT_WARN * 100) + " % of " + SOOT_WARN + " g";
+  const fill = document.getElementById("fill");
+  fill.style.width = Math.max(0, Math.min(1, (p.soot || 0) / SOOT_MAX)) * 100 + "%";
+  fill.style.background = regen ? "var(--regen)" : p.soot >= SOOT_WARN ? "var(--red)"
+    : p.soot >= SOOT_WARN * .7 ? "#e0a020" : "#8a9096";
+  document.getElementById("meas").textContent = p.meas == null ? "--" : p.meas.toFixed(2) + " g";
+  document.getElementById("dp").textContent = p.dp == null ? "--" : p.dp.toFixed(0) + " hPa";
+  document.getElementById("ftemp").textContent = p.temp == null ? "--" : p.temp.toFixed(0) + " °C";
+  document.getElementById("dist").textContent = p.dist == null ? "--" : p.dist.toFixed(1) + " km";
+  document.getElementById("regens").textContent = p.regens ?? "--";
+  document.getElementById("badge").textContent = regen ? "REGENERATING" : "NO REGENERATION";
+  if (regen !== was) toast(regen ? "DPF REGENERATION STARTED" : "DPF REGENERATION FINISHED");
+}
+
+function toast(t) {
+  const el = document.getElementById("toast");
+  el.textContent = t; el.style.display = "block";
+  el.style.background = t.includes("FINISHED") ? "var(--ok)" : "var(--regen)";
+  if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = "none", 5000);
+}
+
+// ---- a frame arrived --------------------------------------------------------
+function onGauges(f) {
+  showGauges(f);
+  const t = (performance.now() - t0) / 1000;
+  const row = { t };
+  G.forEach(g => row[g.k] = f[g.k]);
+  row.soot = dpf.soot ?? null; row.dp = dpf.dp ?? null; row.ftemp = dpf.temp ?? null;
+  hist.push(row);
+  if (hist.length > HIST_MAX) hist.shift();
+  if (log) { log.push([new Date().toISOString(), ...G.map(g => f[g.k]),
+    dpf.soot, dpf.meas, dpf.dp, dpf.dist, dpf.temp, regen ? 1 : 0]); logInfo(); }
+}
+
+// ---- chart --------------------------------------------------------------------
+const CH = [...G, { k: "soot", n: "SOOT", u: "g", d: 1, lo: 0, hi: SOOT_MAX, c: "#b0b0b0" },
+  { k: "dp", n: "DP", u: "hPa", d: 0, lo: 0, hi: 100, c: "#9575cd" },
+  { k: "ftemp", n: "DPF TEMP", u: "°C", d: 0, lo: 0, hi: 700, c: "#ff9a1f" }];
+const chips = document.getElementById("chips");
+CH.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip" + (on.has(c.k) ? " on" : ""); b.textContent = c.n;
+  b.style.background = on.has(c.k) ? c.c : "transparent";
+  b.onclick = () => { on.has(c.k) ? on.delete(c.k) : on.add(c.k);
+    b.classList.toggle("on"); b.style.background = on.has(c.k) ? c.c : "transparent"; };
+  chips.appendChild(b);
+});
+const cv = document.getElementById("chart"), cx = cv.getContext("2d");
+
+function draw() {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx.clearRect(0, 0, w, h);
+  const span = +document.getElementById("window").value;
+  const data = hold || hist;
+  const end = data.length ? data[data.length - 1].t : 0, start = end - span;
+  cx.strokeStyle = "#1c2024"; cx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) { cx.beginPath(); cx.moveTo(0, h * i / 4); cx.lineTo(w, h * i / 4); cx.stroke(); }
+  const X = t => (t - start) / span * w;
+  CH.filter(c => on.has(c.k)).forEach(c => {
+    cx.strokeStyle = c.c; cx.lineWidth = 1.8; cx.beginPath();
+    let pen = false;
+    for (const r of data) {
+      if (r.t < start) continue;
+      const v = r[c.k];
+      if (v == null) { pen = false; continue; }
+      const y = h - 6 - (v - c.lo) / (c.hi - c.lo) * (h - 12);
+      pen ? cx.lineTo(X(r.t), y) : cx.moveTo(X(r.t), y); pen = true;
+    }
+    cx.stroke();
+  });
+  if (cursorT != null && hold) {
+    const x = X(cursorT);
+    cx.strokeStyle = "#fff"; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, h); cx.stroke();
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+document.getElementById("hold").onclick = e => {
+  hold = hold ? null : hist.slice(); cursorT = null;
+  e.target.textContent = hold ? "Live" : "Hold";
+  document.getElementById("cursor").textContent = hold ? "tap the chart for values at that moment"
+    : "tap the chart for values at that moment";
+};
+cv.addEventListener("pointerdown", e => {
+  if (!hold) { hold = hist.slice(); document.getElementById("hold").textContent = "Live"; }
+  const span = +document.getElementById("window").value;
+  const end = hold.length ? hold[hold.length - 1].t : 0;
+  const t = end - span + (e.offsetX / cv.clientWidth) * span;
+  let best = null;
+  for (const r of hold) if (!best || Math.abs(r.t - t) < Math.abs(best.t - t)) best = r;
+  if (!best) return;
+  cursorT = best.t;
+  document.getElementById("cursor").textContent = CH.filter(c => on.has(c.k))
+    .map(c => `${c.n} ${fmt(best[c.k], c.d)}`).join("   ") + `   (${(end - best.t).toFixed(1)} s ago)`;
+});
+
+// ---- log ----------------------------------------------------------------------
+function logInfo() {
+  document.getElementById("loginfo").textContent = log
+    ? `recording: ${log.length} rows, ${(log.length / 10).toFixed(0)} s` : "not recording";
+}
+document.getElementById("rec").onclick = e => {
+  if (log) { e.target.classList.remove("on"); e.target.innerHTML = "&#9679; Record";
+    lastLog = log; log = null; }
+  else { log = []; e.target.classList.add("on"); e.target.innerHTML = "&#9632; Stop"; }
+  logInfo();
+  document.getElementById("csv").disabled = !lastLog && !log;
+  document.getElementById("clear").disabled = !lastLog && !log;
+};
+let lastLog = null;
+document.getElementById("csv").onclick = () => {
+  const rows = log || lastLog; if (!rows) return;
+  const head = ["time", ...G.map(g => g.k), "soot_g", "soot_meas_g", "dp_hpa",
+                "since_regen_km", "filter_c", "regen"];
+  const csv = [head.join(",")].concat(rows.map(r => r.map(v => v == null ? "" : v).join(","))).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = "notstock-" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".csv";
+  a.click();
+};
+document.getElementById("clear").onclick = () => { lastLog = null; if (!log) {
+  document.getElementById("csv").disabled = true; document.getElementById("clear").disabled = true; } };
+
+// ---- Bluetooth ------------------------------------------------------------------
+function setStatus(text, cls) {
+  document.getElementById("status").textContent = text;
+  document.getElementById("dot").className = "dot " + (cls || "");
+  document.getElementById("disconnect").disabled = !cls;
+}
+
+document.getElementById("connect").onclick = async () => {
+  if (!navigator.bluetooth) {
+    setStatus("no Web Bluetooth here: Chrome on Android / PC, Bluefy on iPhone");
+    return;
+  }
+  try {
+    stopDemo();
+    dev = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: "NOTSTOCK" }], optionalServices: [SVC] });
+    dev.addEventListener("gattserverdisconnected", () => setStatus("disconnected"));
+    setStatus("connecting…", "demo");
+    const srv = await dev.gatt.connect();
+    const svc = await srv.getPrimaryService(SVC);
+    let name = dev.name;
+    try { name = new TextDecoder().decode(await (await svc.getCharacteristic(CH_INFO)).readValue()); } catch (_) {}
+    const g = await svc.getCharacteristic(CH_GAUGES);
+    g.addEventListener("characteristicvaluechanged", e => { const f = parseGauges(e.target.value); if (f) onGauges(f); });
+    await g.startNotifications();
+    const d = await svc.getCharacteristic(CH_DPF);
+    d.addEventListener("characteristicvaluechanged", e => { const p = parseDpf(e.target.value); if (p) showDpf(p); });
+    await d.startNotifications();
+    setStatus(name, "on");
+  } catch (e) {
+    setStatus(e.name === "NotFoundError" ? "no gauge picked" : "failed: " + e.message);
+  }
+};
+document.getElementById("disconnect").onclick = () => {
+  stopDemo();
+  if (dev && dev.gatt.connected) dev.gatt.disconnect();
+  setStatus("not connected");
+};
+
+// ---- demo: made-up data through the same parsers ---------------------------------
+function stopDemo() { if (demoTimer) { clearInterval(demoTimer); demoTimer = null; } }
+document.getElementById("demo").onclick = () => {
+  stopDemo(); setStatus("demo data", "demo");
+  let k = 0, soot = 22.6, dist = 274.5, regens = 0;
+  demoTimer = setInterval(() => {
+    k++;
+    const t = k / 10, load = (Math.sin(t / 7) + 1) / 2, rev = 850 + load * 2600 + 200 * Math.sin(t * 1.3);
+    const water = Math.min(88, 35 + t * 1.2), oil = Math.min(96, 28 + t * 1.0);
+    const boost = Math.max(0.02, load * 1.9 + 0.08 * Math.sin(t * 2.7));
+    const inReg = t > 40 && t < 100;
+    const egt = 180 + load * 520 + (inReg ? 120 : 0);
+    const buf = new DataView(new ArrayBuffer(16));
+    buf.setUint8(0, 1); buf.setUint8(1, 1 | (inReg ? 2 : 0)); buf.setUint16(2, k & 0xffff, true);
+    [water, oil, boost, 19 + load * 18, egt].forEach((v, i) =>
+      buf.setInt16(4 + 2 * i, Math.round(v * G[i].s), true));
+    buf.setUint16(14, Math.round(rev), true);
+    onGauges(parseGauges(buf));
+    if (k % 10 === 0) {
+      if (inReg) { soot = Math.max(3.2, soot - 0.33); } else { soot += 0.004; dist += 0.02; }
+      if (t > 99.5 && t < 100.5) { regens++; dist = 0; }
+      const p = new DataView(new ArrayBuffer(14));
+      p.setUint8(0, 1); p.setUint8(1, 1 | (inReg ? 2 : 0));
+      p.setInt16(2, Math.round(soot * 100), true); p.setInt16(4, Math.round((soot - 15) * 100), true);
+      p.setInt16(6, Math.round(4 + load * 30), true); p.setUint16(8, Math.round(dist * 10), true);
+      p.setInt16(10, Math.round(inReg ? 610 + 20 * Math.sin(t) : 90 + load * 200), true);
+      p.setUint16(12, regens, true);
+      showDpf(parseDpf(p));
+    }
+  }, 100);
+};
+</script>
+</body>
+</html>
