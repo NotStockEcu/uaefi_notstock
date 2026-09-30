@@ -24,9 +24,6 @@ static lv_meter_indicator_t *lit, *zone;
 static float zone_at;
 static int lit_at, warn_on, regen_on, big_on;
 
-static const char *const TITLE[RND_COUNT] = {
-    "WATER", "OIL", "BOOST", "INTAKE", "EXHAUST", "ENGINE",
-};
 
 static void build(lv_obj_t *scr)
 {
@@ -87,7 +84,7 @@ static void page(int pg)
     char buf[16];
     const face_page_t *p = &FACE_PAGE[pg];
     lv_img_set_src(icon, page_icon[pg]);
-    lv_label_set_text(title, TITLE[pg]);
+    lv_label_set_text(title, rnd_page_name[pg]);
     lv_label_set_text(unit_lbl, p->unit);
     snprintf(buf, sizeof buf, "%g", p->lo);
     lv_label_set_text(lo_lbl, buf);

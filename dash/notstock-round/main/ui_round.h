@@ -1,6 +1,7 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * settings: look, night level, beep on/off, warn limits). Double tap: night
+ * settings: look, pages, night level, beep on/off, warn limits). Double tap:
+ * night
  * (backlight down to the night level) and back to day.
  * A particulate filter regeneration pops up over whatever is shown, with a
  * beep. ESP-free, so tools/sim renders it on a PC.
@@ -48,6 +49,8 @@ typedef struct {
     bool    beep;                     /* beep on regeneration start / end */
     bool    night;                    /* backlight at night_level */
     uint8_t night_level;              /* % of full, 10..50 */
+    uint8_t order[RND_COUNT];         /* the pages in swipe order */
+    uint8_t hidden;                   /* bit per page (RND_*): left out */
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
 } rnd_settings_t;
 

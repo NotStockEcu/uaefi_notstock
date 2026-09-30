@@ -118,6 +118,10 @@ Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
 - **LOOK**: NOTSTOCK, RETRO, FUTURO.
+- **PAGES**: one gauge at a time in swipe order: SHOWN / HIDDEN, `<` and
+  `>` move it earlier or later, swipe for the next. The gauges then swipe
+  through the shown ones only, and their dots count those; the last shown
+  one cannot be hidden.
 - **NIGHT 30 %**: the backlight at night, tap for the next step (10 to
   50 %). Night itself is a double tap on the gauges or the DPF screen; a
   toast says NIGHT 30 % or DAY for a second. Kept over power-off. The

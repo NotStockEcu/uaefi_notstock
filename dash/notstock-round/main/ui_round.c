@@ -46,6 +46,11 @@ static const struct { int extra; lv_opa_t opa; } GLOW[N_ARC] = {
     { 30, 18 }, { 14, 45 }, { 0, LV_OPA_COVER },
 };
 
+const char *const rnd_page_name[RND_COUNT] = {
+    [RND_WATER] = "WATER", [RND_OIL] = "OIL", [RND_BOOST] = "BOOST",
+    [RND_INTAKE] = "INTAKE", [RND_EXHAUST] = "EXHAUST", [RND_RPM] = "ENGINE",
+};
+
 static lv_obj_t *scr;
 static const rnd_look_t *look;
 static int page;
@@ -162,10 +167,57 @@ void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT])
 void rnd_dots_set(lv_obj_t *d[RND_COUNT], int pg, lv_color_t on,
                   lv_color_t off)
 {
+    int n = rnd_pages_shown(), at = rnd_page_pos(pg);
     for (int i = 0; i < RND_COUNT; i++) {
-        lv_obj_set_width(d[i], i == pg ? 22 : 8);
-        lv_obj_set_style_bg_color(d[i], i == pg ? on : off, 0);
+        if (i >= n) {
+            lv_obj_add_flag(d[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        lv_obj_clear_flag(d[i], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_width(d[i], i == at ? 22 : 8);
+        lv_obj_set_style_bg_color(d[i], i == at ? on : off, 0);
     }
+}
+
+/* ------------------------------------------------------ order, shown */
+static bool shown_page(int pg)
+{
+    return !(g_rnd_set.hidden >> pg & 1);
+}
+
+int rnd_pages_shown(void)
+{
+    int n = 0;
+    for (int i = 0; i < RND_COUNT; i++) n += shown_page(g_rnd_set.order[i]);
+    return n;
+}
+
+int rnd_page_pos(int pg)
+{
+    int n = 0;
+    for (int i = 0; i < RND_COUNT; i++) {
+        int p = g_rnd_set.order[i];
+        if (!shown_page(p)) continue;
+        if (p == pg) return n;
+        n++;
+    }
+    return -1;
+}
+
+/* the next shown page in order from pg, dir +1 or -1 (pg itself may be
+ * hidden: then the first shown one after it) */
+static int step_page(int pg, int dir)
+{
+    int at = 0;
+    for (int i = 0; i < RND_COUNT; i++) {
+        if (g_rnd_set.order[i] == pg) at = i;
+    }
+    for (int k = 1; k <= RND_COUNT; k++) {
+        int p = g_rnd_set.order[((at + dir * k) % RND_COUNT + RND_COUNT) %
+                                RND_COUNT];
+        if (shown_page(p)) return p;
+    }
+    return pg;
 }
 
 lv_obj_t *rnd_gauge_screen(void)
@@ -212,8 +264,14 @@ static void boot(void)
 void ui_round_page(int p)
 {
     page = (p % RND_COUNT + RND_COUNT) % RND_COUNT;
+    if (!shown_page(page)) page = step_page(page, +1);
     shown = NAN;
     look->page(page);
+}
+
+void rnd_pages_changed(void)
+{
+    ui_round_page(page);          /* off a page just hidden; dots redone */
 }
 
 int ui_round_current(void)
@@ -301,8 +359,8 @@ static void gesture_cb(lv_event_t *e)
     (void)e;
     rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-    if (dir == LV_DIR_LEFT)  ui_round_page(page + 1);
-    if (dir == LV_DIR_RIGHT) ui_round_page(page - 1);
+    if (dir == LV_DIR_LEFT)  ui_round_page(step_page(page, +1));
+    if (dir == LV_DIR_RIGHT) ui_round_page(step_page(page, -1));
 }
 
 static void long_cb(lv_event_t *e)

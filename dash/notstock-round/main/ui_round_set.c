@@ -1,6 +1,7 @@
 /* Round gauge UI: settings. See ui_round.h.
  *
- * SETTINGS (from the menu): LOOK, NIGHT (the backlight at night, the double
+ * SETTINGS (from the menu): LOOK, PAGES (which gauges and in what order),
+ * NIGHT (the backlight at night, the double
  * tap's level; tap for the next step), BEEP on / off (the regeneration
  * beeps; the popup comes either way), LIMITS. A long press goes one level back and
  * stores the settings.
@@ -35,6 +36,8 @@ void rnd_settings_defaults(void)
     g_rnd_set.beep = true;
     g_rnd_set.night = false;
     g_rnd_set.night_level = 30;
+    for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
+    g_rnd_set.hidden = 0;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
     }
@@ -59,7 +62,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 {
     lv_obj_t *b = lv_obj_create(par);
     lv_obj_remove_style_all(b);
-    lv_obj_set_size(b, 300, 64);
+    lv_obj_set_size(b, 300, 56);
     lv_obj_align(b, LV_ALIGN_TOP_MID, 0, y);
     lv_obj_set_style_radius(b, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(b, C_PANEL, 0);
@@ -79,7 +82,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 }
 
 /* -------------------------------------------------------------- screens */
-static lv_obj_t *set_scr, *look_scr, *lim_scr;
+static lv_obj_t *set_scr, *look_scr, *lim_scr, *pg_scr;
 static lv_obj_t *beep_lbl, *night_lbl, *look_pill[RND_LOOK_COUNT];
 
 static void show_night(void)
@@ -162,6 +165,74 @@ static void go_look(lv_event_t *e)
     lv_scr_load(look_scr);
 }
 
+/* PAGES: one gauge at a time, in swipe order: shown or hidden, and moved
+ * earlier (<) or later (>) */
+static int pg_at;                     /* position in g_rnd_set.order */
+static lv_obj_t *pg_icon, *pg_name, *pg_state, *pg_state_lbl, *pg_pos;
+static lv_obj_t *pg_dot[RND_COUNT];
+
+static void show_pages(void)
+{
+    char buf[32];
+    int p = g_rnd_set.order[pg_at];
+    bool on = !(g_rnd_set.hidden >> p & 1);
+    lv_img_set_src(pg_icon, page_icon[p]);
+    lv_obj_set_style_img_recolor(pg_icon, on ? C_W : C_DIM, 0);
+    lv_label_set_text(pg_name, rnd_page_name[p]);
+    lv_obj_set_style_text_color(pg_name, on ? C_W : C_DIM, 0);
+    lv_label_set_text(pg_state_lbl, on ? "SHOWN" : "HIDDEN");
+    lv_obj_set_style_text_color(pg_state_lbl, on ? C_W : C_DIM, 0);
+    lv_obj_set_style_border_color(pg_state, on ? C_W : C_EDGE, 0);
+    snprintf(buf, sizeof buf, "POSITION %d / %d", pg_at + 1, RND_COUNT);
+    lv_label_set_text(pg_pos, buf);
+    for (int i = 0; i < RND_COUNT; i++) {
+        bool h = g_rnd_set.hidden >> g_rnd_set.order[i] & 1;
+        lv_obj_set_width(pg_dot[i], i == pg_at ? 22 : 8);
+        lv_obj_set_style_bg_color(pg_dot[i], i == pg_at ? C_W :
+                                  h ? lv_color_hex(0x1C1F23) : C_DOT, 0);
+    }
+}
+
+static void pg_toggle(lv_event_t *e)
+{
+    (void)e;
+    int p = g_rnd_set.order[pg_at];
+    bool on = !(g_rnd_set.hidden >> p & 1);
+    if (on && rnd_pages_shown() <= 1) return;     /* keep one to look at */
+    g_rnd_set.hidden ^= (uint8_t)(1u << p);
+    rnd_pages_changed();
+    show_pages();
+}
+
+static void pg_move(lv_event_t *e)
+{
+    int dir = (int)(intptr_t)lv_event_get_user_data(e);
+    int to = pg_at + dir;
+    if (to < 0 || to >= RND_COUNT) return;
+    uint8_t t = g_rnd_set.order[to];
+    g_rnd_set.order[to] = g_rnd_set.order[pg_at];
+    g_rnd_set.order[pg_at] = t;
+    pg_at = to;                       /* the selection travels with it */
+    rnd_pages_changed();
+    show_pages();
+}
+
+static void pg_gesture(lv_event_t *e)
+{
+    (void)e;
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+    if (dir == LV_DIR_LEFT)  pg_at = (pg_at + 1) % RND_COUNT;
+    if (dir == LV_DIR_RIGHT) pg_at = (pg_at + RND_COUNT - 1) % RND_COUNT;
+    show_pages();
+}
+
+static void go_pages(lv_event_t *e)
+{
+    (void)e;
+    show_pages();
+    lv_scr_load(pg_scr);
+}
+
 /* LIMITS */
 static int lim;                       /* which one is shown */
 static lv_obj_t *lim_name, *lim_val, *lim_unit, *lim_def;
@@ -241,18 +312,42 @@ static void step_button(lv_obj_t *par, lv_coord_t x, int dir)
     }
 }
 
+static void text_button(lv_obj_t *par, lv_coord_t x, const char *t,
+                        lv_event_cb_t cb, int dir)
+{
+    lv_obj_t *b = lv_obj_create(par);
+    lv_obj_remove_style_all(b);
+    lv_obj_set_size(b, 84, 84);
+    lv_obj_set_pos(b, x, CX - 42);
+    lv_obj_set_style_radius(b, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(b, C_PANEL, 0);
+    lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(b, C_EDGE, 0);
+    lv_obj_set_style_border_width(b, 2, 0);
+    lv_obj_set_style_bg_color(b, C_EDGE, LV_STATE_PRESSED);
+    lv_obj_clear_flag(b, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_event_cb(b, cb, LV_EVENT_CLICKED, (void *)(intptr_t)dir);
+    lv_obj_t *l = lv_label_create(b);
+    lv_obj_set_style_text_font(l, &rnd_26, 0);
+    lv_obj_set_style_text_color(l, C_W, 0);
+    lv_label_set_text(l, t);
+    lv_obj_center(l);
+}
+
 void rnd_set_create(void)
 {
     lv_obj_t *l;
 
     set_scr = screen(set_back, "SETTINGS");
-    pill(set_scr, 100, go_look, &l);
+    pill(set_scr, 88, go_look, &l);
     lv_label_set_text(l, "LOOK");
-    pill(set_scr, 176, night_step, &night_lbl);
-    pill(set_scr, 252, beep_toggle, &beep_lbl);
-    pill(set_scr, 328, go_limits, &l);
+    pill(set_scr, 150, go_pages, &l);
+    lv_label_set_text(l, "PAGES");
+    pill(set_scr, 212, night_step, &night_lbl);
+    pill(set_scr, 274, beep_toggle, &beep_lbl);
+    pill(set_scr, 336, go_limits, &l);
     lv_label_set_text(l, "LIMITS");
-    l = rnd_label(set_scr, &rnd_18, C_DIM, 414);
+    l = rnd_label(set_scr, &rnd_18, C_DIM, 410);
     lv_label_set_text(l, "LONG PRESS: BACK");
 
     look_scr = screen(sub_back, "LOOK");
@@ -265,6 +360,38 @@ void rnd_set_create(void)
     }
     l = rnd_label(look_scr, &rnd_18, C_DIM, 390);
     lv_label_set_text(l, "LONG PRESS: BACK");
+
+    pg_scr = screen(sub_back, "PAGES");
+    lv_obj_add_event_cb(pg_scr, pg_gesture, LV_EVENT_GESTURE, NULL);
+    pg_icon = lv_img_create(pg_scr);
+    lv_obj_align(pg_icon, LV_ALIGN_TOP_MID, 0, 98);
+    lv_obj_set_style_img_recolor_opa(pg_icon, LV_OPA_COVER, 0);
+    pg_name = rnd_label(pg_scr, &rnd_26, C_W, 160);
+    lv_obj_set_style_text_letter_space(pg_name, 3, 0);
+    pg_state = pill(pg_scr, CX - 28, pg_toggle, &pg_state_lbl);
+    lv_obj_set_width(pg_state, 190);
+    text_button(pg_scr, 20, "<", pg_move, -1);
+    text_button(pg_scr, RND_W - 20 - 84, ">", pg_move, +1);
+    pg_pos = rnd_label(pg_scr, &rnd_18, C_GREY, CX + 52);
+    l = rnd_label(pg_scr, &rnd_18, C_DIM, CX + 84);
+    lv_label_set_text(l, "< > MOVE    SWIPE: NEXT");
+    lv_obj_t *prow = lv_obj_create(pg_scr);
+    lv_obj_remove_style_all(prow);
+    lv_obj_set_size(prow, 240, 10);
+    lv_obj_align(prow, LV_ALIGN_TOP_MID, 0, CX + 185);
+    lv_obj_set_flex_flow(prow, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(prow, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
+                          LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(prow, 8, 0);
+    lv_obj_clear_flag(prow, LV_OBJ_FLAG_CLICKABLE);
+    for (int i = 0; i < RND_COUNT; i++) {
+        pg_dot[i] = lv_obj_create(prow);
+        lv_obj_remove_style_all(pg_dot[i]);
+        lv_obj_set_size(pg_dot[i], 8, 8);
+        lv_obj_set_style_radius(pg_dot[i], LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_bg_opa(pg_dot[i], LV_OPA_COVER, 0);
+        lv_obj_clear_flag(pg_dot[i], LV_OBJ_FLAG_CLICKABLE);
+    }
 
     lim_scr = screen(sub_back, "LIMITS");
     lv_obj_add_event_cb(lim_scr, lim_gesture, LV_EVENT_GESTURE, NULL);
@@ -303,6 +430,10 @@ void rnd_sim_settings(const char *which, int limit)
 {
     if (strcmp(which, "settings") == 0) rnd_set_open();
     if (strcmp(which, "look") == 0)     go_look(NULL);
+    if (strcmp(which, "pages") == 0) {
+        pg_at = limit % RND_COUNT;
+        go_pages(NULL);
+    }
     if (strcmp(which, "limits") == 0) {
         lim = limit % RND_WARN_COUNT;
         go_limits(NULL);

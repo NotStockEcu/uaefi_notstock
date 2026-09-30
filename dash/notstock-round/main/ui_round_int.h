@@ -69,7 +69,15 @@ typedef struct {
 extern const rnd_look_t rnd_look_notstock, rnd_look_retro, rnd_look_futuro;
 void rnd_look_apply(void);                  /* g_rnd_set.look changed */
 
-/* page dots, shared by the looks */
+/* page names (WATER, OIL, ...) */
+extern const char *const rnd_page_name[RND_COUNT];
+
+/* the shown pages in order: how many, and where a page is among them */
+int rnd_pages_shown(void);
+int rnd_page_pos(int page);                 /* -1: hidden */
+void rnd_pages_changed(void);               /* order or hidden edited */
+
+/* page dots, shared by the looks: one per shown page, in order */
 void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT]);
 void rnd_dots_set(lv_obj_t *d[RND_COUNT], int page, lv_color_t on,
                   lv_color_t off);

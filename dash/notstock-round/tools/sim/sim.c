@@ -12,6 +12,9 @@
  *               [relook=N,M,...]    switch looks while running, as LOOK does
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]
+ *               [tap=x,y;x,y;...]   single taps, after the screen is up
+ *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
+ *                                   limit=N shows position N)
  */
 #include <math.h>
 #include <stdio.h>
@@ -92,6 +95,7 @@ int main(int argc, char **argv)
     int limit = 0, boot = 0;
     const char *relook = NULL;
     int dtap = 0;
+    const char *taps = NULL;
     rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
@@ -120,6 +124,17 @@ int main(int argc, char **argv)
         if (strcmp(k, "look") == 0)  { g_rnd_set.look = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "relook") == 0) { relook = v; used = true; }
         if (strcmp(k, "dtap") == 0)  { dtap = atoi(v); used = true; }
+        if (strcmp(k, "tap") == 0)   { taps = v; used = true; }
+        if (strcmp(k, "hide") == 0)  { g_rnd_set.hidden = (uint8_t)atoi(v); used = true; }
+        if (strcmp(k, "order") == 0) {
+            const char *q = v;
+            for (int i = 0; i < RND_COUNT && q; i++) {
+                g_rnd_set.order[i] = (uint8_t)atoi(q);
+                q = strchr(q, ',');
+                if (q) q++;
+            }
+            used = true;
+        }
         if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
         if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
@@ -178,6 +193,18 @@ int main(int argc, char **argv)
         rnd_look_apply();
         run(0.5f, &d);
         q = strchr(q, ',');
+        if (q) q++;
+    }
+    for (const char *q = taps; q && *q; ) {
+        int x, y;
+        if (sscanf(q, "%d,%d", &x, &y) == 2) {
+            s_tx = x;
+            s_ty = y;
+            run(0.066f, &d);
+            s_tx = s_ty = -1;
+            run(0.5f, &d);
+        }
+        q = strchr(q, ';');
         if (q) q++;
     }
     for (int i = 0; i < dtap; i++) {
