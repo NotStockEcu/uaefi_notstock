@@ -14,6 +14,11 @@
  *               [night=1] [nightlvl=P]
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
  *               [lang=0|1]          RND_LANG_*: English, Czech
+ *               [screen=diag]       trouble codes, read on opening: the
+ *                                   fake car has three stored and one
+ *                                   pending; [dtc=N] N of them (0..4),
+ *                                   [dtcclear=1] clear them after 2 s,
+ *                                   [dtcrefuse=1] the ECU refuses
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
  */
@@ -61,6 +66,45 @@ void rnd_backlight(uint8_t percent)
 
 void rnd_sim_settings(const char *which, int limit);
 
+/* ---------------------------------------------------- fake trouble codes */
+static const rnd_dtc_t FAKE_DTC[] = {
+    { 0x0401, 0, RND_DTC_STORED }, { 0x2463, 0, RND_DTC_STORED },
+    { 0x0670, 0, RND_DTC_STORED }, { 0x0299, 0, RND_DTC_PENDING },
+};
+static int s_dtc_have = 4, s_dtc_refuse, s_dtc_busy_ms;
+static rnd_dtc_status_t s_dtc;
+
+void rnd_dtc_read(void)
+{
+    if (s_dtc.busy) return;
+    s_dtc.busy = RND_DTC_READING;
+    s_dtc.result = RND_DTC_READ;
+    s_dtc_busy_ms = 1000;
+}
+
+void rnd_dtc_clear(void)
+{
+    if (s_dtc.busy) return;
+    s_dtc.busy = RND_DTC_CLEARING;
+    s_dtc_busy_ms = 1500;
+    if (s_dtc_refuse) {
+        s_dtc.result = RND_DTC_REFUSED;
+        s_dtc.nrc = 0x22;
+    } else {
+        s_dtc.result = RND_DTC_CLEARED;
+        s_dtc_have = 0;
+    }
+}
+
+static void dtc_tick(int ms)
+{
+    if (!s_dtc.busy || (s_dtc_busy_ms -= ms) > 0) return;
+    s_dtc.n = (uint8_t)s_dtc_have;
+    memcpy(s_dtc.list, FAKE_DTC, sizeof FAKE_DTC);
+    s_dtc.seq++;
+    s_dtc.busy = RND_DTC_IDLE;
+}
+
 static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
@@ -69,9 +113,11 @@ static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
     data->state = s_tx < 0 ? LV_INDEV_STATE_RELEASED : LV_INDEV_STATE_PRESSED;
 }
 
-static void run(float seconds, const rnd_data_t *d)
+static void run(float seconds, rnd_data_t *d)
 {
     for (float t = 0; t < seconds; t += STEP_MS / 1000.0f) {
+        dtc_tick(STEP_MS);
+        d->dtc = s_dtc;
         ui_round_update(d);
         lv_tick_inc(STEP_MS);
         lv_timer_handler();
@@ -95,7 +141,7 @@ int main(int argc, char **argv)
     const char *screen = NULL, *regen = NULL;
     int limit = 0, boot = 0;
     const char *relook = NULL;
-    int dtap = 0;
+    int dtap = 0, dtcclear = 0;
     const char *taps = NULL;
     rnd_settings_defaults();
     int page = 0;
@@ -138,6 +184,9 @@ int main(int argc, char **argv)
         }
         if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
         if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
+        if (strcmp(k, "dtc") == 0)   { s_dtc_have = atoi(v); used = true; }
+        if (strcmp(k, "dtcclear") == 0) { dtcclear = atoi(v); used = true; }
+        if (strcmp(k, "dtcrefuse") == 0) { s_dtc_refuse = atoi(v); used = true; }
         if (strcmp(k, "lang") == 0)  { g_rnd_set.lang = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "beep") == 0)  { g_rnd_set.beep = atoi(v) != 0; used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
@@ -175,6 +224,10 @@ int main(int argc, char **argv)
         extern void rnd_menu_open(void);
         if (strcmp(screen, "dpf") == 0)  lv_scr_load(rnd_dpf_screen());
         if (strcmp(screen, "menu") == 0) rnd_menu_open();
+        if (strcmp(screen, "diag") == 0) {
+            extern void rnd_diag_open(void);
+            rnd_diag_open();
+        }
         rnd_sim_settings(screen, limit);
     }
     if (regen) {
@@ -185,6 +238,11 @@ int main(int argc, char **argv)
         d.dpf.temp_c = start ? 585 : 290;
         if (!start) d.dpf.soot_g = 3.4f;
         run(t_end / 2, &d);
+    } else if (dtcclear) {
+        /* read on opening, then CLEAR twice, as a finger would */
+        run(2.0f, &d);
+        rnd_dtc_clear();
+        run(t_end, &d);
     } else {
         run(t_end, &d);
     }

@@ -150,6 +150,24 @@ case, so the fonts carry the Czech capitals only. Orbitron has no
 and the caron / ring of Š and Å, into a renamed temporary copy (Orbitron
 is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 
+## Diagnostics
+
+![diag](preview/cz-diag.png) ![cleared](preview/cz-diag-cleared.png)
+![refused](preview/cz-diag-refused.png)
+
+Menu -> DIAGNOSTICS (`ui_round_diag.c`): the OBD trouble codes. Opening it
+reads them (mode 03 stored, 07 pending, every ECU on 0x7DF), one code at a
+time: the code, stored (amber) or pending (grey), which ECU, and what it
+means (`dtc_text.c`, shared with the 7" dash, the common diesel codes in
+English and Czech; others get their group). Swipe for the next code.
+READ reads again; CLEAR turns red and asks once more, then clears (mode 04)
+and reads again. With the engine running the ECU refuses, and the screen
+says to switch the engine off and leave the ignition on.
+
+The platform does the OBD work (the 7" dash's `obd2.c`, tested on the
+T5.1): `rnd_dtc_read()` / `rnd_dtc_clear()` start it, and `rnd_data_t.dtc`
+brings the state and the list back every frame.
+
 ## Bluetooth
 
 The gauge will send its values over Bluetooth LE: gauges 10 times a

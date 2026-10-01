@@ -123,8 +123,7 @@ const char *dtc_group(uint16_t code, int cs)
 const char *dtc_nrc_text(uint8_t nrc, int cs)
 {
     switch (nrc) {
-    case 0x22: return cs ? "VYPNI MOTOR, NECH ZAPALOVÁNÍ"
-                         : "ENGINE OFF, IGNITION ON";
+    case 0x22: return cs ? "MOTOR VYP, KLÍČ ZAP" : "ENGINE OFF, KEY ON";
     case 0x11: return cs ? "JEDNOTKA TO NEUMÍ" : "NOT SUPPORTED";
     case 0x33: return cs ? "JEDNOTKA ZAMČENÁ" : "SECURITY ACCESS DENIED";
     default:   return cs ? "JEDNOTKA ODMÍTLA" : "REFUSED BY THE ECU";

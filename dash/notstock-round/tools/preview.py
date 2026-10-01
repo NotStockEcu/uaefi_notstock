@@ -59,6 +59,11 @@ SCENES = {
     "cz-dpf": "lang=1 screen=dpf",
     "cz-regen-start": "lang=1 regen=start t=2",
     "cz-pages": "lang=1 screen=pages limit=2",
+    "diag": "screen=diag t=1.5",
+    "cz-diag": "lang=1 screen=diag t=1.5",
+    "cz-diag-clear": "lang=1 screen=diag t=1.5 tap=319,371",
+    "cz-diag-cleared": "lang=1 screen=diag dtcclear=1 t=2",
+    "cz-diag-refused": "lang=1 screen=diag dtcclear=1 dtcrefuse=1 t=2",
 }
 
 

@@ -370,6 +370,7 @@ static void lang_rebuild(void *arg)
     rnd_menu_create();                      /* each drops its old screens */
     rnd_dpf_create();
     rnd_set_create();
+    rnd_diag_create();
     look = NULL;
     rnd_look_apply();
     rnd_set_open();
@@ -436,6 +437,7 @@ void ui_round_create(bool boot_logo_on)
     rnd_menu_create();
     rnd_dpf_create();
     rnd_set_create();
+    rnd_diag_create();
     if (boot_logo_on) boot();
     else              lv_scr_load(scr);
 }
@@ -507,4 +509,5 @@ void ui_round_update(const rnd_data_t *d)
     rnd_regen_watch(d);
     gauge_update(d);
     rnd_dpf_update(d);
+    rnd_diag_update(d);
 }

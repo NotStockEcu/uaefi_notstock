@@ -5,6 +5,7 @@
 
 LV_FONT_DECLARE(rnd_112);
 LV_FONT_DECLARE(rnd_84);
+LV_FONT_DECLARE(rnd_56);
 LV_FONT_DECLARE(rnd_26);
 LV_FONT_DECLARE(rnd_18);
 LV_FONT_DECLARE(rnd_barlow_46);
@@ -98,6 +99,9 @@ void rnd_dpf_create(void);
 lv_obj_t *rnd_dpf_screen(void);
 void rnd_dpf_update(const rnd_data_t *d);
 void rnd_set_create(void);
+void rnd_diag_create(void);
+void rnd_diag_open(void);
+void rnd_diag_update(const rnd_data_t *d);
 void rnd_set_open(void);
 void rnd_limits_changed(void);        /* redraw the zones */
 

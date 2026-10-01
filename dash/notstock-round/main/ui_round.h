@@ -1,6 +1,6 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * settings: look, pages, night level, beep on/off, warn limits, language
+ * diagnostics: the trouble codes, read and cleared over OBD; settings: look, pages, night level, beep on/off, warn limits, language
  * English / Czech). Double tap:
  * night
  * (backlight down to the night level) and back to day.
@@ -26,6 +26,26 @@
 enum { RND_WATER, RND_OIL, RND_BOOST, RND_INTAKE, RND_EXHAUST, RND_RPM,
        RND_COUNT };
 
+/* OBD trouble codes, as the platform's OBD layer has them (the 7" dash's
+ * obd2.c: g_obd.dtc, same numbers) */
+#define RND_DTC_MAX 24
+enum { RND_DTC_STORED = 1, RND_DTC_PENDING = 2 };             /* kind bits */
+enum { RND_DTC_IDLE, RND_DTC_READING, RND_DTC_CLEARING };     /* busy */
+enum { RND_DTC_NOT_READ, RND_DTC_READ, RND_DTC_NO_ANSWER,     /* result */
+       RND_DTC_CLEARED, RND_DTC_REFUSED };
+typedef struct {
+    uint16_t code;        /* SAE J2012, 0x0401 = P0401 */
+    uint8_t  ecu;         /* answered on 0x7E8 + ecu */
+    uint8_t  kind;
+} rnd_dtc_t;
+typedef struct {
+    uint8_t  busy, result;
+    uint8_t  nrc;         /* why clearing was refused (7F 04 nrc) */
+    uint8_t  n, more;     /* codes in list; more: the list overflowed */
+    uint16_t seq;         /* counts finished reads */
+    rnd_dtc_t list[RND_DTC_MAX];
+} rnd_dtc_status_t;
+
 /* live values, NAN where unknown; link false: nothing from the car */
 typedef struct {
     float v[RND_COUNT];
@@ -36,6 +56,7 @@ typedef struct {
         float dist_km;        /* since the last regeneration */
         float temp_c;         /* simulated filter surface temperature */
     } dpf;
+    rnd_dtc_status_t dtc;
     bool  link;
 } rnd_data_t;
 
@@ -64,6 +85,8 @@ void rnd_settings_defaults(void);
 void rnd_beep(int n);                 /* n short beeps, must not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
 void rnd_backlight(uint8_t percent);  /* 0..100 */
+void rnd_dtc_read(void);              /* read the trouble codes (03, 07) */
+void rnd_dtc_clear(void);             /* clear them (04), then read again */
 
 /* builds every screen; boot: the NOT STOCK logo first, fading in from black
  * and then into the gauges (RND_BOOT_MS in all), else the gauges at once */
