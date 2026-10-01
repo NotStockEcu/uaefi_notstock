@@ -21,7 +21,8 @@ conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 40 -o $O/dash_
 # small labels: km/h, x1000 rpm
 conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 18 -o $O/dash_orb_18.c
 # side gauge readouts
-conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 30 -o $O/dash_orb_30.c
+# (A-F P U: trouble codes on the DIAG page, P0401 U0100 P242F)
+conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --symbols ABCDEFPU --size 30 -o $O/dash_orb_30.c
 # side gauge units and titles: bar, degC, TURBO, AFR
 conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 14 -o $O/dash_orb_14.c
 

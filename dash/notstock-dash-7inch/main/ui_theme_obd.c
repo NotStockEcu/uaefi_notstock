@@ -1,9 +1,10 @@
 /* OBD-II test screen: plain blocks, made to prove the link to an OBD ECU
  * (VW T5.1 CAAC) before anything prettier is built on it.
  *
- * Two pages, swipe left / right or tap the tabs at the top: TEST (the
- * blocks below) and DPF (the particulate filter's measuring values, a first
- * go at what the round gauge's DPF page will show).
+ * Three pages, swipe left / right or tap the tabs at the top: TEST (the
+ * blocks below), DPF (the particulate filter's measuring values, a first
+ * go at what the round gauge's DPF page will show) and DIAG (trouble codes:
+ * READ, and CLEAR, which wants a second tap to be sure).
  *
  * Shown instead of the selected look whenever the menu's ECU protocol is
  * OBD-II. Each block says which PID it reads and whether the ECU supports
@@ -14,6 +15,7 @@
 #include "ui.h"
 #include "ui_theme.h"
 #include "obd2.h"
+#include "dtc_text.h"
 #include "settings.h"
 
 #include <math.h>
@@ -49,8 +51,15 @@ static const struct {
 
 static lv_obj_t *val[B_COUNT], *unit_row[B_COUNT], *na[B_COUNT], *tag[B_COUNT];
 static lv_obj_t *state_lbl, *stats_lbl, *pids_lbl, *speed_lbl;
-static lv_obj_t *pg[2], *tab[2], *title_lbl;
+enum { PG_TEST, PG_DPF, PG_DIAG, PG_COUNT };
+static lv_obj_t *pg[PG_COUNT], *tab[PG_COUNT], *title_lbl;
 static int page;
+
+/* DIAG page */
+#define CLEAR_ARM_MS 4000      /* CLEAR armed this long after the first tap */
+static lv_obj_t *diag_state, *diag_list, *diag_clear_lbl, *diag_clear;
+static uint32_t clear_armed_at;
+static int diag_shown_seq = -1, diag_shown_busy = -1, diag_shown_armed = -1;
 
 /* DPF page */
 #define SOOT_MAX     40.0f     /* arc full scale, g */
@@ -121,26 +130,30 @@ static void build_block(lv_obj_t *scr, int b, lv_coord_t x, lv_coord_t y,
 /* ------------------------------------------------------------ pages */
 static void show_page(int p)
 {
+    static const char *const TITLE[PG_COUNT] = {
+        "OBD-II TEST", "DPF STATUS", "DIAGNOSTICS",
+    };
     page = p;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < PG_COUNT; i++) {
         if (i == p) lv_obj_clear_flag(pg[i], LV_OBJ_FLAG_HIDDEN);
         else        lv_obj_add_flag(pg[i], LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_text_color(tab[i], i == p ? C_W : C_DIM, 0);
         lv_obj_set_style_border_width(tab[i], i == p ? 2 : 0, 0);
     }
-    lv_label_set_text(title_lbl, p ? "DPF STATUS" : "OBD-II TEST");
+    lv_label_set_text(title_lbl, TITLE[p]);
 }
 
 void ui_obd_page(int p)
 {
-    if (pg[0]) show_page(p ? 1 : 0);
+    if (pg[0]) show_page(p >= 0 && p < PG_COUNT ? p : 0);
 }
 
 static void gesture_cb(lv_event_t *e)
 {
     (void)e;
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-    if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) show_page(!page);
+    if (dir == LV_DIR_LEFT)  show_page((page + 1) % PG_COUNT);
+    if (dir == LV_DIR_RIGHT) show_page((page + PG_COUNT - 1) % PG_COUNT);
 }
 
 static void tab_cb(lv_event_t *e)
@@ -150,8 +163,8 @@ static void tab_cb(lv_event_t *e)
 
 static void build_tabs(lv_obj_t *scr)
 {
-    static const char *const NAME[2] = { "TEST", "DPF" };
-    for (int i = 0; i < 2; i++) {
+    static const char *const NAME[PG_COUNT] = { "TEST", "DPF", "DIAG" };
+    for (int i = 0; i < PG_COUNT; i++) {
         tab[i] = ui_label(scr, &dash_orb_14, C_DIM, NAME[i], 215 + i * 90,
                           14, 80, LV_TEXT_ALIGN_CENTER);
         lv_obj_set_style_pad_ver(tab[i], 4, 0);
@@ -309,6 +322,146 @@ static void update_dpf(const dash_data_t *d, bool live)
     ui_text(dpf_foot, buf);
 }
 
+/* ------------------------------------------------------------ DIAG page */
+static void read_cb(lv_event_t *e)
+{
+    (void)e;
+    clear_armed_at = 0;
+    obd_dtc_read();
+}
+
+static void clear_cb(lv_event_t *e)
+{
+    (void)e;
+    /* first tap arms, the second within CLEAR_ARM_MS clears */
+    if (clear_armed_at && lv_tick_elaps(clear_armed_at) < CLEAR_ARM_MS) {
+        clear_armed_at = 0;
+        obd_dtc_clear();
+    } else {
+        clear_armed_at = lv_tick_get();
+        if (!clear_armed_at) clear_armed_at = 1;
+    }
+}
+
+static lv_obj_t *button(lv_obj_t *par, lv_coord_t y, const char *text,
+                        lv_event_cb_t cb, lv_obj_t **lbl)
+{
+    lv_obj_t *b = ui_rect(par, 8, y, 236, 110, C_TILE);
+    lv_obj_set_style_border_color(b, C_EDGE, 0);
+    lv_obj_set_style_border_width(b, 2, 0);
+    lv_obj_set_style_radius(b, 8, 0);
+    lv_obj_set_style_bg_color(b, C_EDGE, LV_STATE_PRESSED);
+    lv_obj_add_flag(b, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(b, cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *l = ui_label(b, &dash_orb_18, C_W, text, 0, 0, 220,
+                           LV_TEXT_ALIGN_CENTER);
+    lv_obj_center(l);
+    if (lbl) *lbl = l;
+    return b;
+}
+
+static void build_diag(lv_obj_t *par)
+{
+    button(par, 50, "READ CODES", read_cb, NULL);
+    diag_clear = button(par, 172, "CLEAR CODES", clear_cb, &diag_clear_lbl);
+    ui_label(par, &dash_lbl_13, C_DIM,
+             "Mode 03 stored + 07 pending\n"
+             "from every ECU on 7DF.\n\n"
+             "CLEAR: mode 04, then read\n"
+             "again. Ignition on, engine\n"
+             "off. Also resets readiness\n"
+             "monitors and freeze frames.",
+             14, 300, 230, LV_TEXT_ALIGN_LEFT);
+
+    lv_obj_t *t = ui_rect(par, 256, 50, 536, 382, C_TILE);
+    lv_obj_set_style_border_color(t, C_EDGE, 0);
+    lv_obj_set_style_border_width(t, 2, 0);
+    lv_obj_set_style_radius(t, 8, 0);
+    diag_state = ui_label(t, &dash_orb_18, C_GREY, "", 16, 14, 500,
+                          LV_TEXT_ALIGN_LEFT);
+    diag_list = lv_obj_create(t);
+    lv_obj_remove_style_all(diag_list);
+    lv_obj_set_pos(diag_list, 8, 48);
+    lv_obj_set_size(diag_list, 516, 322);
+    lv_obj_set_flex_flow(diag_list, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(diag_list, 6, 0);
+    lv_obj_add_flag(diag_list, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scroll_dir(diag_list, LV_DIR_VER);
+    diag_shown_seq = diag_shown_busy = diag_shown_armed = -1;
+}
+
+static void diag_row(const volatile obd_dtc_t *c)
+{
+    char name[6], buf[64];
+    obd_dtc_name(c->code, name);
+    lv_obj_t *r = ui_rect(diag_list, 0, 0, 516, 64, lv_color_hex(0x1A1D20));
+    lv_obj_set_style_radius(r, 6, 0);
+    bool stored = c->kind & DTC_STORED;
+    ui_label(r, &dash_orb_30, stored ? C_Y : C_GREY, name, 14, 15, 0,
+             LV_TEXT_ALIGN_LEFT);
+    const char *t = dtc_text(c->code, 0);
+    ui_label(r, &dash_orb_14, C_W, t ? t : dtc_group(c->code, 0), 170, 12,
+             336, LV_TEXT_ALIGN_LEFT);
+    snprintf(buf, sizeof buf, "%s   ECU %03X",
+             stored ? (c->kind & DTC_PENDING ? "STORED + PENDING" : "STORED")
+                    : "PENDING",
+             OBD_RESP_BASE + c->ecu);
+    ui_label(r, &dash_lbl_13, stored ? C_Y : C_GREY, buf, 170, 38, 336,
+             LV_TEXT_ALIGN_LEFT);
+}
+
+static void update_diag(void)
+{
+    int armed = clear_armed_at && lv_tick_elaps(clear_armed_at) < CLEAR_ARM_MS;
+    if (armed != diag_shown_armed) {
+        diag_shown_armed = armed;
+        ui_text(diag_clear_lbl, armed ? "TAP AGAIN\nTO CLEAR" : "CLEAR CODES");
+        lv_obj_set_style_bg_color(diag_clear, armed ? C_RED : C_TILE, 0);
+    }
+    int busy = g_obd.dtc.busy, seq = g_obd.dtc.seq;
+    if (busy == diag_shown_busy && seq == diag_shown_seq) return;
+    diag_shown_busy = busy;
+    diag_shown_seq = seq;
+
+    char buf[96];
+    lv_color_t c = C_GREY;
+    if (busy == DTC_READING) {
+        snprintf(buf, sizeof buf, "READING ...");
+    } else if (busy == DTC_CLEARING) {
+        snprintf(buf, sizeof buf, "CLEARING ...");
+    } else {
+        int n = g_obd.dtc.n;
+        switch (g_obd.dtc.result) {
+        case DTC_NOT_READ:
+            snprintf(buf, sizeof buf, "NOT READ YET: TAP READ CODES");
+            break;
+        case DTC_NO_ANSWER:
+            snprintf(buf, sizeof buf, "NO ECU ANSWERED");
+            c = C_RED;
+            break;
+        case DTC_CLEAR_REFUSED:
+            snprintf(buf, sizeof buf, "NOT CLEARED: %s",
+                     dtc_nrc_text(g_obd.dtc.nrc, 0));
+            c = C_RED;
+            break;
+        default: {
+            const char *pre = g_obd.dtc.result == DTC_CLEARED ? "CLEARED.  " : "";
+            if (n == 0) snprintf(buf, sizeof buf, "%sNO CODES", pre);
+            else snprintf(buf, sizeof buf, "%s%d CODE%s%s", pre, n,
+                          n == 1 ? "" : "S", g_obd.dtc.more ? " (AND MORE)" : "");
+            c = n ? C_Y : C_GREEN;
+            break;
+        }
+        }
+    }
+    ui_text(diag_state, buf);
+    lv_obj_set_style_text_color(diag_state, c, 0);
+
+    if (busy) return;                   /* the list is being written */
+    lv_obj_clean(diag_list);
+    for (int i = 0; i < g_obd.dtc.n; i++) diag_row(&g_obd.dtc.list[i]);
+}
+
 static lv_obj_t *build(void)
 {
     lv_obj_t *scr = ui_screen(C_BG);
@@ -320,7 +473,7 @@ static lv_obj_t *build(void)
                          LV_TEXT_ALIGN_RIGHT);
     build_tabs(scr);
 
-    for (int i = 0; i < 2; i++) pg[i] = ui_box(scr, 0, 0, 800, 480);
+    for (int i = 0; i < PG_COUNT; i++) pg[i] = ui_box(scr, 0, 0, 800, 480);
     lv_obj_t *root = scr;
     scr = pg[0];                    /* the TEST page's widgets */
 
@@ -341,10 +494,11 @@ static lv_obj_t *build(void)
     lv_label_set_long_mode(pids_lbl, LV_LABEL_LONG_CLIP);
     lv_obj_set_height(pids_lbl, 18);
 
-    build_dpf(pg[1]);
+    build_dpf(pg[PG_DPF]);
+    build_diag(pg[PG_DIAG]);
     scr = root;
     /* the pages cover the whole screen: keep the tabs tappable */
-    for (int i = 0; i < 2; i++) lv_obj_move_foreground(tab[i]);
+    for (int i = 0; i < PG_COUNT; i++) lv_obj_move_foreground(tab[i]);
     show_page(page);
 
     shown_rx = UINT32_MAX;
@@ -406,6 +560,7 @@ static void update(const dash_data_t *d, int link)
     bool live = link != LINK_NONE;
 
     update_dpf(d, live);
+    update_diag();
 
     show_block(B_CLT, d->clt, live);
     show_block(B_OIL, d->oilt, live);

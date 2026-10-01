@@ -17,7 +17,11 @@
  *   switch=a,b,..  after the run, switch to these looks in turn (as SAVE
  *                  in the menu would) and render the last one
  *   proto=1        OBD-II: the test screen, fed by a fake VW T5 engine ECU
- *   obdpage=1      OBD-II: the DPF page instead of the test blocks
+ *   obdpage=1|2    OBD-II: the DPF page / the DIAG page instead of the
+ *                  test blocks
+ *   dtc=read|clear OBD-II: read the trouble codes after 1 s (clear: read,
+ *                  then clear); the fake ECU has three stored and one
+ *                  pending (ecu=2..5), dtcrefuse=1: it refuses to clear
  *                  below through the real obd2.c (ecu=0: nobody answers)
  *   night=1        night mode
  *   area=0|1       shift flash on the whole screen / on the rev counter
@@ -94,9 +98,60 @@ static void sf(uint32_t id, int n, const uint8_t *payload)
     q_push(id, d);
 }
 
+/* trouble codes: P0401 P2463 P0670 stored, P0299 pending, until cleared;
+ * the gearbox (7E9) answers too, with none */
+static bool s_dtc_gone, s_dtc_refuse, s_dtc_ff;
+
+static bool fake_dtc(uint32_t id, const uint8_t d[8])
+{
+    if (id == 0x7E0 && d[0] == 0x30 && s_dtc_ff) {   /* rest of the 03 answer */
+        const uint8_t cf[8] = { 0x21, 0x06, 0x70, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+        q_push(0x7E8, cf);
+        s_dtc_ff = false;
+        return true;
+    }
+    if (id != 0x7DF || d[0] != 0x01) return false;
+    if (d[1] == 0x03) {
+        if (s_dtc_gone) {
+            const uint8_t p[] = { 0x43, 0x00 };
+            sf(0x7E8, 2, p);
+        } else {                                 /* 8 bytes: two frames */
+            const uint8_t ff[8] = { 0x10, 0x08, 0x43, 0x03, 0x04, 0x01, 0x24, 0x63 };
+            q_push(0x7E8, ff);
+            s_dtc_ff = true;
+        }
+        const uint8_t g[] = { 0x43, 0x00 };
+        sf(0x7E9, 2, g);
+        return true;
+    }
+    if (d[1] == 0x07) {
+        const uint8_t p[] = { 0x47, 0x01, 0x02, 0x99 };
+        if (!s_dtc_gone) sf(0x7E8, 4, p);
+        else { const uint8_t z[] = { 0x47, 0x00 }; sf(0x7E8, 2, z); }
+        return true;
+    }
+    if (d[1] == 0x04) {
+        if (s_dtc_refuse) {
+            const uint8_t n[] = { 0x7F, 0x04, 0x22 };
+            sf(0x7E8, 3, n);
+        } else {
+            const uint8_t busy[] = { 0x7F, 0x04, 0x78 };
+            sf(0x7E8, 3, busy);                  /* takes a moment */
+            const uint8_t p[] = { 0x44 };
+            sf(0x7E8, 1, p);
+            s_dtc_gone = true;
+        }
+        const uint8_t g[] = { 0x44 };
+        sf(0x7E9, 1, g);
+        return true;
+    }
+    return false;
+}
+
 bool obd_send(uint32_t id, const uint8_t d[8])
 {
     if (!s_fake_ecu) return true;
+    if (s_fake_ecu >= 2 && fake_dtc(id, d)) return true;
     if (id == 0x7E0 && d[0] == 0x30) {          /* flow control for PID 78 */
         const uint8_t cf[8] = { 0x21, 0x0F, 0xC8, 0x10, 0x00, 0x00, 0xAA, 0xAA };
         q_push(0x7E8, cf);
@@ -262,6 +317,7 @@ int main(int argc, char **argv)
     volatile float *peak_field[3] = { &g_dash.clt, &g_dash.iat, &g_dash.boost };
     const char *peak_name[3] = { "peak_clt", "peak_iat", "peak_boost" };
     int night = 0, area = 0, colour = 0, look = 0, proto = 0, obdpage = 0;
+    const char *dtc = NULL;
     bool menu = false, logscr = false;
     int hold = -1;
     const char *sw = NULL;
@@ -295,6 +351,8 @@ int main(int argc, char **argv)
         if (strcmp(k, "proto") == 0)  { proto = atoi(v); used = true; }
         if (strcmp(k, "ecu") == 0)    { s_fake_ecu = atoi(v); used = true; }
         if (strcmp(k, "obdpage") == 0) { obdpage = atoi(v); used = true; }
+        if (strcmp(k, "dtc") == 0)    { dtc = v; used = true; }
+        if (strcmp(k, "dtcrefuse") == 0) { s_dtc_refuse = atoi(v) != 0; used = true; }
         if (strcmp(k, "look") == 0)   { look = atoi(v); used = true; }
         if (strcmp(k, "switch") == 0) { sw = v; used = true; }
         if (strcmp(k, "area") == 0)   { area = atoi(v); used = true; }
@@ -363,6 +421,10 @@ int main(int argc, char **argv)
 
     /* run the UI timer long enough for the needle smoothing to settle */
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {
+        /* trouble codes: read at 1 s; clear: and clear at 3 s */
+        if (dtc && fabsf(t - 1.0f) < STEP_MS / 2000.0f) obd_dtc_read();
+        if (dtc && strcmp(dtc, "clear") == 0 &&
+            fabsf(t - 3.0f) < STEP_MS / 2000.0f) obd_dtc_clear();
         if (t >= 1.0f && t < 1.0f + STEP_MS / 1000.0f) {
             for (int j = 0; j < 3; j++) *peak_field[j] = real[j];
         }

@@ -20,6 +20,9 @@ bool obd_send(uint32_t id, const uint8_t d[8]);
 #define BARO_EVERY         40       /* baro changes slowly: every 40th poll */
 #define UDS_GIVE_UP        3        /* unanswered UDS reads before REFUSED */
 #define DPF_EVERY          4        /* DPF values: every 4th round */
+#define DTC_WINDOW_US      500000   /* answers to 03 / 07 / 04, all ECUs */
+#define DTC_BUSY_US        5000000  /* after 7F xx 78: the ECU is working on it */
+#define DTC_ECUS           8        /* 0x7E8..0x7EF */
 
 volatile obd_status_t g_obd;
 
@@ -77,6 +80,19 @@ static int s_silent;              /* timeouts in a row */
 static uint8_t s_buf[40];
 static int s_len, s_have, s_next_sn;
 
+/* trouble codes: what was asked for, and the session running */
+enum { P_NONE, P_03, P_07, P_04 };
+static volatile uint8_t s_dtc_want;     /* DTC_READING / DTC_CLEARING */
+static int s_dtc_phase;
+static int64_t s_dtc_until;              /* the phase's answer window ends */
+static int64_t s_dtc_busy_until;         /* ... or later, while an ECU said */
+static uint8_t s_dtc_busy;               /* 7F xx 78 (working): bit per ECU */
+static bool s_dtc_cleared, s_dtc_refused;
+static struct {                          /* ISO-TP, one per answering ECU */
+    uint8_t buf[2 + 2 * OBD_DTC_MAX + 8];
+    int len, have, sn;
+} s_dr[DTC_ECUS];
+
 static inline void set_supported_word(int page, uint32_t bits)
 {
     g_obd.supported[page] = bits;
@@ -101,6 +117,9 @@ void obd_reset(void)
 {
     obd_status_t z;
     memset(&z, 0, sizeof z);
+    /* the trouble codes outlive a rescan */
+    memcpy(&z.dtc, (const void *)&g_obd.dtc, sizeof z.dtc);
+    z.dtc.busy = DTC_IDLE;              /* a session in flight is dropped */
     z.state = OBD_SCANNING;
     for (int i = 0; i < 4; i++) z.egt[i] = NAN;
     z.dpf.dp_hpa = z.dpf.soot_g = z.dpf.soot_meas_g = NAN;
@@ -115,6 +134,8 @@ void obd_reset(void)
     s_len = s_have = 0;
     s_pending_uds = -1;
     memset(s_uds_miss, 0, sizeof s_uds_miss);
+    s_dtc_phase = P_NONE;
+    s_dtc_want = 0;
 }
 
 static void request(uint32_t id, uint8_t pid, int64_t now)
@@ -273,10 +294,187 @@ static void answer(const uint8_t *d, int n, int64_t now)
     }
 }
 
+/* ------------------------------------------------------- trouble codes */
+void obd_dtc_name(uint16_t code, char out[6])
+{
+    static const char L[4] = { 'P', 'C', 'B', 'U' };
+    static const char H[] = "0123456789ABCDEF";
+    out[0] = L[code >> 14];
+    out[1] = H[(code >> 12) & 3];
+    out[2] = H[(code >> 8) & 15];
+    out[3] = H[(code >> 4) & 15];
+    out[4] = H[code & 15];
+    out[5] = 0;
+}
+
+void obd_dtc_read(void)
+{
+    if (!g_obd.dtc.busy && !s_dtc_want) s_dtc_want = DTC_READING;
+}
+
+void obd_dtc_clear(void)
+{
+    if (!g_obd.dtc.busy && !s_dtc_want) s_dtc_want = DTC_CLEARING;
+}
+
+static void dtc_send(int phase, int64_t now)
+{
+    static const uint8_t MODE[] = { [P_03] = 0x03, [P_07] = 0x07,
+                                    [P_04] = 0x04 };
+    const uint8_t d[8] = { 0x01, MODE[phase], 0x55, 0x55, 0x55, 0x55, 0x55,
+                           0x55 };
+    s_dtc_phase = phase;
+    s_dtc_busy = 0;
+    memset(s_dr, 0, sizeof s_dr);
+    obd_send(OBD_REQ_FUNC, d);
+    g_obd.tx++;
+    s_dtc_until = now + DTC_WINDOW_US;
+}
+
+static void dtc_add(uint16_t code, int ecu, uint8_t kind)
+{
+    volatile obd_dtc_t *l = g_obd.dtc.list;
+    for (int i = 0; i < g_obd.dtc.n; i++) {
+        if (l[i].code == code && l[i].ecu == ecu) {
+            l[i].kind |= kind;
+            return;
+        }
+    }
+    if (g_obd.dtc.n >= OBD_DTC_MAX) {
+        g_obd.dtc.more = 1;
+        return;
+    }
+    l[g_obd.dtc.n].code = code;
+    l[g_obd.dtc.n].ecu = (uint8_t)ecu;
+    l[g_obd.dtc.n].kind = kind;
+    g_obd.dtc.n++;
+}
+
+/* one whole answer from ECU e: 43 / 47 count code code ..., or 44 */
+static void dtc_answer(int e, const uint8_t *p, int n)
+{
+    g_obd.rx++;
+    g_obd.dtc.ecus |= (uint8_t)(1u << e);
+    s_dtc_busy &= (uint8_t)~(1u << e);
+    if (n >= 1 && p[0] == 0x44) {
+        s_dtc_cleared = true;
+        return;
+    }
+    if (n < 2 || (p[0] != 0x43 && p[0] != 0x47)) return;
+    uint8_t kind = p[0] == 0x43 ? DTC_STORED : DTC_PENDING;
+    for (int i = 2; i + 1 < n; i += 2) {
+        uint16_t code = (uint16_t)(p[i] << 8 | p[i + 1]);
+        if (code) dtc_add(code, e, kind);      /* 0000 is padding */
+    }
+}
+
+static void dtc_frame(uint32_t id, const uint8_t *d, int len, int64_t now)
+{
+    int e = (int)(id - OBD_RESP_BASE);
+    g_dash.last_rx_us = now;             /* the link is up, polling or not */
+    uint8_t type = d[0] >> 4;
+    if (type == 0) {
+        int n = d[0] & 0x0F;
+        if (n > len - 1) n = len - 1;
+        if (n >= 3 && d[1] == 0x7F) {
+            if (d[3] == 0x78) {                  /* working on it */
+                s_dtc_busy |= (uint8_t)(1u << e);
+                s_dtc_busy_until = now + DTC_BUSY_US;
+                return;
+            }
+            g_obd.negative++;
+            g_obd.dtc.ecus |= (uint8_t)(1u << e);
+            s_dtc_busy &= (uint8_t)~(1u << e);
+            if (d[2] == 0x04) {
+                s_dtc_refused = true;
+                g_obd.dtc.nrc = d[3];
+            }
+            return;
+        }
+        dtc_answer(e, d + 1, n);
+    } else if (type == 1) {                      /* first frame */
+        int total = ((d[0] & 0x0F) << 8) | d[1];
+        if (total > (int)sizeof s_dr[e].buf) total = sizeof s_dr[e].buf;
+        s_dr[e].len = total;
+        s_dr[e].have = len - 2 < total ? len - 2 : total;
+        memcpy(s_dr[e].buf, d + 2, s_dr[e].have);
+        s_dr[e].sn = 1;
+        const uint8_t fc[8] = { 0x30, 0x00, 0x00, 0x55, 0x55, 0x55, 0x55, 0x55 };
+        obd_send(id - 8, fc);
+        if (s_dtc_until < now + REPLY_TIMEOUT_US) {
+            s_dtc_until = now + REPLY_TIMEOUT_US;
+        }
+    } else if (type == 2 && s_dr[e].len > 0) {   /* consecutive frame */
+        if ((d[0] & 0x0F) != (s_dr[e].sn & 0x0F)) {
+            s_dr[e].len = 0;
+            return;
+        }
+        s_dr[e].sn++;
+        int n = len - 1;
+        if (n > s_dr[e].len - s_dr[e].have) n = s_dr[e].len - s_dr[e].have;
+        memcpy(s_dr[e].buf + s_dr[e].have, d + 1, n);
+        s_dr[e].have += n;
+        if (s_dr[e].have >= s_dr[e].len) {
+            dtc_answer(e, s_dr[e].buf, s_dr[e].len);
+            s_dr[e].len = 0;
+        } else if (s_dtc_until < now + REPLY_TIMEOUT_US) {
+            s_dtc_until = now + REPLY_TIMEOUT_US;
+        }
+    }
+}
+
+static void dtc_start(int64_t now)
+{
+    uint8_t want = s_dtc_want;
+    s_dtc_want = 0;
+    g_obd.dtc.busy = want;
+    g_obd.dtc.nrc = 0;
+    g_obd.dtc.ecus = 0;
+    s_dtc_cleared = s_dtc_refused = false;
+    if (want == DTC_CLEARING) {
+        dtc_send(P_04, now);
+    } else {
+        g_obd.dtc.n = 0;
+        g_obd.dtc.more = 0;
+        dtc_send(P_03, now);
+    }
+}
+
+/* the window of the phase in flight has closed */
+static void dtc_step(int64_t now)
+{
+    if (s_dtc_phase == P_04) {
+        /* cleared, refused or both (one ECU each): see what is left */
+        g_obd.dtc.n = 0;
+        g_obd.dtc.more = 0;
+        g_obd.dtc.ecus = 0;
+        dtc_send(P_03, now);
+        return;
+    }
+    if (s_dtc_phase == P_03) {
+        dtc_send(P_07, now);
+        return;
+    }
+    if (!g_obd.dtc.ecus)      g_obd.dtc.result = DTC_NO_ANSWER;
+    else if (s_dtc_refused)   g_obd.dtc.result = DTC_CLEAR_REFUSED;
+    else if (s_dtc_cleared)   g_obd.dtc.result = DTC_CLEARED;
+    else                      g_obd.dtc.result = DTC_READ;
+    s_dtc_phase = P_NONE;
+    g_obd.dtc.seq++;
+    g_obd.dtc.busy = DTC_IDLE;          /* last: the UI reads list[] after */
+    s_len = 0;
+    s_deadline = 0;
+    s_next = now + GAP_US;
+}
+
 void obd_frame(uint32_t id, const uint8_t *d, int len, int64_t now_us)
 {
     if (g_obd.state == OBD_IDLE) return;
     if (id < OBD_RESP_BASE || id > OBD_RESP_BASE + 7 || len < 2) return;
+    if (s_dtc_phase) {
+        dtc_frame(id, d, len, now_us);
+        return;
+    }
     /* The engine answers on the lowest ID (0x7E8). During the scan another
      * ECU (gearbox, 0x7E9) may beat it to the first answer; move down to the
      * lower ID as soon as it shows up, it overwrites what the other said. */
@@ -333,6 +531,13 @@ void obd_frame(uint32_t id, const uint8_t *d, int len, int64_t now_us)
 void obd_tick(int64_t now)
 {
     if (g_obd.state == OBD_IDLE) return;
+    if (s_dtc_phase) {
+        /* the window, or longer while an ECU said it is still working */
+        if (now >= s_dtc_until && (!s_dtc_busy || now >= s_dtc_busy_until)) {
+            dtc_step(now);
+        }
+        return;
+    }
 
     if (s_deadline) {
         if (now < s_deadline) return;
@@ -354,6 +559,12 @@ void obd_tick(int64_t now)
         }
     }
     if (now < s_next) return;
+
+    /* trouble codes asked for: between two polls, nothing in flight */
+    if (s_dtc_want) {
+        dtc_start(now);
+        return;
+    }
 
     if (g_obd.state == OBD_NO_ECU) {
         uint32_t tx = g_obd.tx, rx = g_obd.rx, to = g_obd.timeouts;

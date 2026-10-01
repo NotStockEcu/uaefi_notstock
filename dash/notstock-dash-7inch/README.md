@@ -117,6 +117,30 @@ block marked NOT SUPPORTED.
 
 ![obd-t5](preview/obd-t5.png)
 
+### Trouble codes (DIAG page)
+
+The third page (swipe, or the DIAG tab) reads and clears the trouble codes,
+like a generic OBD scanner:
+
+![obd-diag](preview/obd-diag.png)
+
+- **READ CODES**: mode 03 (stored codes) and mode 07 (pending: seen once,
+  not confirmed yet) to 0x7DF, so every ECU that speaks OBD answers (engine
+  7E8, gearbox 7E9, ...). Polling pauses for about a second meanwhile.
+  Stored codes are yellow, pending ones grey, with the generic meaning
+  (`main/dtc_text.c`, the common diesel ones; anything else gets its group,
+  and the maker's own codes P1xxx / P3xxx say "see VCDS").
+- **CLEAR CODES**: tap twice (the button turns red for 4 s after the first
+  tap). Mode 04 to 0x7DF, then the codes are read again, so what comes back
+  at once shows. Ignition on, engine off: an ECU with the engine running
+  refuses (7F 04 22) and the page says so. Like any OBD tester this also
+  resets the readiness monitors and the freeze frames.
+
+![obd-diag-refused](preview/obd-diag-refused.png)
+
+Only what OBD offers: generic codes from the emission related ECUs. VW's
+own fault memory of every module (airbag, ABS, cluster, ...) needs VCDS.
+
 ## SNIFF mode (finding the VW measuring values)
 
 Settings menu, **ECU protocol: SNIFF**. The CAN controller goes listen-only
