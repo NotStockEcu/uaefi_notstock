@@ -138,6 +138,9 @@ like a generic OBD scanner:
 
 ![obd-diag-refused](preview/obd-diag-refused.png)
 
+Tested on the T5.1 CAAC: with the air mass meter unplugged the code came up,
+and CLEAR CODES (engine off, ignition on) cleared it.
+
 Only what OBD offers: generic codes from the emission related ECUs. VW's
 own fault memory of every module (airbag, ABS, cluster, ...) needs VCDS.
 
