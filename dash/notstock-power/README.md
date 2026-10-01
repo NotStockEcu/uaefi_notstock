@@ -34,9 +34,14 @@ project and layout are the next step.
     with the key. With the regulator off, the board takes microamps.
   - JP1 closed: EN tied to +12 V through R3, always on. Only for testing, or
     if the car switches pin 16 with the key.
-  A later option is to leave JP1 open without an IGN wire and let the ESP32
-  sleep when the CAN bus goes quiet. That needs a latch on EN and is not in
-  this revision.
+  The round gauge is meant to need nothing but the OBD plug, so it runs
+  with JP1 closed and switches itself off: when the CAN bus has been quiet
+  for a while (car locked, the gateway asleep) the ESP32 turns the backlight
+  off and goes into deep sleep, and the first CAN frame wakes it again (the
+  SN65HVD230's receiver stays on, its RX line toggles a wake-up GPIO). The
+  buck draws about 25 uA without load; what the display board itself draws
+  asleep has to be measured once it is here, the target is well under
+  1 mA.
 - **CAN.** CAN-H (OBD 6) and CAN-L (OBD 14) go straight to J2. D3 PESD1CAN
   protects both lines against ESD at the connector. R6 120 Ω with JP2 is an
   optional termination. On the T5.1 on the bench a 120 Ω was needed for the
