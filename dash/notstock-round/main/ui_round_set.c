@@ -39,7 +39,13 @@ void rnd_settings_defaults(void)
     g_rnd_set.night = false;
     g_rnd_set.night_level = 30;
     for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
+    g_rnd_set.order[RND_COUNT] = RND_MULTI;          /* last, after rpm */
     g_rnd_set.hidden = 0;
+    /* MULTI: boost big, water, oil and exhaust small */
+    g_rnd_set.multi[0] = RND_BOOST;
+    g_rnd_set.multi[1] = RND_WATER;
+    g_rnd_set.multi[2] = RND_OIL;
+    g_rnd_set.multi[3] = RND_EXHAUST;
     g_rnd_set.lang = RND_LANG_EN;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
@@ -181,16 +187,27 @@ static void go_look(lv_event_t *e)
 /* PAGES: one gauge at a time, in swipe order: shown or hidden, and moved
  * earlier (<) or later (>) */
 static int pg_at;                     /* position in g_rnd_set.order */
-static lv_obj_t *pg_icon, *pg_name, *pg_state, *pg_state_lbl, *pg_pos;
-static lv_obj_t *pg_dot[RND_COUNT];
+static lv_obj_t *pg_icon, *pg_multi_icon, *pg_edit;
+static lv_obj_t *pg_name, *pg_state, *pg_state_lbl, *pg_pos;
+static lv_obj_t *pg_dot[RND_PAGES];
 
 static void show_pages(void)
 {
     char buf[32];
     int p = g_rnd_set.order[pg_at];
     bool on = !(g_rnd_set.hidden >> p & 1);
-    lv_img_set_src(pg_icon, page_icon[p]);
-    lv_obj_set_style_img_recolor(pg_icon, on ? C_W : C_DIM, 0);
+    bool multi = p == RND_MULTI;
+    if (multi) {
+        lv_obj_add_flag(pg_icon, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(pg_multi_icon, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(pg_edit, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_img_set_src(pg_icon, page_icon[p]);
+        lv_obj_set_style_img_recolor(pg_icon, on ? C_W : C_DIM, 0);
+        lv_obj_clear_flag(pg_icon, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(pg_multi_icon, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(pg_edit, LV_OBJ_FLAG_HIDDEN);
+    }
     lv_label_set_text(pg_name, rnd_page_name(p));
     lv_obj_set_style_text_color(pg_name, on ? C_W : C_DIM, 0);
     lv_label_set_text(pg_state_lbl, on ? TR("SHOWN", "ZOBRAZENO")
@@ -198,9 +215,9 @@ static void show_pages(void)
     lv_obj_set_style_text_color(pg_state_lbl, on ? C_W : C_DIM, 0);
     lv_obj_set_style_border_color(pg_state, on ? C_W : C_EDGE, 0);
     snprintf(buf, sizeof buf, "%s %d / %d", TR("POSITION", "POZICE"),
-             pg_at + 1, RND_COUNT);
+             pg_at + 1, RND_PAGES);
     lv_label_set_text(pg_pos, buf);
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         bool h = g_rnd_set.hidden >> g_rnd_set.order[i] & 1;
         lv_obj_set_width(pg_dot[i], i == pg_at ? 22 : 8);
         lv_obj_set_style_bg_color(pg_dot[i], i == pg_at ? C_W :
@@ -223,7 +240,7 @@ static void pg_move(lv_event_t *e)
 {
     int dir = (int)(intptr_t)lv_event_get_user_data(e);
     int to = pg_at + dir;
-    if (to < 0 || to >= RND_COUNT) return;
+    if (to < 0 || to >= RND_PAGES) return;
     uint8_t t = g_rnd_set.order[to];
     g_rnd_set.order[to] = g_rnd_set.order[pg_at];
     g_rnd_set.order[pg_at] = t;
@@ -236,8 +253,8 @@ static void pg_gesture(lv_event_t *e)
 {
     (void)e;
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-    if (dir == LV_DIR_LEFT)  pg_at = (pg_at + 1) % RND_COUNT;
-    if (dir == LV_DIR_RIGHT) pg_at = (pg_at + RND_COUNT - 1) % RND_COUNT;
+    if (dir == LV_DIR_LEFT)  pg_at = (pg_at + 1) % RND_PAGES;
+    if (dir == LV_DIR_RIGHT) pg_at = (pg_at + RND_PAGES - 1) % RND_PAGES;
     show_pages();
 }
 
@@ -246,6 +263,17 @@ static void go_pages(lv_event_t *e)
     (void)e;
     show_pages();
     lv_scr_load(pg_scr);
+}
+
+void rnd_pages_open(void)
+{
+    go_pages(NULL);
+}
+
+static void go_multi_edit(lv_event_t *e)
+{
+    (void)e;
+    rnd_multi_edit_open();
 }
 
 /* LIMITS */
@@ -399,6 +427,7 @@ void rnd_set_create(void)
     pg_icon = lv_img_create(pg_scr);
     lv_obj_align(pg_icon, LV_ALIGN_TOP_MID, 0, 98);
     lv_obj_set_style_img_recolor_opa(pg_icon, LV_OPA_COVER, 0);
+    rnd_multi_icon(pg_scr, 98, &pg_multi_icon);
     pg_name = rnd_label(pg_scr, &rnd_26, C_W, 160);
     lv_obj_set_style_text_letter_space(pg_name, 3, 0);
     pg_state = pill(pg_scr, CX - 28, pg_toggle, &pg_state_lbl);
@@ -409,6 +438,9 @@ void rnd_set_create(void)
     l = rnd_label(pg_scr, &rnd_18, C_DIM, CX + 84);
     lv_label_set_text(l, TR("< > MOVE    SWIPE: NEXT",
                             "< > POSUN    PŘEJEĎ: DALŠÍ"));
+    pg_edit = pill(pg_scr, CX + 114, go_multi_edit, &l);
+    lv_obj_set_size(pg_edit, 180, 46);
+    lv_label_set_text(l, TR("EDIT", "UPRAVIT"));
     lv_obj_t *prow = lv_obj_create(pg_scr);
     lv_obj_remove_style_all(prow);
     lv_obj_set_size(prow, 240, 10);
@@ -418,7 +450,7 @@ void rnd_set_create(void)
                           LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(prow, 8, 0);
     lv_obj_clear_flag(prow, LV_OBJ_FLAG_CLICKABLE);
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         pg_dot[i] = lv_obj_create(prow);
         lv_obj_remove_style_all(pg_dot[i]);
         lv_obj_set_size(pg_dot[i], 8, 8);
@@ -456,6 +488,8 @@ void rnd_set_create(void)
         lv_obj_set_style_bg_opa(lim_dot[i], LV_OPA_COVER, 0);
         lv_obj_clear_flag(lim_dot[i], LV_OBJ_FLAG_CLICKABLE);
     }
+
+    rnd_multi_edit_create();
 }
 
 #ifdef RND_SIM
@@ -465,7 +499,7 @@ void rnd_sim_settings(const char *which, int limit)
     if (strcmp(which, "settings") == 0) rnd_set_open();
     if (strcmp(which, "look") == 0)     go_look(NULL);
     if (strcmp(which, "pages") == 0) {
-        pg_at = limit % RND_COUNT;
+        pg_at = limit % RND_PAGES;
         go_pages(NULL);
     }
     if (strcmp(which, "limits") == 0) {

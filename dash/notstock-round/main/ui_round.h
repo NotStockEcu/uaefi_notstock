@@ -25,6 +25,10 @@
 /* page order; must match PAGES in tools/gen_faces.py */
 enum { RND_WATER, RND_OIL, RND_BOOST, RND_INTAKE, RND_EXHAUST, RND_RPM,
        RND_COUNT };
+/* MULTI: one more page, several values at once (ui_round_multi.c). Its id
+ * is past the gauges and past RND_WARN_SOOT, which shares their numbering */
+#define RND_MULTI 7
+#define RND_PAGES (RND_COUNT + 1)        /* gauges + MULTI */
 
 /* OBD trouble codes, as the platform's OBD layer has them (the 7" dash's
  * obd2.c: g_obd.dtc, same numbers) */
@@ -66,16 +70,21 @@ typedef struct {
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
 enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
 enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
+/* MULTI's slots: 0 the big one, 1..3 the small ones below. Each holds a
+ * gauge (RND_WATER..RND_RPM), RND_WARN_SOOT (DPF soot) or RND_MV_NONE */
+#define RND_MULTI_SLOTS 4
+#define RND_MV_NONE 0xFF
 
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
     bool    beep;                     /* beep on regeneration start / end */
     bool    night;                    /* backlight at night_level */
     uint8_t night_level;              /* % of full, 10..50 */
-    uint8_t order[RND_COUNT];         /* the pages in swipe order */
-    uint8_t hidden;                   /* bit per page (RND_*): left out */
+    uint8_t order[RND_PAGES];         /* the pages in swipe order */
+    uint8_t hidden;                   /* bit per page id (RND_*): left out */
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
     uint8_t lang;                     /* RND_LANG_* */
+    uint8_t multi[RND_MULTI_SLOTS];   /* what MULTI shows */
 } rnd_settings_t;
 
 extern rnd_settings_t g_rnd_set;

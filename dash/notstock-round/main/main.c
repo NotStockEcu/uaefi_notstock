@@ -29,7 +29,7 @@ static const char *TAG = "round";
 /* ------------------------------------------------------------ settings */
 #define NS  "round"
 #define KEY "set"
-#define VER 1        /* bump whenever rnd_settings_t changes */
+#define VER 2        /* bump whenever rnd_settings_t changes */
 
 static void settings_load(void)
 {

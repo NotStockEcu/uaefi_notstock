@@ -15,7 +15,7 @@
 #define C_BAND       lv_color_hex(0xC81E1E)
 
 static lv_obj_t *face, *zone, *needle, *shadow, *tell, *hub, *cap;
-static lv_obj_t *title, *unit_lbl, *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_COUNT];
+static lv_obj_t *title, *unit_lbl, *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_PAGES];
 static lv_point_t pn[2], ps[2], pt[2];
 static float zone_at, needle_at, tell_at;
 static int warn_on, regen_on;

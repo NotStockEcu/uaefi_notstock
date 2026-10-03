@@ -18,7 +18,7 @@
 #define C_TEAL_DIM  lv_color_hex(0x2A8C9C)
 
 static lv_obj_t *meter, *icon, *title, *val_lbl, *unit_lbl, *peak_lbl;
-static lv_obj_t *lo_lbl, *hi_lbl, *regen_lbl, *dot[RND_COUNT];
+static lv_obj_t *lo_lbl, *hi_lbl, *regen_lbl, *dot[RND_PAGES];
 static lv_meter_scale_t *scale;
 static lv_meter_indicator_t *lit, *zone;
 static float zone_at;

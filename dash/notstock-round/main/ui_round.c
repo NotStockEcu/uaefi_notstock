@@ -62,6 +62,7 @@ static const char *const NAME[RND_LANG_COUNT][RND_WARN_COUNT] = {
 const char *rnd_page_name(int pg)
 {
     int l = g_rnd_set.lang < RND_LANG_COUNT ? g_rnd_set.lang : RND_LANG_EN;
+    if (pg == RND_MULTI) return "MULTI";
     return pg >= 0 && pg < RND_WARN_COUNT ? NAME[l][pg] : "";
 }
 
@@ -163,7 +164,7 @@ lv_obj_t *rnd_label(lv_obj_t *par, const lv_font_t *f, lv_color_t c,
     return l;
 }
 
-void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT])
+void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_PAGES])
 {
     lv_obj_t *row = lv_obj_create(par);
     lv_obj_remove_style_all(row);
@@ -174,7 +175,7 @@ void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT])
                           LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(row, 8, 0);
     lv_obj_clear_flag(row, LV_OBJ_FLAG_CLICKABLE);
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         lv_obj_t *d = lv_obj_create(row);
         lv_obj_remove_style_all(d);
         lv_obj_set_size(d, 8, 8);
@@ -185,11 +186,11 @@ void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT])
     }
 }
 
-void rnd_dots_set(lv_obj_t *d[RND_COUNT], int pg, lv_color_t on,
+void rnd_dots_set(lv_obj_t *d[RND_PAGES], int pg, lv_color_t on,
                   lv_color_t off)
 {
     int n = rnd_pages_shown(), at = rnd_page_pos(pg);
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         if (i >= n) {
             lv_obj_add_flag(d[i], LV_OBJ_FLAG_HIDDEN);
             continue;
@@ -209,14 +210,14 @@ static bool shown_page(int pg)
 int rnd_pages_shown(void)
 {
     int n = 0;
-    for (int i = 0; i < RND_COUNT; i++) n += shown_page(g_rnd_set.order[i]);
+    for (int i = 0; i < RND_PAGES; i++) n += shown_page(g_rnd_set.order[i]);
     return n;
 }
 
 int rnd_page_pos(int pg)
 {
     int n = 0;
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         int p = g_rnd_set.order[i];
         if (!shown_page(p)) continue;
         if (p == pg) return n;
@@ -230,12 +231,12 @@ int rnd_page_pos(int pg)
 static int step_page(int pg, int dir)
 {
     int at = 0;
-    for (int i = 0; i < RND_COUNT; i++) {
+    for (int i = 0; i < RND_PAGES; i++) {
         if (g_rnd_set.order[i] == pg) at = i;
     }
-    for (int k = 1; k <= RND_COUNT; k++) {
-        int p = g_rnd_set.order[((at + dir * k) % RND_COUNT + RND_COUNT) %
-                                RND_COUNT];
+    for (int k = 1; k <= RND_PAGES; k++) {
+        int p = g_rnd_set.order[((at + dir * k) % RND_PAGES + RND_PAGES) %
+                                RND_PAGES];
         if (shown_page(p)) return p;
     }
     return pg;
@@ -284,10 +285,16 @@ static void boot(void)
 /* ---------------------------------------------------------------- pages */
 void ui_round_page(int p)
 {
-    page = (p % RND_COUNT + RND_COUNT) % RND_COUNT;
+    page = rnd_page_valid(p) ? p : RND_WATER;
     if (!shown_page(page)) page = step_page(page, +1);
     shown = NAN;
-    look->page(page);
+    rnd_multi_show(page == RND_MULTI);
+    if (page != RND_MULTI) look->page(page);
+}
+
+bool rnd_page_valid(int p)
+{
+    return (p >= 0 && p < RND_COUNT) || p == RND_MULTI;
 }
 
 void rnd_pages_changed(void)
@@ -307,6 +314,7 @@ void rnd_look_apply(void)
     look = LOOKS[l];
     lv_obj_clean(scr);
     look->build(scr);
+    rnd_multi_build(scr);              /* on top, shown on its own page */
     ui_round_page(page);
 }
 
@@ -444,7 +452,7 @@ void ui_round_create(bool boot_logo_on)
     rnd_backlight_apply();
 
     /* start on the first page of the chosen order */
-    page = g_rnd_set.order[0] < RND_COUNT ? g_rnd_set.order[0] : 0;
+    page = rnd_page_valid(g_rnd_set.order[0]) ? g_rnd_set.order[0] : 0;
     for (int i = 0; i < RND_COUNT; i++) peak[i] = NAN;
     look = NULL;
     rnd_look_apply();
@@ -472,8 +480,6 @@ static float to_frac(const face_page_t *p, float v)
 
 static void gauge_update(const rnd_data_t *d)
 {
-    const face_page_t *p = &FACE_PAGE[page];
-    float v = d->link ? d->v[page] : NAN;
     char text[16], pk[24];
 
     for (int i = 0; i < RND_COUNT; i++) {
@@ -483,6 +489,12 @@ static void gauge_update(const rnd_data_t *d)
         }
     }
     if (lv_scr_act() != scr) return;
+    if (page == RND_MULTI) {
+        rnd_multi_update(d);
+        return;
+    }
+    const face_page_t *p = &FACE_PAGE[page];
+    float v = d->link ? d->v[page] : NAN;
 
     rnd_view_t view = {
         .page = page, .valid = !isnan(v), .text = text, .peak = pk,

@@ -85,10 +85,20 @@ const char *rnd_unit(int page);
 int rnd_pages_shown(void);
 int rnd_page_pos(int page);                 /* -1: hidden */
 void rnd_pages_changed(void);               /* order or hidden edited */
+bool rnd_page_valid(int page);              /* a gauge or RND_MULTI */
+
+/* MULTI (ui_round_multi.c): a layer over the look on the gauge screen, and
+ * its editor screen (SETTINGS -> PAGES -> MULTI -> EDIT) */
+void rnd_multi_build(lv_obj_t *gauge_scr);
+void rnd_multi_show(bool on);
+void rnd_multi_update(const rnd_data_t *d);
+void rnd_multi_edit_create(void);
+void rnd_multi_edit_open(void);
+void rnd_multi_icon(lv_obj_t *par, lv_coord_t y, lv_obj_t **out);
 
 /* page dots, shared by the looks: one per shown page, in order */
-void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_COUNT]);
-void rnd_dots_set(lv_obj_t *d[RND_COUNT], int page, lv_color_t on,
+void rnd_dots(lv_obj_t *par, lv_coord_t y, lv_obj_t *out[RND_PAGES]);
+void rnd_dots_set(lv_obj_t *d[RND_PAGES], int page, lv_color_t on,
                   lv_color_t off);
 
 /* screens */
@@ -103,6 +113,7 @@ void rnd_diag_create(void);
 void rnd_diag_open(void);
 void rnd_diag_update(const rnd_data_t *d);
 void rnd_set_open(void);
+void rnd_pages_open(void);              /* SETTINGS -> PAGES */
 void rnd_limits_changed(void);        /* redraw the zones */
 
 /* day / night: a double tap on the gauges or the DPF screen */

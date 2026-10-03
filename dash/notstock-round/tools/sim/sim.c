@@ -14,6 +14,9 @@
  *               [night=1] [nightlvl=P]
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
  *               [hold=x,y,ms;...]   finger down at x,y for ms, then lifted
+ *               [page=7]            MULTI; [multi=a,b,c,d] its slots (page
+ *                                   ids, 6 DPF soot, 255 empty)
+ *               [screen=multiedit]  its editor
  *               [lang=0|1]          RND_LANG_*: English, Czech
  *               [screen=diag]       trouble codes, read on opening: the
  *                                   fake car has three stored and one
@@ -177,8 +180,17 @@ int main(int argc, char **argv)
         if (strcmp(k, "hide") == 0)  { g_rnd_set.hidden = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "order") == 0) {
             const char *q = v;
-            for (int i = 0; i < RND_COUNT && q; i++) {
+            for (int i = 0; i < RND_PAGES && q; i++) {
                 g_rnd_set.order[i] = (uint8_t)atoi(q);
+                q = strchr(q, ',');
+                if (q) q++;
+            }
+            used = true;
+        }
+        if (strcmp(k, "multi") == 0) {
+            const char *q = v;
+            for (int i = 0; i < RND_MULTI_SLOTS && q; i++) {
+                g_rnd_set.multi[i] = (uint8_t)atoi(q);
                 q = strchr(q, ',');
                 if (q) q++;
             }
@@ -229,6 +241,10 @@ int main(int argc, char **argv)
         if (strcmp(screen, "diag") == 0) {
             extern void rnd_diag_open(void);
             rnd_diag_open();
+        }
+        if (strcmp(screen, "multiedit") == 0) {
+            extern void rnd_multi_edit_open(void);
+            rnd_multi_edit_open();
         }
         rnd_sim_settings(screen, limit);
     }

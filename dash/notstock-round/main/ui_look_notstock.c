@@ -6,7 +6,7 @@
 #include <math.h>
 
 static lv_obj_t *face, *center, *title, *zone, *arc[N_ARC];
-static lv_obj_t *val_lbl, *unit_lbl, *peak_lbl, *regen_lbl, *dot[RND_COUNT];
+static lv_obj_t *val_lbl, *unit_lbl, *peak_lbl, *regen_lbl, *dot[RND_PAGES];
 static float zone_at;
 static int warn_on, regen_on, big_on;
 
