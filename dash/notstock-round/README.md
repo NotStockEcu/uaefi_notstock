@@ -97,7 +97,8 @@ same in every look.
 ![retro](preview/retro-boost.png) ![futuro](preview/futuro-boost.png)
 
 - **NOTSTOCK**: the faces above, glowing value arc.
-- **RETRO** (`ui_look_retro.c`): a mechanical instrument of the VDO kind.
+- **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
+  instrument of the VDO kind.
   Chrome bezel, black dial, white print, a glass sheen, all pre-rendered
   per page (`draw_face_retro` in `gen_faces.py`). Live: the red band from
   the warn limit, a red needle with a shadow over a black hub, a thin
