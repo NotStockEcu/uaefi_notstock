@@ -8,10 +8,12 @@
  *   I2C: SCL GPIO7, SDA GPIO15. TCA9554 0x20, CST820 0x15 (INT GPIO16,
  *   reset EXIO2). Buzzer EXIO8. Backlight GPIO6 (PWM).
  *
- * CAN: the SN65HVD230 board on GPIO43 (TXD) to its CTX and GPIO44 (RXD) to
- * its CRX, from the 12-pin connector (which also takes the 5 V supply on
- * VBus) or the 4-pin UART header. Those are the only free pins. The console
- * therefore runs on the native USB (USB Serial/JTAG), never UART0.
+ * CAN: the SN65HVD230 board on the 12-pin connector, D+ (GPIO20) to its CTX
+ * and D- (GPIO19) to its CRX; the same connector takes the 5 V supply on
+ * VBus. The native USB is given up for it (as on the 7" dash), so the
+ * bottom "USB" USB-C is dead while CAN is wired. Flash and monitor over the
+ * "UART" USB-C, console on UART0 (GPIO43/44). CAN off UART0 also keeps the
+ * boot ROM's messages, which go out on GPIO43 at every reset, off the bus.
  */
 #pragma once
 
@@ -51,8 +53,8 @@
 #define EXIO_SD_CS   (1 << 3)
 #define EXIO_BUZZER  (1 << 7)
 
-#define PIN_TWAI_TX 43
-#define PIN_TWAI_RX 44
+#define PIN_TWAI_TX 20      /* 12-pin D+ */
+#define PIN_TWAI_RX 19      /* 12-pin D- */
 
 /* touch to screen: flip these if a tap lands mirrored */
 #define TOUCH_SWAP_XY  0

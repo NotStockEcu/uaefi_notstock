@@ -1,8 +1,8 @@
 /* NOT STOCK round gauge on the Waveshare ESP32-S3-Touch-LCD-2.1, OBD-II.
  *
  * Build: idf.py set-target esp32s3 && idf.py build flash monitor
- * Flash and monitor over the board's USB-C. The console is on the native
- * USB (USB Serial/JTAG): GPIO43/44, the UART pins, carry CAN.
+ * Flash and monitor over the board's "UART" USB-C. CAN is on GPIO19/20, the
+ * native USB's pins (12-pin D-/D+), so the "USB" USB-C is out of use.
  *
  * Here: the platform side of ui_round.h (settings in NVS, backlight, buzzer,
  * trouble codes) and the loop that feeds the UI 30 times a second.

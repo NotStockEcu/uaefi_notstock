@@ -213,30 +213,24 @@ obd2.c`, `dtc_text.c`) as they are, so keep both folders side by side.
   `idf.py reconfigure` (or `fullclean`).
 
 **In the car everything goes through the 12-pin connector** (Waveshare's
-"12PIN wire interface"): GPIO0, GND, RXD (GPIO44), TXD (GPIO43), SDA, SCL,
-3V3, GND, D+, D-, VBus (5 V), GND.
+"12PIN wire interface"): GND, VBus (5 V), D- (GPIO19), D+ (GPIO20), GND,
+3V3, SCL, SDA, TXD (GPIO43), RXD (GPIO44), NC, GPIO0.
 
 | 12-pin | to |
 |---|---|
 | VBus (5V) + GND | +5 V and GND from the power box |
-| TXD (GPIO43) | SN65HVD230 CTX |
-| RXD (GPIO44) | SN65HVD230 CRX |
+| D+ (GPIO20) | SN65HVD230 CTX |
+| D- (GPIO19) | SN65HVD230 CRX |
 | 3V3 + GND | SN65HVD230 3V3, GND |
 
-The SN65HVD230 sits at the display, so only 5 V, GND, CAN-H and CAN-L run
-to the box. VBus is the USB 5 V rail: with the box connected, do not plug
-the board into a computer as well. GPIO43/44 are also on the 4-pin UART
-header. They are the only free pins, so the console runs on the native USB
-(USB Serial/JTAG) and nothing else may use UART0. Two things to know:
+CAN uses the native USB's pins, as on the 7" dash: the bottom "USB" USB-C
+is dead for it while the transceiver is wired. Flash and monitor over the
+"UART" USB-C; the console stays on UART0 (GPIO43/44). That also keeps CAN
+clear of the boot ROM, which prints a few lines on GPIO43 at every reset.
 
-- The board switches GPIO43/44 off from the connectors while its "UART"
-  USB-C is plugged in (FSUSB42 switch). Flash over it or over "USB", but
-  test CAN without a cable in "UART".
-- At every power-up the chip's boot ROM prints a few lines on GPIO43 before
-  the firmware runs, which puts some 20 ms of noise on the OBD CAN. ECUs
-  shrug that off as error frames; for a permanent fit it can be switched
-  off for good with an eFuse (`espefuse.py burn_efuse UART_PRINT_CONTROL 3`,
-  irreversible).
+The SN65HVD230 sits at the display, so only 5 V, GND, CAN-H and CAN-L run
+to the box. VBus is the USB 5 V rail: with the box connected, do not plug a
+computer into the board as well, unplug the 12-pin to flash.
 
 Not done yet: sleep when the car is off. The gauge polls the ECU all the
 time, so for now unplug it when parked.

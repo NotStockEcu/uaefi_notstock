@@ -23,10 +23,11 @@ CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
 CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB=y
 CONFIG_LCD_RGB_RESTART_IN_VSYNC=y
 
-# ---- console on the native USB ---------------------------------------------
-# GPIO43/44 (UART0, the 4-pin UART header) carry CAN, so nothing may log
-# there. Flash and monitor over the USB-C (USB Serial/JTAG).
-CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+# ---- console on UART0 ------------------------------------------------------
+# GPIO19/20, the native USB's pins, carry CAN (12-pin D-/D+). Flash and
+# monitor over the "UART" USB-C; nothing may sit on USB Serial/JTAG, not
+# even the secondary console IDF adds by default.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
 CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 
 # ---- no radio: nothing starts Wi-Fi, Bluetooth is not even built ----------
