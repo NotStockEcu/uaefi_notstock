@@ -11,9 +11,10 @@ RGB like the 7" dash, CST820 touch). The UI is laid out from the centre and
 also builds for a 1.32" AMOLED at 466 x 466 (`-DRND_SIZE=466`, sim
 `make SIZE=466`).
 
-**State: UI mock-up only.** `main/ui_round.c` is real LVGL 8.4 code and runs
-in the PC simulator; panel, touch and CAN drivers come once the board is on
-the bench.
+**State: first firmware for the board, not tried on it yet.** The UI is
+real LVGL 8.4 code that also runs in the PC simulator; `main/hw.c` and
+`main/can_obd.c` bring up the board and read the car over OBD-II (see
+[Firmware](#firmware)).
 
 ![sheet](preview/sheet.png)
 
@@ -185,6 +186,41 @@ printed grille (`tools/mockup_t5.py`, all three looks in
 as a rounded rectangle about 95 x 80 mm, the grille's round boss 70 mm, the
 display's active area 53 mm. The printable grille needs the real opening
 and the board's outline first.
+
+## Firmware
+
+ESP-IDF 5.x project, LVGL from the component manager. It uses the OBD-II
+client and the trouble code texts of the 7" dash (`../notstock-dash-7inch/main/
+obd2.c`, `dtc_text.c`) as they are, so keep both folders side by side.
+
+    idf.py set-target esp32s3
+    idf.py build
+    idf.py -p COMx flash monitor
+
+- `main/board_round.h`: the pin map. ST7701 set up over bit-banged 3-wire
+  SPI (GPIO1/2, CS and reset on the TCA9554), then RGB at 16 MHz; CST820
+  touch and the TCA9554 on I2C (GPIO7/15); backlight PWM on GPIO6; buzzer on
+  EXIO8. If a tap lands mirrored, flip `TOUCH_*` there.
+- `main/hw.c`: the drivers, `main/can_obd.c`: TWAI and the OBD client,
+  `main/main.c`: settings in NVS, the platform hooks of `ui_round.h`, the
+  30 Hz feed into the UI.
+- No Wi-Fi, no Bluetooth.
+
+**CAN** goes on the 4-pin UART header: GPIO43 (TXD) to the SN65HVD230 board's
+CTX, GPIO44 (RXD) to CRX, plus 3V3 and GND. These are the only free pins, so
+the console runs on the native USB (USB Serial/JTAG) and nothing else may
+use UART0. Two things to know:
+
+- The board switches the 4-pin header off while its UART USB-C is plugged
+  in (FSUSB42 switch). Flash over it, but test CAN powered some other way.
+- At every power-up the chip's boot ROM prints a few lines on GPIO43 before
+  the firmware runs, which puts some 20 ms of noise on the OBD CAN. ECUs
+  shrug that off as error frames; for a permanent fit it can be switched
+  off for good with an eFuse (`espefuse.py burn_efuse UART_PRINT_CONTROL 3`,
+  irreversible).
+
+Not done yet: sleep when the car is off. The gauge polls the ECU all the
+time, so for now unplug it when parked.
 
 ## Preview on the PC
 

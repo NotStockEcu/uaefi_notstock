@@ -114,7 +114,7 @@ static void show_code(void)
         lv_obj_set_width(dot[i], i == at ? 22 : 8);
         lv_obj_set_style_bg_color(dot[i], i == at ? C_W : C_DOT, 0);
     }
-    char buf[16];
+    char buf[32];
     if (n > DOTS_MAX) snprintf(buf, sizeof buf, "%d / %d", at + 1, n);
     else buf[0] = 0;
     lv_label_set_text(pos_lbl, buf);
