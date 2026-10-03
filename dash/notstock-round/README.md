@@ -163,7 +163,7 @@ goes red over it. It takes its place in the swipe order like the gauges
 (last by default) and can be hidden. What it shows: SETTINGS -> PAGES ->
 MULTI -> EDIT, tap a slot for the next value (water, oil, boost, intake,
 exhaust, rpm, DPF soot; the small ones can be empty). Default: boost big,
-water, oil and exhaust small.
+air, oil and water small.
 
 ## Diagnostics
 

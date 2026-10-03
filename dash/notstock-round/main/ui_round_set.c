@@ -41,11 +41,11 @@ void rnd_settings_defaults(void)
     for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
     g_rnd_set.order[RND_COUNT] = RND_MULTI;          /* last, after rpm */
     g_rnd_set.hidden = 0;
-    /* MULTI: boost big, water, oil and exhaust small */
+    /* MULTI: boost big, air, oil and water small */
     g_rnd_set.multi[0] = RND_BOOST;
-    g_rnd_set.multi[1] = RND_WATER;
+    g_rnd_set.multi[1] = RND_INTAKE;
     g_rnd_set.multi[2] = RND_OIL;
-    g_rnd_set.multi[3] = RND_EXHAUST;
+    g_rnd_set.multi[3] = RND_WATER;
     g_rnd_set.lang = RND_LANG_EN;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
