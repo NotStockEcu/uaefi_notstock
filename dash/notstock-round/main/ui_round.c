@@ -49,12 +49,12 @@ static const struct { int extra; lv_opa_t opa; } GLOW[N_ARC] = {
 static const char *const NAME[RND_LANG_COUNT][RND_WARN_COUNT] = {
     [RND_LANG_EN] = {
         [RND_WATER] = "WATER", [RND_OIL] = "OIL", [RND_BOOST] = "BOOST",
-        [RND_INTAKE] = "INTAKE", [RND_EXHAUST] = "EGT",
+        [RND_INTAKE] = "AIR", [RND_EXHAUST] = "EGT",
         [RND_RPM] = "ENGINE", [RND_WARN_SOOT] = "DPF SOOT",
     },
     [RND_LANG_CS] = {
         [RND_WATER] = "VODA", [RND_OIL] = "OLEJ", [RND_BOOST] = "TURBO",
-        [RND_INTAKE] = "SÁNÍ", [RND_EXHAUST] = "EGT",
+        [RND_INTAKE] = "VZDUCH", [RND_EXHAUST] = "EGT",
         [RND_RPM] = "OTÁČKY", [RND_WARN_SOOT] = "SAZE DPF",
     },
 };
