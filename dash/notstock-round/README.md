@@ -156,9 +156,14 @@ is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 ![multi](preview/multi.png) ![multi rpm](preview/multi-rpm.png)
 ![multi warn](preview/cz-multi-warn.png) ![editor](preview/cz-multi-edit.png)
 
+![retro multi](preview/retro-multi.png) ![futuro multi](preview/futuro-multi.png)
+
 A page with four values at once, like a CAN Checked MFD's multi view: a big
-one in the middle with an arc over the top, three small gauges in a row
-below (`ui_round_multi.c`). Each has its red zone from its warn limit and
+one in the middle with its scale over the top, three small gauges in a row
+below (`ui_round_multi.c`), in the chosen look: white arcs (NOTSTOCK),
+needles on a VDO-style dial with three small dials (RETRO, the dial is
+`face_retro_multi` from `gen_faces.py`), rings of cyan to magenta segments
+(FUTURO). Each has its red zone from its warn limit and
 goes red over it. It takes its place in the swipe order like the gauges
 (last by default) and can be hidden. What it shows: SETTINGS -> PAGES ->
 MULTI -> EDIT, tap a slot for the next value (water, oil, boost, intake,

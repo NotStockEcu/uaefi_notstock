@@ -21,6 +21,14 @@
 #define RETRO_TITLE_Y 46     /* live title, above the centre */
 #define RETRO_UNIT_Y  154     /* live unit, below the centre */
 
+/* MULTI: the small gauges (from the centre), RETRO's readout window */
+#define MULTI_MINI_DX 132
+#define MULTI_MINI_Y  92
+#define MULTI_MINI_R  52
+#define RMULTI_WIN_TOP -106    /* from the centre, negative: above */
+#define RMULTI_WIN_BOT -62
+#define RMULTI_WIN_W  120
+
 /* FUTURO: the lit segments */
 #define FUTURO_SEG_R  224
 #define FUTURO_SEG_L  34
@@ -44,6 +52,7 @@ extern const lv_img_dsc_t *const face_img[FACE_COUNT];
 extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];
 extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */
 extern const lv_img_dsc_t face_futuro_bg;
+extern const lv_img_dsc_t face_retro_multi;
 
 /* A8 icons, recolour with img_recolor */
 extern const lv_img_dsc_t icon_dpf_120;

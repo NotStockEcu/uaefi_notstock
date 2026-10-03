@@ -391,6 +391,105 @@ def draw_face_retro(p, size):
     return out
 
 
+# ------------------------------------------------------------ MULTI, RETRO
+# MULTI's geometry, shared with ui_round_multi.c through faces.h (fractions
+# of the radius): the small gauges' centres and radius, the main readout
+MULTI_MINI_DX = 0.55        # small gauges: left / right of the centre
+MULTI_MINI_Y = 0.385        # small gauges: below the centre
+MULTI_MINI_R = 0.215        # small gauges: outer radius
+RMULTI_WIN = (-0.44, -0.26, 0.50)   # RETRO readout window: top, bottom, width
+
+
+def _chrome_ring(d, cx, cy, r, w):
+    """A chrome ring lit from above, like the big bezel."""
+    for i in range(0, 360, 2):
+        lum = 0.5 + 0.5 * math.sin(math.radians(-(i + 1)))
+        col = tuple(int(70 + 175 * lum ** 1.4) for _ in range(3))
+        d.arc([cx - r, cy - r, cx + r, cy + r], i, i + 3, fill=col, width=int(w))
+
+
+def draw_multi_retro(size):
+    """RETRO's MULTI page: the same bezel and dial as the gauges, a scale
+    without numbers over the top half for the big needle, three small
+    chrome-rimmed dials below, and the window for the big readout. Numbers
+    are left off: the slots show whatever value is chosen."""
+    S = size * SS
+    c = R = S / 2
+    img = Image.new("RGB", (S, S), (0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for i in range(360):
+        lum = 0.5 + 0.5 * math.sin(math.radians(-(i + 0.5)))
+        col = tuple(int(70 + 175 * lum ** 1.4) for _ in range(3))
+        d.arc([0, 0, S - 1, S - 1], i, i + 1.5, fill=col, width=int(0.065 * R))
+    d.ellipse([0.065 * R, 0.065 * R, S - 0.065 * R, S - 0.065 * R],
+              fill=(30, 28, 26))
+    fr = 0.925 * R
+    for i in range(40):
+        t = i / 39
+        r = fr * (1 - t)
+        k = t ** 1.2
+        col = tuple(int(C_DIAL_OUT[j] + (C_DIAL_IN[j] - C_DIAL_OUT[j]) * k)
+                    for j in range(3))
+        d.ellipse([c - r, c - r, c + r, c + r], fill=col)
+
+    # big scale: the top half, 40 steps, a long tick every 5th
+    r_out = RETRO_TICK_R * R
+    for k in range(41):
+        a = math.radians(180 + k * 4.5)
+        major, half = k % 10 == 0, k % 5 == 0
+        ln = (0.11 if major else 0.075 if half else 0.045) * R
+        w = (0.020 if major else 0.011 if half else 0.008) * R
+        d.line([(c + r_out * math.cos(a), c + r_out * math.sin(a)),
+                (c + (r_out - ln) * math.cos(a), c + (r_out - ln) * math.sin(a))],
+               fill=C_INK, width=int(w))
+
+    # three small dials: chrome rim, dark face, ticks over 270 degrees
+    for i in (-1, 0, 1):
+        x, y, r = c + i * MULTI_MINI_DX * R, c + MULTI_MINI_Y * R, MULTI_MINI_R * R
+        _chrome_ring(d, x, y, r, 0.035 * R)
+        ri = r - 0.035 * R
+        for j in range(16):
+            t = j / 15
+            rr = ri * (1 - t)
+            col = tuple(int(C_DIAL_OUT[q] + (C_DIAL_IN[q] - C_DIAL_OUT[q]) * t)
+                        for q in range(3))
+            d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=col)
+        to = ri - 0.012 * R
+        for k in range(11):
+            a = math.radians(135 + k * 27)
+            major = k % 5 == 0
+            ln = (0.05 if major else 0.028) * R
+            w = (0.014 if major else 0.008) * R
+            d.line([(x + to * math.cos(a), y + to * math.sin(a)),
+                    (x + (to - ln) * math.cos(a), y + (to - ln) * math.sin(a))],
+                   fill=C_INK, width=int(w))
+
+    # the big readout's window, above the hub
+    top, bot, wid = RMULTI_WIN
+    box = [c - wid / 2 * R, c + top * R, c + wid / 2 * R, c + bot * R]
+    d.rounded_rectangle([box[0] - 0.02 * R, box[1] - 0.02 * R,
+                         box[2] + 0.02 * R, box[3] + 0.02 * R],
+                        radius=0.05 * R, fill=(58, 58, 60))
+    d.rounded_rectangle(box, radius=0.04 * R, fill=(0, 0, 0))
+
+    img = img.resize((size, size), Image.LANCZOS)
+    sheen = Image.new("L", (size, size), 0)
+    sd = ImageDraw.Draw(sheen)
+    for i in range(30):
+        t = i / 29
+        rx, ry = size * (0.62 - 0.25 * t), size * (0.36 - 0.14 * t)
+        cx, cy = size * 0.40, size * 0.26
+        sd.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=int(2 + 16 * t))
+    sheen = sheen.filter(ImageFilter.GaussianBlur(size * 0.03))
+    img = Image.composite(Image.new("RGB", (size, size), (255, 255, 255)),
+                          img, sheen)
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
+    out = Image.new("RGB", (size, size), (0, 0, 0))
+    out.paste(img, (0, 0), mask)
+    return out
+
+
 # ----------------------------------------------------------------- FUTURO
 FUTURO_SEG_R = 0.935        # outer end of the lit segments (live)
 FUTURO_SEG_L = 0.140        # their length
@@ -523,6 +622,9 @@ def main():
         emit_rgb(lines, "face_retro_" + key, face)
         icons.append("page_icon_" + key)
         emit_a8(lines, "page_icon_" + key, icon_mask(p[9], PAGE_ICON_PX))
+    mr = draw_multi_retro(size)
+    mr.save(os.path.join(prev, "retro-multi.png"))
+    emit_rgb(lines, "face_retro_multi", mr)
     bg = draw_futuro_bg(size)
     bg.save(os.path.join(prev, "futuro-bg.png"))
     emit_rgb(lines, "face_futuro_bg", bg)
@@ -562,6 +664,14 @@ def main():
          "#define RETRO_TITLE_Y %d     /* live title, above the centre */" % round(0.19 * R),
          "#define RETRO_UNIT_Y  %d     /* live unit, below the centre */" % round(0.64 * R),
          "",
+         "/* MULTI: the small gauges (from the centre), RETRO's readout window */",
+         "#define MULTI_MINI_DX %d" % round(MULTI_MINI_DX * R),
+         "#define MULTI_MINI_Y  %d" % round(MULTI_MINI_Y * R),
+         "#define MULTI_MINI_R  %d" % round(MULTI_MINI_R * R),
+         "#define RMULTI_WIN_TOP %d    /* from the centre, negative: above */" % round(RMULTI_WIN[0] * R),
+         "#define RMULTI_WIN_BOT %d" % round(RMULTI_WIN[1] * R),
+         "#define RMULTI_WIN_W  %d" % round(RMULTI_WIN[2] * R),
+         "",
          "/* FUTURO: the lit segments */",
          "#define FUTURO_SEG_R  %d" % round(FUTURO_SEG_R * R),
          "#define FUTURO_SEG_L  %d" % round(FUTURO_SEG_L * R),
@@ -582,6 +692,7 @@ def main():
           "extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];",
           "extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */",
           "extern const lv_img_dsc_t face_futuro_bg;",
+          "extern const lv_img_dsc_t face_retro_multi;",
           "",
           "/* A8 icons, recolour with img_recolor */"]
     h += ["extern const lv_img_dsc_t icon_%s_%d;" % (n, px) for n, px in UI_ICONS]
