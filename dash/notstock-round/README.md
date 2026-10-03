@@ -212,13 +212,26 @@ obd2.c`, `dtc_text.c`) as they are, so keep both folders side by side.
 - New source files are picked up at configure time: after adding one,
   `idf.py reconfigure` (or `fullclean`).
 
-**CAN** goes on the 4-pin UART header: GPIO43 (TXD) to the SN65HVD230 board's
-CTX, GPIO44 (RXD) to CRX, plus 3V3 and GND. These are the only free pins, so
-the console runs on the native USB (USB Serial/JTAG) and nothing else may
-use UART0. Two things to know:
+**In the car everything goes through the 12-pin connector** (Waveshare's
+"12PIN wire interface"): GPIO0, GND, RXD (GPIO44), TXD (GPIO43), SDA, SCL,
+3V3, GND, D+, D-, VBus (5 V), GND.
 
-- The board switches the 4-pin header off while its UART USB-C is plugged
-  in (FSUSB42 switch). Flash over it, but test CAN powered some other way.
+| 12-pin | to |
+|---|---|
+| VBus (5V) + GND | +5 V and GND from the power box |
+| TXD (GPIO43) | SN65HVD230 CTX |
+| RXD (GPIO44) | SN65HVD230 CRX |
+| 3V3 + GND | SN65HVD230 3V3, GND |
+
+The SN65HVD230 sits at the display, so only 5 V, GND, CAN-H and CAN-L run
+to the box. VBus is the USB 5 V rail: with the box connected, do not plug
+the board into a computer as well. GPIO43/44 are also on the 4-pin UART
+header. They are the only free pins, so the console runs on the native USB
+(USB Serial/JTAG) and nothing else may use UART0. Two things to know:
+
+- The board switches GPIO43/44 off from the connectors while its "UART"
+  USB-C is plugged in (FSUSB42 switch). Flash over it or over "USB", but
+  test CAN without a cable in "UART".
 - At every power-up the chip's boot ROM prints a few lines on GPIO43 before
   the firmware runs, which puts some 20 ms of noise on the OBD CAN. ECUs
   shrug that off as error frames; for a permanent fit it can be switched
