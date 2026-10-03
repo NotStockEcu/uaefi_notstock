@@ -145,7 +145,7 @@ stores them (`rnd_settings_save()`, the platform's NVS).
 
 All text goes through `TR("ENGLISH", "ČESKY")` (`ui_round_int.h`), page
 names and units through `rnd_page_name()` / `rnd_unit()` (`ui_round.c`):
-VODA, OLEJ, TURBO, SÁNÍ, VÝFUK, OTÁČKY (ot/min), SAZE DPF. The UI is upper
+VODA, OLEJ, TURBO, SÁNÍ, EGT, OTÁČKY (ot/min), SAZE DPF. The UI is upper
 case, so the fonts carry the Czech capitals only. Orbitron has no
 Č Ď Ě Ň Ř Ť Ů: `tools/patch_font.py` builds them from its own C D E N R T U
 and the caron / ring of Š and Å, into a renamed temporary copy (Orbitron
