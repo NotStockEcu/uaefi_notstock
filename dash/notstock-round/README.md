@@ -216,6 +216,10 @@ obd2.c`, `dtc_text.c`) as they are, so keep both folders side by side.
 "12PIN wire interface"): GND, VBus (5 V), D- (GPIO19), D+ (GPIO20), GND,
 3V3, SCL, SDA, TXD (GPIO43), RXD (GPIO44), NC, GPIO0.
 
+![wiring](docs/wiring.png)
+
+(`docs/wiring.svg` is the source.)
+
 | 12-pin | to |
 |---|---|
 | VBus (5V) + GND | +5 V and GND from the power box |
