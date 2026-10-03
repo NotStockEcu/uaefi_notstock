@@ -13,6 +13,7 @@
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
+ *               [hold=x,y,ms;...]   finger down at x,y for ms, then lifted
  *               [lang=0|1]          RND_LANG_*: English, Czech
  *               [screen=diag]       trouble codes, read on opening: the
  *                                   fake car has three stored and one
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
     int limit = 0, boot = 0;
     const char *relook = NULL;
     int dtap = 0, dtcclear = 0;
-    const char *taps = NULL;
+    const char *taps = NULL, *holds = NULL;
     rnd_settings_defaults();
     int page = 0;
     float t_end = 1.5f;
@@ -172,6 +173,7 @@ int main(int argc, char **argv)
         if (strcmp(k, "relook") == 0) { relook = v; used = true; }
         if (strcmp(k, "dtap") == 0)  { dtap = atoi(v); used = true; }
         if (strcmp(k, "tap") == 0)   { taps = v; used = true; }
+        if (strcmp(k, "hold") == 0)  { holds = v; used = true; }
         if (strcmp(k, "hide") == 0)  { g_rnd_set.hidden = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "order") == 0) {
             const char *q = v;
@@ -261,6 +263,18 @@ int main(int argc, char **argv)
             s_tx = x;
             s_ty = y;
             run(0.066f, &d);
+            s_tx = s_ty = -1;
+            run(0.5f, &d);
+        }
+        q = strchr(q, ';');
+        if (q) q++;
+    }
+    for (const char *q = holds; q && *q; ) {
+        int x, y, ms;
+        if (sscanf(q, "%d,%d,%d", &x, &y, &ms) == 3) {
+            s_tx = x;
+            s_ty = y;
+            run(ms / 1000.0f, &d);
             s_tx = s_ty = -1;
             run(0.5f, &d);
         }

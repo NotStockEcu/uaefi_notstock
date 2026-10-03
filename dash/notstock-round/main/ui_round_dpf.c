@@ -97,7 +97,7 @@ void rnd_menu_create(void)
     lv_obj_set_style_bg_color(menu, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(menu, LV_OPA_COVER, 0);
     lv_obj_clear_flag(menu, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_event_cb(menu, go_gauges, LV_EVENT_LONG_PRESSED, NULL);
+    rnd_on_long(menu, go_gauges);
 
     lv_obj_t *t = rnd_label(menu, &rnd_18, C_GREY, 64);
     lv_obj_set_style_text_letter_space(t, 4, 0);
@@ -193,7 +193,7 @@ void rnd_dpf_create(void)
     lv_obj_set_style_bg_opa(dpf, LV_OPA_COVER, 0);
     lv_obj_clear_flag(dpf, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(dpf, dpf_gesture, LV_EVENT_GESTURE, NULL);
-    lv_obj_add_event_cb(dpf, go_menu, LV_EVENT_LONG_PRESSED, NULL);
+    rnd_on_long(dpf, go_menu);
     lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
 
     /* groove and red zone like the gauge faces, then the soot arc */

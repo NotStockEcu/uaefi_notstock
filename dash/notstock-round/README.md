@@ -204,7 +204,13 @@ obd2.c`, `dtc_text.c`) as they are, so keep both folders side by side.
 - `main/hw.c`: the drivers, `main/can_obd.c`: TWAI and the OBD client,
   `main/main.c`: settings in NVS, the platform hooks of `ui_round.h`, the
   30 Hz feed into the UI.
+- `main/boot_fb.c`: on the board the boot logo is written straight into
+  the frame buffer (fade in, then a cross-fade into the gauge LVGL has
+  rendered behind it). Through LVGL every step redrew the whole screen and
+  the fade stuttered; the simulator still shows the LVGL version.
 - No Wi-Fi, no Bluetooth.
+- New source files are picked up at configure time: after adding one,
+  `idf.py reconfigure` (or `fullclean`).
 
 **CAN** goes on the 4-pin UART header: GPIO43 (TXD) to the SN65HVD230 board's
 CTX, GPIO44 (RXD) to CRX, plus 3V3 and GND. These are the only free pins, so

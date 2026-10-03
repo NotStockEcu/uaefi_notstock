@@ -97,9 +97,13 @@ void app_main(void)
     hw_init();
     can_obd_start();
 
-    /* the boot logo fades in from black; the backlight comes up with it */
-    ui_round_create(true);
+    /* the gauges first, then the logo in front of them out of black and
+     * into them (hw_boot, straight into the frame buffer; the LVGL fade of
+     * ui_round_create(true) is what the PC simulator shows) */
+    ui_round_create(false);
     lv_timer_create(update_cb, UPDATE_MS, NULL);
+    extern const lv_img_dsc_t *const boot_logo[];
+    hw_boot(boot_logo[0]);
 
     lv_mem_monitor_t mon;
     lv_mem_monitor(&mon);

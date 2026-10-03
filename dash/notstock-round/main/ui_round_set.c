@@ -53,7 +53,7 @@ static lv_obj_t *screen(lv_event_cb_t on_long, const char *title)
     lv_obj_set_style_bg_color(s, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(s, LV_OPA_COVER, 0);
     lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_event_cb(s, on_long, LV_EVENT_LONG_PRESSED, NULL);
+    rnd_on_long(s, on_long);
     lv_obj_t *t = rnd_label(s, &rnd_18, C_GREY, 64);
     lv_obj_set_style_text_letter_space(t, 4, 0);
     lv_label_set_text(t, title);

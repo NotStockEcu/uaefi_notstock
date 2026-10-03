@@ -8,3 +8,5 @@ void hw_init(void);                  /* I2C, expander, panel, touch, LVGL */
 void hw_backlight(uint8_t percent);  /* 0..100 */
 void hw_beep(int n);                 /* n short beeps, does not block */
 void exio_set(uint8_t mask, bool on);
+/* the boot logo fading in and into the gauge screen already loaded */
+void hw_boot(const lv_img_dsc_t *logo);

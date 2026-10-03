@@ -246,7 +246,7 @@ void rnd_diag_create(void)
     lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_event_cb(scr, back_cb, LV_EVENT_LONG_PRESSED, NULL);
+    rnd_on_long(scr, back_cb);
     lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);
 
     lv_obj_t *t = rnd_label(scr, &rnd_18, C_GREY, 58);

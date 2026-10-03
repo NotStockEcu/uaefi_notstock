@@ -4,6 +4,7 @@
  */
 #include "hw.h"
 #include "board_round.h"
+#include "boot_fb.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -356,9 +357,22 @@ static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 }
 
 /* ------------------------------------------------------------------ LVGL */
+/* While set, LVGL renders into this buffer instead of the panel: the boot
+ * gets a finished gauge frame to cross-fade into. */
+static uint16_t *s_shadow;
+
 static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
 {
-    esp_lcd_panel_draw_bitmap(s_panel, a->x1, a->y1, a->x2 + 1, a->y2 + 1, px);
+    if (s_shadow) {
+        int w = a->x2 - a->x1 + 1;
+        for (int y = a->y1; y <= a->y2; y++) {
+            memcpy(s_shadow + y * LCD_H_RES + a->x1, px, w * 2);
+            px += w;
+        }
+    } else {
+        esp_lcd_panel_draw_bitmap(s_panel, a->x1, a->y1, a->x2 + 1, a->y2 + 1,
+                                  px);
+    }
     lv_disp_flush_ready(drv);
 }
 
@@ -397,6 +411,75 @@ static void lvgl_init(void)
         in.read_cb = touch_read;
         lv_indev_drv_register(&in);
     }
+}
+
+/* ------------------------------------------------------------------ boot */
+/* The logo rises out of black, holds, and cross-fades into the gauge, all
+ * written straight into the frame buffer (boot_fb.c). During the hold LVGL
+ * renders the gauge screen into a shadow buffer, so the cross-fade ends on
+ * exactly the frame LVGL believes is on screen. */
+static void fb_present(uint16_t *fb)
+{
+    /* the frame buffer is its own source: the driver only syncs the cache */
+    esp_lcd_panel_draw_bitmap(s_panel, 0, 0, LCD_H_RES, LCD_V_RES, fb);
+}
+
+void hw_boot(const lv_img_dsc_t *logo)
+{
+    uint16_t *fb = NULL;
+    uint16_t *shadow = heap_caps_malloc(LCD_H_RES * LCD_V_RES * 2,
+                                        MALLOC_CAP_SPIRAM);
+    if (esp_lcd_rgb_panel_get_frame_buffer(s_panel, 1, (void **)&fb) != ESP_OK
+        || !fb || !shadow) {
+        ESP_LOGW(TAG, "no frame buffer or memory, no boot logo");
+        heap_caps_free(shadow);
+        lv_obj_invalidate(lv_scr_act());
+        return;
+    }
+    memset(fb, 0, LCD_H_RES * LCD_V_RES * 2);
+    fb_present(fb);
+
+    int64_t t0 = esp_timer_get_time();
+    for (int last = -1;;) {
+        uint32_t ms = (uint32_t)((esp_timer_get_time() - t0) / 1000);
+        int lv = boot_fb_in_level(ms);
+        if (lv != last) {
+            boot_fb_logo(fb, logo, lv);
+            fb_present(fb);
+            last = lv;
+        }
+        if (lv >= 32) break;
+        vTaskDelay(1);
+    }
+
+    /* hold: LVGL runs, into the shadow, so the gauge sweeps up on live
+     * values behind the logo */
+    s_shadow = shadow;
+    lv_obj_invalidate(lv_scr_act());
+    int64_t hold_end = t0 + (int64_t)(RND_BOOT_IN_MS + RND_BOOT_HOLD_MS) * 1000;
+    while (esp_timer_get_time() < hold_end) {
+        lv_timer_handler();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    lv_obj_invalidate(lv_scr_act());
+    lv_refr_now(NULL);
+
+    int64_t t1 = esp_timer_get_time();
+    for (int last = -1;;) {
+        uint32_t ms = (uint32_t)((esp_timer_get_time() - t1) / 1000);
+        int lv = boot_fb_x_level(ms);
+        if (lv != last) {
+            boot_fb_cross(fb, logo, shadow, lv);
+            fb_present(fb);
+            last = lv;
+        }
+        if (lv >= 32) break;
+        vTaskDelay(1);
+    }
+
+    /* the frame buffer now holds the last LVGL frame: back to the panel */
+    s_shadow = NULL;
+    heap_caps_free(shadow);
 }
 
 /* ------------------------------------------------------------------ init */

@@ -107,6 +107,11 @@ void rnd_limits_changed(void);        /* redraw the zones */
 
 /* day / night: a double tap on the gauges or the DPF screen */
 void rnd_tap_cb(lv_event_t *e);           /* on LV_EVENT_SHORT_CLICKED */
+
+/* a long press that leaves the screen: cb runs, and the finger, still down
+ * on the next screen, counts for nothing until it is lifted (else lifting it
+ * taps whatever lies under it there) */
+void rnd_on_long(lv_obj_t *obj, lv_event_cb_t cb);
 void rnd_swiped(void);                    /* from a gesture handler */
 void rnd_backlight_apply(void);           /* from g_rnd_set */
 void rnd_night_toggle(void);

@@ -419,6 +419,19 @@ static void long_cb(lv_event_t *e)
     rnd_menu_open();
 }
 
+static void hold_cb(lv_event_t *e)
+{
+    lv_indev_t *in = lv_event_get_indev(e);
+    if (!in) in = lv_indev_get_act();
+    if (in) lv_indev_wait_release(in);
+}
+
+void rnd_on_long(lv_obj_t *obj, lv_event_cb_t cb)
+{
+    lv_obj_add_event_cb(obj, cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(obj, hold_cb, LV_EVENT_LONG_PRESSED, NULL);
+}
+
 void ui_round_create(bool boot_logo_on)
 {
     scr = lv_obj_create(NULL);
@@ -426,10 +439,12 @@ void ui_round_create(bool boot_logo_on)
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);
-    lv_obj_add_event_cb(scr, long_cb, LV_EVENT_LONG_PRESSED, NULL);
+    rnd_on_long(scr, long_cb);
     lv_obj_add_event_cb(scr, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
     rnd_backlight_apply();
 
+    /* start on the first page of the chosen order */
+    page = g_rnd_set.order[0] < RND_COUNT ? g_rnd_set.order[0] : 0;
     for (int i = 0; i < RND_COUNT; i++) peak[i] = NAN;
     look = NULL;
     rnd_look_apply();
