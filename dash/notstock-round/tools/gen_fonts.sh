@@ -32,7 +32,8 @@ conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --symbols ABCDEFPU --size 56 -o $
 conv --font $T/bold.ttf -r 0x20-0x7E -r 0xB0 --symbols "$CZ" --size 26 -o $O/rnd_26.c
 # page titles, scale numbers, peak line, hints
 conv --font $T/bold.ttf -r 0x20-0x7E -r 0xB0 --symbols "$CZ" --size 18 -o $O/rnd_18.c
-# RETRO look: the readout window, the page title, the unit (Barlow Condensed)
-conv --font $F/BarlowCondensed-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 46 -o $O/rnd_barlow_46.c
+# RETRO look: the readout window (and trouble codes), the page title, the
+# unit (Barlow Condensed)
+conv --font $F/BarlowCondensed-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --symbols ABCDEFPU --size 46 -o $O/rnd_barlow_46.c
 conv --font $F/BarlowCondensed-SemiBold.ttf -r 0x20-0x7E -r 0xB0 --symbols "$CZ" --size 23 -o $O/rnd_barlow_23.c
 conv --font $F/BarlowCondensed-SemiBold.ttf -r 0x20-0x7E -r 0xB0 --symbols "$CZ" --size 20 -o $O/rnd_barlow_20.c

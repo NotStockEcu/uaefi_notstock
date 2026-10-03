@@ -1,7 +1,7 @@
 # NOT STOCK round gauge
 
 One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
-rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, SETTINGS.
+rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, DIAGNOSTICS, SETTINGS.
 Double tap: night (backlight down), double tap again: day. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
@@ -91,8 +91,8 @@ the buzzer sits on the TCA9554 expander (EXIO8).
 
 ## Looks
 
-SETTINGS -> LOOK, applies at once. Menu, DPF status and settings stay the
-same in every look.
+SETTINGS -> LOOK, applies at once, to the gauges, MULTI, DPF status and
+diagnostics. Menu and settings stay the same in every look.
 
 ![retro](preview/retro-boost.png) ![futuro](preview/futuro-boost.png)
 
@@ -108,6 +108,23 @@ same in every look.
   fading to the rim, thin cyan rings) and 46 segments that light up to the
   value, cyan into magenta; dim red past the warn limit, all red over it.
   Icon and title on top, a pale neon readout, the scale's ends underneath.
+
+DPF status and diagnostics follow the look (`ui_round_dpf.c`,
+`ui_round_diag.c`, rebuilt when it changes):
+
+![retro dpf](preview/retro-dpf-regen.png) ![futuro dpf](preview/futuro-dpf.png)
+![retro diag](preview/cz-retro-diag.png) ![futuro diag](preview/cz-futuro-diag.png)
+
+- VDO STYLE: a dial 0..40 g with the red band from the soot limit
+  (`face_retro_dpf`), the soot in the window, pressure, filter temperature
+  and distance in three small windows, and a DPF tell-tale: dark, amber
+  over the limit, orange with a glow while it regenerates. Diagnostics on
+  the plain dial (`face_retro_plain`), Barlow print.
+- FUTURO: the soot on the ring of segments, cyan into magenta, all red over
+  the limit, orange while it regenerates; neon text on the hex background.
+
+The two extra dials cost about 0.9 MB of flash; the app is 8.1 MB of the
+15 MB partition.
 
 A look is three functions (`rnd_look_t` in `ui_round_int.h`: build, page,
 draw); `ui_round.c` hands it the page and a smoothed value every frame.

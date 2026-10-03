@@ -490,6 +490,103 @@ def draw_multi_retro(size):
     return out
 
 
+def _retro_base(S):
+    """Chrome bezel and black dial, supersampled canvas of S pixels."""
+    c = R = S / 2
+    img = Image.new("RGB", (S, S), (0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for i in range(360):
+        lum = 0.5 + 0.5 * math.sin(math.radians(-(i + 0.5)))
+        col = tuple(int(70 + 175 * lum ** 1.4) for _ in range(3))
+        d.arc([0, 0, S - 1, S - 1], i, i + 1.5, fill=col, width=int(0.065 * R))
+    d.ellipse([0.065 * R, 0.065 * R, S - 0.065 * R, S - 0.065 * R],
+              fill=(30, 28, 26))
+    fr = 0.925 * R
+    for i in range(40):
+        t = i / 39
+        r = fr * (1 - t)
+        k = t ** 1.2
+        col = tuple(int(C_DIAL_OUT[j] + (C_DIAL_IN[j] - C_DIAL_OUT[j]) * k)
+                    for j in range(3))
+        d.ellipse([c - r, c - r, c + r, c + r], fill=col)
+    return img, d
+
+
+def _retro_finish(img, size):
+    """Down to size, the glass sheen, round."""
+    img = img.resize((size, size), Image.LANCZOS)
+    sheen = Image.new("L", (size, size), 0)
+    sd = ImageDraw.Draw(sheen)
+    for i in range(30):
+        t = i / 29
+        rx, ry = size * (0.62 - 0.25 * t), size * (0.36 - 0.14 * t)
+        cx, cy = size * 0.40, size * 0.26
+        sd.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=int(2 + 16 * t))
+    sheen = sheen.filter(ImageFilter.GaussianBlur(size * 0.03))
+    img = Image.composite(Image.new("RGB", (size, size), (255, 255, 255)),
+                          img, sheen)
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
+    out = Image.new("RGB", (size, size), (0, 0, 0))
+    out.paste(img, (0, 0), mask)
+    return out
+
+
+def _window(d, c, R, top, bot, wid, x=0.0):
+    """A black readout window with a thin chrome frame (fractions of R from
+    the centre)."""
+    box = [c + (x - wid / 2) * R, c + top * R, c + (x + wid / 2) * R, c + bot * R]
+    d.rounded_rectangle([box[0] - 0.02 * R, box[1] - 0.02 * R,
+                         box[2] + 0.02 * R, box[3] + 0.02 * R],
+                        radius=0.05 * R, fill=(58, 58, 60))
+    d.rounded_rectangle(box, radius=0.04 * R, fill=(0, 0, 0))
+
+
+def draw_retro_plain(size):
+    """RETRO's dial with nothing printed on it: the diagnostics screen."""
+    S = size * SS
+    img, d = _retro_base(S)
+    return _retro_finish(img, size)
+
+
+# RETRO DPF: soot 0..40 g over the top half, readouts below the hub
+RDPF_MAX = 40
+RDPF_WIN = (-0.44, -0.26, 0.50)     # soot readout: top, bottom, width
+RDPF_SMALL = (0.27, 0.42, 0.34)     # the three small windows: top, bottom, width
+RDPF_SMALL_DX = 0.42                # their spacing
+
+
+def draw_retro_dpf(size):
+    """RETRO's DPF status dial: soot scale over the top half (0..40 g, a
+    long tick every 10 g with its number), the soot window above the hub,
+    three small windows below it."""
+    S = size * SS
+    c = R = S / 2
+    img, d = _retro_base(S)
+    font = ImageFont.truetype(FONT_BARLOW_B, int(0.15 * R))
+    r_out = RETRO_TICK_R * R
+    for k in range(41):
+        a = math.radians(180 + k * 4.5)
+        major, half = k % 10 == 0, k % 5 == 0
+        ln = (0.11 if major else 0.075 if half else 0.045) * R
+        w = (0.020 if major else 0.011 if half else 0.008) * R
+        d.line([(c + r_out * math.cos(a), c + r_out * math.sin(a)),
+                (c + (r_out - ln) * math.cos(a), c + (r_out - ln) * math.sin(a))],
+               fill=C_INK, width=int(w))
+        if major:
+            rt = 0.66 * R
+            d.text((c + rt * math.cos(a), c + rt * math.sin(a)), "%d" % k,
+                   font=font, fill=C_INK, anchor="mm")
+    uf = ImageFont.truetype(FONT_BARLOW_S, int(0.085 * R))
+    d.text((c, c - 0.12 * R), "g", font=uf, fill=C_INK_DIM, anchor="mm")
+    top, bot, wid = RDPF_WIN
+    _window(d, c, R, top, bot, wid)
+    top, bot, wid = RDPF_SMALL
+    for i in (-1, 0, 1):
+        _window(d, c, R, top, bot, wid, i * RDPF_SMALL_DX)
+    return _retro_finish(img, size)
+
+
 # ----------------------------------------------------------------- FUTURO
 FUTURO_SEG_R = 0.935        # outer end of the lit segments (live)
 FUTURO_SEG_L = 0.140        # their length
@@ -622,6 +719,11 @@ def main():
         emit_rgb(lines, "face_retro_" + key, face)
         icons.append("page_icon_" + key)
         emit_a8(lines, "page_icon_" + key, icon_mask(p[9], PAGE_ICON_PX))
+    for name, fn in (("retro_plain", draw_retro_plain),
+                     ("retro_dpf", draw_retro_dpf)):
+        im = fn(size)
+        im.save(os.path.join(prev, name.replace("_", "-") + ".png"))
+        emit_rgb(lines, "face_" + name, im)
     mr = draw_multi_retro(size)
     mr.save(os.path.join(prev, "retro-multi.png"))
     emit_rgb(lines, "face_retro_multi", mr)
@@ -672,6 +774,16 @@ def main():
          "#define RMULTI_WIN_BOT %d" % round(RMULTI_WIN[1] * R),
          "#define RMULTI_WIN_W  %d" % round(RMULTI_WIN[2] * R),
          "",
+         "/* RETRO DPF: soot readout and the three small windows (from the centre) */",
+         "#define RDPF_MAX      %d" % RDPF_MAX,
+         "#define RDPF_WIN_TOP  %d" % round(RDPF_WIN[0] * R),
+         "#define RDPF_WIN_BOT  %d" % round(RDPF_WIN[1] * R),
+         "#define RDPF_WIN_W    %d" % round(RDPF_WIN[2] * R),
+         "#define RDPF_SM_TOP   %d" % round(RDPF_SMALL[0] * R),
+         "#define RDPF_SM_BOT   %d" % round(RDPF_SMALL[1] * R),
+         "#define RDPF_SM_W     %d" % round(RDPF_SMALL[2] * R),
+         "#define RDPF_SM_DX    %d" % round(RDPF_SMALL_DX * R),
+         "",
          "/* FUTURO: the lit segments */",
          "#define FUTURO_SEG_R  %d" % round(FUTURO_SEG_R * R),
          "#define FUTURO_SEG_L  %d" % round(FUTURO_SEG_L * R),
@@ -693,6 +805,8 @@ def main():
           "extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */",
           "extern const lv_img_dsc_t face_futuro_bg;",
           "extern const lv_img_dsc_t face_retro_multi;",
+          "extern const lv_img_dsc_t face_retro_plain;",
+          "extern const lv_img_dsc_t face_retro_dpf;",
           "",
           "/* A8 icons, recolour with img_recolor */"]
     h += ["extern const lv_img_dsc_t icon_%s_%d;" % (n, px) for n, px in UI_ICONS]

@@ -29,6 +29,16 @@
 #define RMULTI_WIN_BOT -62
 #define RMULTI_WIN_W  120
 
+/* RETRO DPF: soot readout and the three small windows (from the centre) */
+#define RDPF_MAX      40
+#define RDPF_WIN_TOP  -106
+#define RDPF_WIN_BOT  -62
+#define RDPF_WIN_W    120
+#define RDPF_SM_TOP   65
+#define RDPF_SM_BOT   101
+#define RDPF_SM_W     82
+#define RDPF_SM_DX    101
+
 /* FUTURO: the lit segments */
 #define FUTURO_SEG_R  224
 #define FUTURO_SEG_L  34
@@ -53,6 +63,8 @@ extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];
 extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */
 extern const lv_img_dsc_t face_futuro_bg;
 extern const lv_img_dsc_t face_retro_multi;
+extern const lv_img_dsc_t face_retro_plain;
+extern const lv_img_dsc_t face_retro_dpf;
 
 /* A8 icons, recolour with img_recolor */
 extern const lv_img_dsc_t icon_dpf_120;

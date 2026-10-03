@@ -316,6 +316,18 @@ void rnd_look_apply(void)
     look->build(scr);
     rnd_multi_build(scr);              /* on top, shown on its own page */
     ui_round_page(page);
+    /* DPF and DIAGNOSTICS wear the look too. The look is picked on the LOOK
+     * screen, but should either be up, it is not deleted while shown. */
+    if (rnd_dpf_screen()) {
+        lv_obj_t *act = lv_scr_act();
+        bool on_dpf = act == rnd_dpf_screen();
+        bool on_diag = act == rnd_diag_screen();
+        if (on_dpf || on_diag) lv_scr_load(scr);
+        rnd_dpf_create();
+        rnd_diag_create();
+        if (on_dpf)  lv_scr_load(rnd_dpf_screen());
+        if (on_diag) lv_scr_load(rnd_diag_screen());
+    }
 }
 
 /* ------------------------------------------------------------ day / night */

@@ -120,6 +120,15 @@ void rnd_menu_create(void)
 }
 
 /* ------------------------------------------------------ DPF status screen */
+/* Drawn in the look picked in SETTINGS, rebuilt when it changes:
+ *   NOTSTOCK  the arc over the face's groove and a filter that fills up
+ *   RETRO     a VDO-like dial 0..40 g (face_retro_dpf), red needle and band,
+ *             readings in windows, a DPF tell-tale: amber over the limit,
+ *             orange and glowing while it regenerates
+ *   FUTURO    the ring of segments on the hex background, neon readings */
+enum { ST_NOTSTOCK, ST_RETRO, ST_FUTURO };
+static int dstyle;
+
 static lv_obj_t *dpf, *dpf_arc[N_ARC], *dpf_zone, *body, *fill, *pipe[2];
 static float zone_at = NAN;       /* the warn level the zone was drawn for */
 static lv_obj_t *soot_lbl, *meas_lbl, *pill, *pill_lbl;
@@ -127,6 +136,16 @@ enum { V_DP, V_TEMP, V_DIST, V_COUNT };
 static lv_obj_t *v_lbl[V_COUNT];
 static float dpf_shown = NAN;
 static int dpf_level = -1;
+/* RETRO */
+static lv_obj_t *needle, *lamp, *glow;
+static lv_point_t np[2];
+/* FUTURO */
+static lv_obj_t *meter, *icon;
+static lv_meter_indicator_t *seg_lit, *seg_zone;
+static int seg_at;
+
+#define R_SWEEP   180              /* RETRO: 0 g at 9 o'clock, 40 g at 3 */
+#define F_SEGS    46
 
 lv_obj_t *rnd_dpf_screen(void)
 {
@@ -171,6 +190,34 @@ static lv_obj_t *rect(lv_obj_t *par, lv_coord_t x, lv_coord_t y, lv_coord_t w,
     return o;
 }
 
+/* a label centred on x, its middle at y */
+static lv_obj_t *label_mid(const lv_font_t *f, lv_color_t c, int x, int y,
+                           int w)
+{
+    lv_obj_t *l = rnd_label(dpf, f, c, y - lv_font_get_line_height(f) / 2);
+    lv_obj_set_width(l, w);
+    lv_obj_set_x(l, x - w / 2);
+    return l;
+}
+
+static lv_obj_t *background(const lv_img_dsc_t *img)
+{
+    lv_obj_t *bg = lv_img_create(dpf);
+    lv_img_set_src(bg, img);
+    lv_obj_set_pos(bg, 0, 0);
+    lv_obj_clear_flag(bg, LV_OBJ_FLAG_CLICKABLE);
+    return bg;
+}
+
+static const char *cap_text(int i)
+{
+    switch (i) {
+    case V_DP:   return "DP hPa";
+    case V_TEMP: return TR("TEMP \xC2\xB0" "C", "TEPL \xC2\xB0" "C");
+    default:     return TR("REGEN km", "OD REG km");
+    }
+}
+
 #define BODY_X   (CX - 100)
 #define BODY_Y   84
 #define BODY_W   200
@@ -178,24 +225,8 @@ static lv_obj_t *rect(lv_obj_t *par, lv_coord_t x, lv_coord_t y, lv_coord_t w,
 #define BODY_B   5
 #define FILL_W   (BODY_W - 2 * BODY_B)
 
-static void popup_drop(void);
-
-void rnd_dpf_create(void)
+static void build_notstock(void)
 {
-    if (dpf) {                            /* rebuilt for a new language */
-        lv_obj_del(dpf);
-        popup_drop();
-        zone_at = dpf_shown = NAN;
-        dpf_level = -1;
-    }
-    dpf = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(dpf, lv_color_black(), 0);
-    lv_obj_set_style_bg_opa(dpf, LV_OPA_COVER, 0);
-    lv_obj_clear_flag(dpf, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_event_cb(dpf, dpf_gesture, LV_EVENT_GESTURE, NULL);
-    rnd_on_long(dpf, go_menu);
-    lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
-
     /* groove and red zone like the gauge faces, then the soot arc */
     ring(dpf, 0, FACE_SWEEP, lv_color_hex(0x0C0E11), FACE_GROOVE_W);
     dpf_zone = rnd_zone(dpf);
@@ -229,11 +260,6 @@ void rnd_dpf_create(void)
     soot_lbl = rnd_label(dpf, &rnd_84, C_W, 196);
     meas_lbl = rnd_label(dpf, &rnd_18, C_GREY, 290);
 
-    const char *const CAP[V_COUNT] = {
-        "DP hPa",
-        TR("TEMP \xC2\xB0" "C", "TEPL \xC2\xB0" "C"),
-        TR("REGEN km", "OD REG km"),
-    };
     for (int i = 0; i < V_COUNT; i++) {
         lv_coord_t x = CX - 165 + i * 110;
         v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, 322);
@@ -242,7 +268,7 @@ void rnd_dpf_create(void)
         lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, 356);
         lv_obj_set_width(c, 130);         /* wider than the column: CS */
         lv_obj_set_x(c, x - 10);
-        lv_label_set_text(c, CAP[i]);
+        lv_label_set_text(c, cap_text(i));
     }
 
     pill = rect(dpf, CX - 110, 390, 220, 38, C_PANEL);
@@ -255,6 +281,154 @@ void rnd_dpf_create(void)
     lv_obj_center(pill_lbl);
 }
 
+static void build_retro(void)
+{
+    background(&face_retro_dpf);
+    /* the red band from the limit to 40 g, on the tick ring */
+    dpf_zone = lv_arc_create(dpf);
+    lv_obj_remove_style_all(dpf_zone);
+    lv_obj_set_size(dpf_zone, 2 * RETRO_ZONE_R + RETRO_ZONE_W,
+                    2 * RETRO_ZONE_R + RETRO_ZONE_W);
+    lv_obj_center(dpf_zone);
+    lv_obj_clear_flag(dpf_zone, LV_OBJ_FLAG_CLICKABLE);
+    lv_arc_set_rotation(dpf_zone, 180);
+    lv_obj_set_style_arc_width(dpf_zone, RETRO_ZONE_W, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(dpf_zone, C_BAND, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(dpf_zone, false, LV_PART_MAIN);
+    lv_obj_set_style_arc_opa(dpf_zone, LV_OPA_TRANSP, LV_PART_INDICATOR);
+
+    soot_lbl = label_mid(&rnd_barlow_46, C_W, CX,
+                         CX + (RDPF_WIN_TOP + RDPF_WIN_BOT) / 2 + 2,
+                         RDPF_WIN_W);
+    meas_lbl = rnd_label(dpf, &rnd_barlow_20, C_INK_DIM, CX + 30);
+    lv_obj_set_style_text_letter_space(meas_lbl, 2, 0);
+
+    for (int i = 0; i < V_COUNT; i++) {
+        int x = CX + (i - 1) * RDPF_SM_DX;
+        v_lbl[i] = label_mid(&rnd_barlow_23, C_W, x,
+                             CX + (RDPF_SM_TOP + RDPF_SM_BOT) / 2 + 1,
+                             RDPF_SM_W);
+        lv_obj_t *c = label_mid(&rnd_barlow_20, C_INK_DIM, x,
+                                CX + RDPF_SM_BOT + 16, 110);
+        lv_label_set_text(c, cap_text(i));
+    }
+
+    /* the tell-tale, with a glow behind it while it regenerates */
+    glow = rect(dpf, CX - 34, CX + 126, 68, 68, C_REGEN);
+    lv_obj_set_style_radius(glow, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(glow, LV_OPA_20, 0);
+    lv_obj_add_flag(glow, LV_OBJ_FLAG_HIDDEN);
+    lamp = lv_img_create(dpf);
+    lv_img_set_src(lamp, &icon_dpf_40);
+    lv_obj_align(lamp, LV_ALIGN_TOP_MID, 0, CX + 140);
+    lv_obj_set_style_img_recolor_opa(lamp, LV_OPA_COVER, 0);
+    lv_obj_set_style_img_recolor(lamp, lv_color_hex(0x3A3A3A), 0);
+    pill_lbl = rnd_label(dpf, &rnd_barlow_20, C_INK_DIM, CX + 184);
+    lv_obj_set_style_text_letter_space(pill_lbl, 2, 0);
+
+    /* needle and hub over everything */
+    needle = lv_line_create(dpf);
+    lv_obj_set_pos(needle, 0, 0);
+    lv_obj_set_style_line_width(needle, 7, 0);
+    lv_obj_set_style_line_color(needle, C_NEEDLE, 0);
+    lv_obj_set_style_line_rounded(needle, true, 0);
+    lv_obj_clear_flag(needle, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *hub = rect(dpf, CX - 20, CX - 20, 40, 40,
+                         lv_color_hex(0x111111));
+    lv_obj_set_style_radius(hub, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_border_color(hub, lv_color_hex(0x55575A), 0);
+    lv_obj_set_style_border_width(hub, 2, 0);
+}
+
+static void build_futuro(void)
+{
+    background(&face_futuro_bg);
+    meter = lv_meter_create(dpf);
+    lv_obj_remove_style_all(meter);
+    lv_obj_set_size(meter, 2 * FUTURO_SEG_R, 2 * FUTURO_SEG_R);
+    lv_obj_center(meter);
+    lv_obj_clear_flag(meter, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_width(meter, 0, LV_PART_INDICATOR);
+    lv_obj_set_style_height(meter, 0, LV_PART_INDICATOR);
+    lv_obj_set_style_text_opa(meter, LV_OPA_TRANSP, LV_PART_TICKS);
+    lv_meter_scale_t *sc = lv_meter_add_scale(meter);
+    lv_meter_set_scale_ticks(meter, sc, F_SEGS, 9, FUTURO_SEG_L, C_SEG_OFF);
+    lv_meter_set_scale_major_ticks(meter, sc, 1000, 9, FUTURO_SEG_L,
+                                   C_SEG_OFF, 0);
+    lv_meter_set_scale_range(meter, sc, 0, ARC_MAX, FACE_SWEEP, FACE_START);
+    seg_zone = lv_meter_add_scale_lines(meter, sc, C_SEG_ZONE, C_SEG_ZONE,
+                                        false, 0);
+    seg_lit = lv_meter_add_scale_lines(meter, sc, C_CYAN, C_MAGENTA, false, 0);
+    lv_meter_set_indicator_start_value(meter, seg_lit, 0);
+    lv_meter_set_indicator_end_value(meter, seg_lit, -1);
+    seg_at = -2;
+
+    icon = lv_img_create(dpf);
+    lv_img_set_src(icon, &icon_dpf_40);
+    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 86);
+    lv_obj_set_style_img_recolor(icon, C_CYAN, 0);
+    lv_obj_set_style_img_recolor_opa(icon, LV_OPA_COVER, 0);
+    lv_obj_t *t = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 136);
+    lv_obj_set_style_text_letter_space(t, 5, 0);
+    lv_label_set_text(t, TR("DPF STATUS", "STAV DPF"));
+
+    soot_lbl = rnd_label(dpf, &rnd_84, C_ICE, 170);
+    meas_lbl = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 268);
+    lv_obj_set_style_text_letter_space(meas_lbl, 2, 0);
+
+    for (int i = 0; i < V_COUNT; i++) {
+        lv_coord_t x = CX - 165 + i * 110;
+        v_lbl[i] = rnd_label(dpf, &rnd_26, C_ICE, 304);
+        lv_obj_set_width(v_lbl[i], 110);
+        lv_obj_set_x(v_lbl[i], x);
+        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 338);
+        lv_obj_set_width(c, 130);
+        lv_obj_set_x(c, x - 10);
+        lv_label_set_text(c, cap_text(i));
+    }
+
+    pill = rect(dpf, CX - 110, 376, 220, 38, lv_color_black());
+    lv_obj_set_style_radius(pill, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(pill, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(pill, 2, 0);
+    lv_obj_set_style_border_color(pill, C_TEAL_DIM, 0);
+    pill_lbl = lv_label_create(pill);
+    lv_obj_set_style_text_font(pill_lbl, &rnd_18, 0);
+    lv_obj_set_style_text_color(pill_lbl, C_CYAN, 0);
+    lv_obj_set_style_text_letter_space(pill_lbl, 2, 0);
+    lv_label_set_text(pill_lbl, "");
+    lv_obj_center(pill_lbl);
+}
+
+static void popup_drop(void);
+
+void rnd_dpf_create(void)
+{
+    if (dpf) {                            /* rebuilt: language or look */
+        lv_obj_del(dpf);
+        popup_drop();
+    }
+    zone_at = dpf_shown = NAN;
+    dpf_level = -1;
+    dpf_zone = body = fill = pipe[0] = pipe[1] = pill = NULL;
+    needle = lamp = glow = meter = icon = NULL;
+    memset(dpf_arc, 0, sizeof dpf_arc);
+    dstyle = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO :
+             g_rnd_set.look == RND_LOOK_FUTURO ? ST_FUTURO : ST_NOTSTOCK;
+
+    dpf = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(dpf, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(dpf, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(dpf, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_event_cb(dpf, dpf_gesture, LV_EVENT_GESTURE, NULL);
+    rnd_on_long(dpf, go_menu);
+    lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
+
+    if (dstyle == ST_RETRO)       build_retro();
+    else if (dstyle == ST_FUTURO) build_futuro();
+    else                          build_notstock();
+}
+
 static void fmt_or_dash(lv_obj_t *l, const char *fmt, float v, bool live)
 {
     char buf[24];
@@ -262,6 +436,98 @@ static void fmt_or_dash(lv_obj_t *l, const char *fmt, float v, bool live)
     else {
         snprintf(buf, sizeof buf, fmt, v);
         lv_label_set_text(l, buf);
+    }
+}
+
+static void zone_draw(float frac)
+{
+    if (dstyle == ST_NOTSTOCK) {
+        rnd_zone_set(dpf_zone, frac);
+    } else if (dstyle == ST_RETRO) {
+        if (!(frac < 1)) {
+            lv_obj_add_flag(dpf_zone, LV_OBJ_FLAG_HIDDEN);
+            return;
+        }
+        if (frac < 0) frac = 0;
+        lv_obj_clear_flag(dpf_zone, LV_OBJ_FLAG_HIDDEN);
+        lv_arc_set_bg_angles(dpf_zone, (uint16_t)lroundf(R_SWEEP * frac),
+                             R_SWEEP);
+    } else {
+        lv_meter_set_indicator_start_value(meter, seg_zone, frac < 1 ?
+            (int32_t)lroundf((frac < 0 ? 0 : frac) * ARC_MAX) : ARC_MAX + 1);
+        lv_meter_set_indicator_end_value(meter, seg_zone, ARC_MAX);
+    }
+}
+
+/* where the soot stands, 0..ARC_MAX */
+static void level_draw(float at, int lvl)
+{
+    static const uint32_t COL[4] = { 0xFFFFFF, 0xE0A020, 0xFF3030, 0xFF9A1F };
+    if (dstyle == ST_NOTSTOCK) {
+        rnd_arcs_set(dpf_arc, at, lv_color_hex(COL[lvl]));
+        lv_obj_set_width(fill, (lv_coord_t)lroundf(at / ARC_MAX * FILL_W));
+    } else if (dstyle == ST_RETRO) {
+        float a = (180 + at / ARC_MAX * R_SWEEP) * (float)M_PI / 180.0f;
+        float c = cosf(a), s = sinf(a);
+        np[0].x = (lv_coord_t)lroundf(CX - 14 * c);
+        np[0].y = (lv_coord_t)lroundf(CX - 14 * s);
+        np[1].x = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * c);
+        np[1].y = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * s);
+        lv_line_set_points(needle, np, 2);
+    } else {
+        int n = (int)lroundf(at / ARC_MAX * (F_SEGS - 1));
+        if (at < 10) n = -1;
+        if (n != seg_at) {
+            seg_at = n;
+            lv_meter_set_indicator_end_value(meter, seg_lit, n < 0 ? -1 :
+                (int32_t)lroundf((float)n * ARC_MAX / (F_SEGS - 1)));
+        }
+    }
+}
+
+/* 0 clean, 1 filling, 2 over the warn level, 3 regenerating */
+static void state_draw(int lvl)
+{
+    bool regen = lvl == 3;
+    if (dstyle == ST_NOTSTOCK) {
+        static const uint32_t FIL[4] = { 0x8A9096, 0xE0A020, 0xFF3030,
+                                         0xFF9A1F };
+        lv_obj_set_style_bg_color(fill, lv_color_hex(FIL[lvl]), 0);
+        lv_color_t edge = regen ? C_REGEN : lvl == 2 ? C_RED : C_GREY;
+        lv_obj_set_style_border_color(body, edge, 0);
+        for (int i = 0; i < 2; i++) {
+            lv_obj_set_style_bg_color(pipe[i], edge, 0);
+        }
+        lv_obj_set_style_shadow_width(body, regen ? 40 : 0, 0);
+        lv_obj_set_style_bg_color(body, regen ? lv_color_hex(0x3A2006)
+                                              : C_FILTER, 0);
+        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_RED : C_W, 0);
+        lv_obj_set_style_bg_color(pill, regen ? C_REGEN : C_PANEL, 0);
+        lv_obj_set_style_text_color(pill_lbl, regen ? lv_color_black()
+                                                    : C_GREY, 0);
+    } else if (dstyle == ST_RETRO) {
+        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_RED : C_W, 0);
+        lv_obj_set_style_img_recolor(lamp, regen ? C_REGEN :
+                                     lvl == 2 ? C_AMBER :
+                                     lv_color_hex(0x3A3A3A), 0);
+        if (regen) lv_obj_clear_flag(glow, LV_OBJ_FLAG_HIDDEN);
+        else       lv_obj_add_flag(glow, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_style_text_color(pill_lbl, regen ? C_REGEN : C_INK_DIM, 0);
+    } else {
+        lv_color_t warn = lvl == 2 ? C_SEG_WARN : C_CYAN;
+        seg_lit->type_data.scale_lines.color_start =
+            regen ? C_REGEN : lvl == 2 ? C_SEG_WARN : C_CYAN;
+        seg_lit->type_data.scale_lines.color_end =
+            regen ? C_REGEN : lvl == 2 ? C_SEG_WARN : C_MAGENTA;
+        lv_obj_invalidate(meter);
+        lv_obj_set_style_img_recolor(icon, regen ? C_REGEN : warn, 0);
+        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_SEG_WARN : C_ICE,
+                                    0);
+        lv_obj_set_style_border_color(pill, regen ? C_REGEN : C_TEAL_DIM, 0);
+        lv_obj_set_style_bg_opa(pill, regen ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+        lv_obj_set_style_bg_color(pill, C_REGEN, 0);
+        lv_obj_set_style_text_color(pill_lbl, regen ? lv_color_black()
+                                                    : C_CYAN, 0);
     }
 }
 
@@ -276,16 +542,20 @@ void rnd_dpf_update(const rnd_data_t *d)
     bool regen = rnd_regen_active();
     if (SOOT_WARN != zone_at) {           /* the limit is a setting */
         zone_at = SOOT_WARN;
-        rnd_zone_set(dpf_zone, SOOT_WARN / SOOT_MAX);
+        zone_draw(SOOT_WARN / SOOT_MAX);
         dpf_level = -1;
     }
     char buf[40];
 
     fmt_or_dash(soot_lbl, "%.1f", s, live);
-    if (!live || isnan(d->dpf.soot_meas_g)) {
-        lv_label_set_text(meas_lbl, live ? "g" : TR("NO DATA", "BEZ DAT"));
+    /* RETRO has the unit printed on the dial */
+    const char *g = dstyle == ST_RETRO ? "" : "g   ";
+    if (!live) {
+        lv_label_set_text(meas_lbl, TR("NO DATA", "BEZ DAT"));
+    } else if (isnan(d->dpf.soot_meas_g)) {
+        lv_label_set_text(meas_lbl, dstyle == ST_RETRO ? "" : "g");
     } else {
-        snprintf(buf, sizeof buf, "g   %s %.2f g", TR("MEASURED", "MĚŘENO"),
+        snprintf(buf, sizeof buf, "%s%s %.2f g", g, TR("MEASURED", "MĚŘENO"),
                  d->dpf.soot_meas_g);
         lv_label_set_text(meas_lbl, buf);
     }
@@ -298,29 +568,13 @@ void rnd_dpf_update(const rnd_data_t *d)
     if (frac > 1) frac = 1;
     if (isnan(dpf_shown)) dpf_shown = 0;
     dpf_shown += (frac * ARC_MAX - dpf_shown) * 0.25f;
-    lv_obj_set_width(fill, (lv_coord_t)lroundf(dpf_shown / ARC_MAX * FILL_W));
 
-    /* 0 clean, 1 filling, 2 over the warn level, 3 regenerating */
     int lvl = regen ? 3 : isnan(s) ? 0 : s >= SOOT_WARN ? 2 :
               s >= SOOT_WARN * 0.7f ? 1 : 0;
-    static const uint32_t COL[4] = { 0xFFFFFF, 0xE0A020, 0xFF3030, 0xFF9A1F };
-    static const uint32_t FIL[4] = { 0x8A9096, 0xE0A020, 0xFF3030, 0xFF9A1F };
-    rnd_arcs_set(dpf_arc, dpf_shown, lv_color_hex(COL[lvl]));
+    level_draw(dpf_shown, lvl);
     if (lvl != dpf_level) {
         dpf_level = lvl;
-        lv_obj_set_style_bg_color(fill, lv_color_hex(FIL[lvl]), 0);
-        lv_color_t edge = lvl == 3 ? C_REGEN : lvl == 2 ? C_RED : C_GREY;
-        lv_obj_set_style_border_color(body, edge, 0);
-        for (int i = 0; i < 2; i++) {
-            lv_obj_set_style_bg_color(pipe[i], edge, 0);
-        }
-        lv_obj_set_style_shadow_width(body, regen ? 40 : 0, 0);
-        lv_obj_set_style_bg_color(body, regen ? lv_color_hex(0x3A2006)
-                                              : C_FILTER, 0);
-        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_RED : C_W, 0);
-        lv_obj_set_style_bg_color(pill, regen ? C_REGEN : C_PANEL, 0);
-        lv_obj_set_style_text_color(pill_lbl, regen ? lv_color_black()
-                                                    : C_GREY, 0);
+        state_draw(lvl);
     }
     if (regen) {
         lv_label_set_text(pill_lbl, TR("REGENERATING", "REGENERACE"));

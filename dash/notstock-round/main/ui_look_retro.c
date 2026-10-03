@@ -10,9 +10,7 @@
 #define NEEDLE_TIP   (RETRO_TICK_R - 8)
 #define NEEDLE_TAIL  (-RND_W * 7 / 100)
 #define TELL_IN      (RND_W * 29 / 100)
-#define C_NEEDLE     lv_color_hex(0xE8261E)
 #define C_TELL       lv_color_hex(0xC86A1E)
-#define C_BAND       lv_color_hex(0xC81E1E)
 
 static lv_obj_t *face, *zone, *needle, *shadow, *tell, *hub, *cap;
 static lv_obj_t *title, *unit_lbl, *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_PAGES];

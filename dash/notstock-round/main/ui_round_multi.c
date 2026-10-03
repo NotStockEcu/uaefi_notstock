@@ -73,17 +73,6 @@ static float frac_of(int id, float v)
  *   FUTURO    rings of segments, cyan into magenta, on the hex background */
 enum { ST_NOTSTOCK, ST_RETRO, ST_FUTURO };
 
-#define C_ICE       lv_color_hex(0xC8FBFF)
-#define C_CYAN      lv_color_hex(0x00E5FF)
-#define C_MAGENTA   lv_color_hex(0xFF2BD6)
-#define C_TEAL_DIM  lv_color_hex(0x2A8C9C)
-#define C_SEG_OFF   lv_color_hex(0x0C2830)
-#define C_SEG_ZONE  lv_color_hex(0x4A1024)
-#define C_SEG_WARN  lv_color_hex(0xFF3040)
-#define C_INK_DIM   lv_color_hex(0xA0A09C)
-#define C_NEEDLE    lv_color_hex(0xE8261E)
-#define C_BAND      lv_color_hex(0xC81E1E)
-
 typedef struct {
     lv_obj_t *box, *val, *name, *unit;
     /* NOTSTOCK: arc and red zone; RETRO: the red band */

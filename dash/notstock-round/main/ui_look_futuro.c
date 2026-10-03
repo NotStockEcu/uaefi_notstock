@@ -9,13 +9,6 @@
 
 #define SEGS        46
 #define SEG_W       9
-#define C_CYAN      lv_color_hex(0x00E5FF)
-#define C_MAGENTA   lv_color_hex(0xFF2BD6)
-#define C_ICE       lv_color_hex(0xC8FBFF)
-#define C_SEG_OFF   lv_color_hex(0x0C2830)
-#define C_SEG_ZONE  lv_color_hex(0x4A1024)
-#define C_SEG_WARN  lv_color_hex(0xFF3040)
-#define C_TEAL_DIM  lv_color_hex(0x2A8C9C)
 
 static lv_obj_t *meter, *icon, *title, *val_lbl, *unit_lbl, *peak_lbl;
 static lv_obj_t *lo_lbl, *hi_lbl, *regen_lbl, *dot[RND_PAGES];

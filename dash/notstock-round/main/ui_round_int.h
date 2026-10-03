@@ -26,6 +26,19 @@ void rnd_lang_apply(void);        /* g_rnd_set.lang changed: rebuild */
 #define C_PANEL  lv_color_hex(0x16191C)
 #define C_EDGE   lv_color_hex(0x2A2D31)
 
+/* FUTURO: neon on the hex background */
+#define C_ICE       lv_color_hex(0xC8FBFF)
+#define C_CYAN      lv_color_hex(0x00E5FF)
+#define C_MAGENTA   lv_color_hex(0xFF2BD6)
+#define C_TEAL_DIM  lv_color_hex(0x2A8C9C)
+#define C_SEG_OFF   lv_color_hex(0x0C2830)
+#define C_SEG_ZONE  lv_color_hex(0x4A1024)
+#define C_SEG_WARN  lv_color_hex(0xFF3040)
+/* VDO STYLE (RETRO): print on the dial, the red needle and band */
+#define C_INK_DIM   lv_color_hex(0xA0A09C)
+#define C_NEEDLE    lv_color_hex(0xE8261E)
+#define C_BAND      lv_color_hex(0xC81E1E)
+
 #define CX       (RND_W / 2)
 #define ARC_MAX  1000        /* arc range: fraction of the scale * 1000 */
 
@@ -111,6 +124,7 @@ void rnd_dpf_update(const rnd_data_t *d);
 void rnd_set_create(void);
 void rnd_diag_create(void);
 void rnd_diag_open(void);
+lv_obj_t *rnd_diag_screen(void);
 void rnd_diag_update(const rnd_data_t *d);
 void rnd_set_open(void);
 void rnd_pages_open(void);              /* SETTINGS -> PAGES */
