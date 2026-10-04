@@ -224,6 +224,7 @@ static const char *cap_text(int i)
 #define BODY_H   96
 #define BODY_B   5
 #define FILL_W   (BODY_W - 2 * BODY_B)
+#define COL_W    (RND_W * 110 / 480)   /* the three readings' columns */
 
 static void build_notstock(void)
 {
@@ -261,12 +262,12 @@ static void build_notstock(void)
     meas_lbl = rnd_label(dpf, &rnd_18, C_GREY, 290);
 
     for (int i = 0; i < V_COUNT; i++) {
-        lv_coord_t x = CX - 165 + i * 110;
-        v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, 322);
-        lv_obj_set_width(v_lbl[i], 110);
+        lv_coord_t x = CX - COL_W * 3 / 2 + i * COL_W;
+        v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, CX + 82);
+        lv_obj_set_width(v_lbl[i], COL_W);
         lv_obj_set_x(v_lbl[i], x);
-        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, 356);
-        lv_obj_set_width(c, 130);         /* wider than the column: CS */
+        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, CX + 116);
+        lv_obj_set_width(c, COL_W + 20);  /* wider than the column: CS */
         lv_obj_set_x(c, x - 10);
         lv_label_set_text(c, cap_text(i));
     }
@@ -377,12 +378,12 @@ static void build_futuro(void)
     lv_obj_set_style_text_letter_space(meas_lbl, 2, 0);
 
     for (int i = 0; i < V_COUNT; i++) {
-        lv_coord_t x = CX - 165 + i * 110;
-        v_lbl[i] = rnd_label(dpf, &rnd_26, C_ICE, 304);
-        lv_obj_set_width(v_lbl[i], 110);
+        lv_coord_t x = CX - COL_W * 3 / 2 + i * COL_W;
+        v_lbl[i] = rnd_label(dpf, &rnd_26, C_ICE, CX + 64);
+        lv_obj_set_width(v_lbl[i], COL_W);
         lv_obj_set_x(v_lbl[i], x);
-        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 338);
-        lv_obj_set_width(c, 130);
+        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_TEAL_DIM, CX + 98);
+        lv_obj_set_width(c, COL_W + 20);
         lv_obj_set_x(c, x - 10);
         lv_label_set_text(c, cap_text(i));
     }

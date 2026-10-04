@@ -1,15 +1,24 @@
-/* NOT STOCK round gauge on the Waveshare ESP32-S3-Touch-LCD-2.1, OBD-II.
+/* NOT STOCK round gauge, OBD-II. Built here for the Waveshare
+ * ESP32-S3-Touch-LCD-2.1, and by ../notstock-round-amoled for the
+ * ESP32-S3-Touch-AMOLED-1.75 (hw.c is the board's own there).
  *
  * Build: idf.py set-target esp32s3 && idf.py build flash monitor
- * Flash and monitor over the board's "UART" USB-C. CAN is on GPIO19/20, the
- * native USB's pins (12-pin D-/D+), so the "USB" USB-C is out of use.
+ * 2.1": flash and monitor over the board's "UART" USB-C. CAN is on
+ * GPIO19/20, the native USB's pins (12-pin D-/D+), so the "USB" USB-C is
+ * out of use. AMOLED: its one USB-C; CAN on the header, GPIO17/18.
  *
  * Here: the platform side of ui_round.h (settings in NVS, backlight, buzzer,
  * trouble codes) and the loop that feeds the UI 30 times a second.
  */
 #include <string.h>
 
+/* the board: the 2.1" LCD here, the 1.75" AMOLED from its own project
+ * (../notstock-round-amoled, which defines BOARD_AMOLED) */
+#ifdef BOARD_AMOLED
+#include "board_amoled.h"
+#else
 #include "board_round.h"
+#endif
 #include "can_obd.h"
 #include "hw.h"
 #include "ui_round.h"

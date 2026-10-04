@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="700" viewBox="0 0 1240 700" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect width="1240" height="700" fill="#ffffff"/>
+  <text x="30" y="44" font-size="26" font-weight="bold" fill="#111">NOT STOCK round gauge (AMOLED 1.75"): CAN transceiver and power</text>
+  <text x="30" y="72" font-size="15" fill="#555">Waveshare ESP32-S3-Touch-AMOLED-1.75, 8-pin header H2  |  SN65HVD230 CAN board at the display  |  power box towards the OBD plug</text>
+
+  <!-- ===== 8-pin header ===== -->
+  <rect x="40" y="110" width="270" height="400" rx="10" fill="#e8f0fb" stroke="#2b5fa8" stroke-width="2"/>
+  <text x="175" y="138" font-size="17" font-weight="bold" text-anchor="middle" fill="#1d3f70">Display, 8-pin header</text>
+  <text x="175" y="158" font-size="12" text-anchor="middle" fill="#1d3f70">2.54 mm, pin 1 = VBUS</text>
+  <g font-size="15" fill="#111">
+    <text x="60" y="195" font-weight="bold" fill="#c0392b">1  VBUS (5V)</text>
+    <text x="60" y="235" font-weight="bold">2  GND</text>
+    <text x="60" y="275" font-weight="bold" fill="#c0392b">3  3V3</text>
+    <text x="60" y="315" fill="#999">4  RXD (GPIO44)</text>
+    <text x="60" y="355" fill="#999">5  TXD (GPIO43)</text>
+    <text x="60" y="395" font-weight="bold" fill="#1e7e34">6  GPIO17</text>
+    <text x="60" y="435" font-weight="bold" fill="#1e7e34">7  GPIO18</text>
+    <text x="60" y="475" fill="#999">8  GPIO16</text>
+  </g>
+  <g fill="#2b5fa8">
+    <circle cx="300" cy="190" r="6"/><circle cx="300" cy="230" r="6"/><circle cx="300" cy="270" r="6"/>
+    <circle cx="300" cy="390" r="6"/><circle cx="300" cy="430" r="6"/>
+  </g>
+  <g fill="#bbb">
+    <circle cx="300" cy="310" r="5"/><circle cx="300" cy="350" r="5"/><circle cx="300" cy="470" r="5"/>
+  </g>
+  <text x="175" y="500" font-size="12" text-anchor="middle" fill="#888">grey: not connected</text>
+
+  <!-- ===== SN65HVD230 board ===== -->
+  <rect x="520" y="240" width="220" height="250" rx="10" fill="#e9f6ec" stroke="#1e7e34" stroke-width="2"/>
+  <text x="630" y="268" font-size="17" font-weight="bold" text-anchor="middle" fill="#14532d">SN65HVD230</text>
+  <text x="630" y="288" font-size="12" text-anchor="middle" fill="#14532d">CAN board, 3.3 V, at the display</text>
+  <g font-size="15" fill="#111">
+    <text x="540" y="325">3V3</text>
+    <text x="540" y="365">GND</text>
+    <text x="540" y="405">CTX</text>
+    <text x="540" y="445">CRX</text>
+    <text x="720" y="385" text-anchor="end">CANH</text>
+    <text x="720" y="425" text-anchor="end">CANL</text>
+  </g>
+  <g fill="#1e7e34">
+    <circle cx="526" cy="320" r="6"/><circle cx="526" cy="360" r="6"/>
+    <circle cx="526" cy="400" r="6"/><circle cx="526" cy="440" r="6"/>
+    <circle cx="734" cy="380" r="6"/><circle cx="734" cy="420" r="6"/>
+  </g>
+  <text x="630" y="476" font-size="11" text-anchor="middle" fill="#14532d">120 R on board (R2): keep</text>
+
+  <!-- wires display -> transceiver -->
+  <g fill="none" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M300 270 H440 V320 H526" stroke="#c0392b"/>
+    <path d="M300 230 H460 V360 H526" stroke="#111"/>
+    <path d="M300 390 H400 V400 H526" stroke="#1e7e34"/>
+    <path d="M300 430 H400 V440 H526" stroke="#27ae60" stroke-dasharray="10 5"/>
+  </g>
+  <g font-size="12" fill="#333">
+    <text x="380" y="262" fill="#c0392b">3V3</text>
+    <text x="468" y="350">GND</text>
+    <text x="410" y="392" fill="#1e7e34">GPIO17 -&gt; CTX</text>
+    <text x="410" y="458" fill="#1e7e34">GPIO18 &lt;- CRX</text>
+  </g>
+
+  <!-- power box -->
+  <rect x="930" y="170" width="270" height="330" rx="10" fill="#fdf2e6" stroke="#b9770e" stroke-width="2"/>
+  <text x="1065" y="198" font-size="17" font-weight="bold" text-anchor="middle" fill="#7e5109">Power box</text>
+  <text x="1065" y="218" font-size="12" text-anchor="middle" fill="#7e5109">fuse, TVS, 12 V -&gt; 5 V,</text>
+  <text x="1065" y="236" font-size="12" text-anchor="middle" fill="#7e5109">CAN straight through</text>
+  <g font-size="15" fill="#111">
+    <text x="950" y="286">+5 V</text>
+    <text x="950" y="325">GND</text>
+    <text x="950" y="385">CAN-H</text>
+    <text x="950" y="425">CAN-L</text>
+  </g>
+  <g fill="#b9770e">
+    <circle cx="936" cy="280" r="6"/><circle cx="936" cy="320" r="6"/>
+    <circle cx="936" cy="380" r="6"/><circle cx="936" cy="420" r="6"/>
+  </g>
+  <g font-size="13" fill="#7e5109">
+    <text x="1065" y="455" text-anchor="middle">from the OBD plug:</text>
+    <text x="1065" y="473" text-anchor="middle">16 +12 V, 4/5 GND, 6 CAN-H, 14 CAN-L</text>
+  </g>
+
+  <!-- 5V and GND from box to header pins 1 / 2 (top route) -->
+  <g fill="none" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M936 280 H860 V130 H340 V190 H300" stroke="#c0392b"/>
+    <path d="M936 320 H880 V110 H325 V230 H300" stroke="#111"/>
+    <path d="M734 380 H936" stroke="#e67e22"/>
+    <path d="M734 420 H936" stroke="#8e44ad"/>
+  </g>
+  <g stroke="#555" stroke-width="1.5">
+    <line x1="800" y1="372" x2="812" y2="428"/><line x1="830" y1="372" x2="842" y2="428"/><line x1="860" y1="372" x2="872" y2="428"/>
+  </g>
+  <g font-size="12" fill="#333">
+    <text x="600" y="124" fill="#c0392b">+5 V -&gt; VBUS (pin 1)</text>
+    <text x="600" y="104">GND -&gt; GND (pin 2)</text>
+    <text x="830" y="455" text-anchor="middle">CAN-H / CAN-L twisted pair</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="14" fill="#222">
+    <text x="40" y="560" font-weight="bold">Notes</text>
+    <text x="40" y="584">- Speaker: 8 ohm, 1-2 W, on the board's 2-pin MX1.25 speaker socket. The regeneration beeps go there.</text>
+    <text x="40" y="606">- Flash and monitor over the USB-C, with the power box unplugged (VBUS is the USB 5 V rail: never two 5 V sources at once).</text>
+    <text x="40" y="628">- Never put 5 V on 3V3 (pin 3): it is an output of the board's power chip. All GPIOs are 3.3 V only.</text>
+    <text x="40" y="650">- Firmware: PIN_TWAI_TX 17, PIN_TWAI_RX 18 in main/board_amoled.h. Pin order per Waveshare's H2 table; check the silkscreen.</text>
+  </g>
+</svg>

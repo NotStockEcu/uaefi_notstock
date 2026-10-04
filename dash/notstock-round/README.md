@@ -7,9 +7,10 @@ Double tap: night (backlight down), double tap again: day. Data comes over CAN t
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
 
 Target board: **Waveshare ESP32-S3-Touch-LCD-2.1** (480 x 480, ST7701 on
-RGB like the 7" dash, CST820 touch). The UI is laid out from the centre and
-also builds for a 1.32" AMOLED at 466 x 466 (`-DRND_SIZE=466`, sim
-`make SIZE=466`).
+RGB like the 7" dash, CST820 touch). The same sources also build for the
+**Waveshare ESP32-S3-Touch-AMOLED-1.75** (466 x 466, CO5300 on QSPI,
+speaker instead of a buzzer): see [`../notstock-round-amoled`](../notstock-round-amoled),
+which takes everything from here but `main/hw.c` (sim: `make SIZE=466`).
 
 **State: first firmware for the board, not tried on it yet.** The UI is
 real LVGL 8.4 code that also runs in the PC simulator; `main/hw.c` and
@@ -22,7 +23,8 @@ real LVGL 8.4 code that also runs in the PC simulator; `main/hw.c` and
 
 ![icons](preview/icons.png)
 
-- **Pre-rendered faces** (`tools/gen_faces.py` -> `main/faces.c`): radial
+- **Pre-rendered faces** (`tools/gen_faces.py` -> `main/faces480/faces.c`,
+  and `main/faces466` for the AMOLED): radial
   background, bezel line, the groove the value arc runs in, ticks, scale
   numbers, the page's icon. The title and unit are drawn live, since they
   follow the language. The red zone above the warn limit is
@@ -284,7 +286,8 @@ time, so for now unplug it when parked.
     LVGL_DIR=/path/to/lvgl-8.4 python tools/preview.py screen=limits limit=2
 
 Writes `preview/*.png`. After changing pages or artwork:
-`python tools/gen_faces.py` (add `--size 466` for the AMOLED). Fonts:
+`python tools/gen_faces.py` and `python tools/gen_faces.py --size 466`
+(the AMOLED's). Fonts:
 `sh tools/gen_fonts.sh` (Orbitron and Barlow Condensed, SIL OFL,
 `assets/fonts`; needs lv_font_conv and fontTools). Czech in the sim:
 `lang=1`.
