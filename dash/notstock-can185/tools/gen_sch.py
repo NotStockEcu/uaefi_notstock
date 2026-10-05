@@ -78,8 +78,8 @@ def pins_of(lib_id):
 BLOCKS = [
     ("Input: fuse, reverse polarity, load dump", 30, 50,
      ["J1", "F1", "D1", "D2", "C1", "C2"]),
-    ("12 V -> 3.75 V for the display's battery input, on with the key (OBD 1, terminal 15)", 30, 140,
-     ["U1", "R1", "R9", "C9", "C3", "D3", "L1", "R2", "R3", "C4", "C5"]),
+    ("12 V -> 3.75 V for the display's battery input", 30, 140,
+     ["U1", "R1", "C3", "D3", "L1", "R2", "R3", "C4", "C5"]),
     ("CAN transceiver, ESD, termination (JP1 open: the car's bus is "
      "terminated already)", 230, 50,
      ["U2", "C6", "C7", "D4", "R4", "R5", "C8", "JP1"]),
@@ -182,7 +182,7 @@ def main():
     out = ['(kicad_sch (version 20230121) (generator eeschema)\n\n'
            '  (uuid "%s")\n\n  (paper "A3")\n\n' % ROOT_UUID,
            '  (title_block\n    (title "NOT STOCK CAN 1.85")\n'
-           '    (rev "5")\n    (comment 1 "12 V -> 3.75 V, CAN (SN65HVD230) for '
+           '    (rev "6")\n    (comment 1 "12 V -> 3.75 V, CAN (SN65HVD230) for '
            'the round gauge")\n  )\n\n  (lib_symbols\n']
     for lib_id in sorted(used):
         out.append("    " + embedded(lib_id).replace("\n", "\n    ") + "\n")

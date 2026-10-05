@@ -40,13 +40,15 @@ R0805 = "Resistor_SMD:R_0805_2012Metric"
 C0603 = "Capacitor_SMD:C_0603_1608Metric"
 C1206 = "Capacitor_SMD:C_1206_3216Metric"
 
-# car side: 12 V, GND, CAN-H, CAN-L, ignition (OBD 1). SMD, vertical: the cable
-# plugs in straight from behind. Mating housing JST PHR-5 with
+# car side: 12 V, GND, CAN-H, CAN-L. The 12 V is OBD pin 1, terminal 15 on
+# VW (+12 V switched by the key, as the CANcheck display takes it): the
+# board is on with the key and off without it. SMD, vertical: the cable
+# plugs in straight from behind. Mating housing JST PHR-4 with
 # SPH-002T-P0.5S crimps.
-part("J1", "Connector_Generic:Conn_01x05", "OBD 12V GND H L 15",
-     "Connector_JST:JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical",
-     {"1": "VBAT", "2": "GND", "3": "CANH", "4": "CANL", "5": "IGN"},
-     (3.0, -15.5, 0), mpn="JST B5B-PH-SM4-TB(LF)(SN)", lcsc="C265085")
+part("J1", "Connector_Generic:Conn_01x04", "OBD 12V GND H L",
+     "Connector_JST:JST_PH_B4B-PH-SM4-TB_1x04-1MP_P2.00mm_Vertical",
+     {"1": "VBAT", "2": "GND", "3": "CANH", "4": "CANL"},
+     (2.0, -15.5, 0), mpn="JST B4B-PH-SM4-TB(LF)(SN)", lcsc="C160354")
 
 # input: resettable fuse, reverse polarity diode, TVS against load dump
 part("F1", "Device:Polyfuse", "0.5A 30V", "Fuse:Fuse_1812_4532Metric",
@@ -67,15 +69,8 @@ part("U1", "Regulator_Switching:LMR16006YQ", "LMR16006YDDCR",
      "Package_TO_SOT_SMD:SOT-23-6",
      {"1": "CB", "2": "GND", "3": "FB", "4": "EN", "5": "VIN", "6": "SW"},
      (-10.0, 1.5, 180), mpn="TI LMR16006YDDCR", lcsc="C290195")
-# ignition: OBD pin 1, terminal 15 on VW (switched +12 V, as the CANcheck
-# display uses it). 100 k / 13 k onto EN (1.21 V rising, 1.07 V falling):
-# on above 10.5 V, off below 9.3 V. 100 nF against spikes.
-part("R1", "Device:R", "100k", R0603, {"1": "IGN", "2": "EN"},
+part("R1", "Device:R", "100k", R0603, {"1": "VIN", "2": "EN"},
      (-13.9, -0.9, 0), mpn="UNI-ROYAL 0603WAF1003T5E (100 k 1%)", lcsc="C25803")
-part("R9", "Device:R", "13k", R0603, {"1": "EN", "2": "GND"},
-     (-4.0, -5.0, 90), mpn="UNI-ROYAL 0603WAF1302T5E (13 k 1%)", lcsc="C22797")
-part("C9", "Device:C", "100n", C0603, {"1": "EN", "2": "GND"},
-     (-2.4, -5.0, 90), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
 part("C3", "Device:C", "100n", C0603, {"1": "CB", "2": "SW"},
      (-10.0, 4.2, 180), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
 part("D3", "Device:D_Schottky", "PMEG6010CEH", "Diode_SMD:D_SOD-123F",

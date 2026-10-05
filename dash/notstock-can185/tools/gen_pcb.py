@@ -247,8 +247,8 @@ def build():
     silk(board, "NOT STOCK", 3.5, 6.5, 1.4, bold=True)
     silk(board, "CAN 1.85", 3.5, 8.6, 1.0)
     jx, jy = P["J1"]["at"][:2]
-    for i, t in enumerate(("12V", "GND", "CH", "CL", "15")):
-        silk(board, t, jx - 4 + 2 * i, jy + 5.8, 0.8, rot=90)
+    for i, t in enumerate(("12V", "GND", "CH", "CL")):
+        silk(board, t, jx - 3 + 2 * i, jy + 5.8, 0.8, rot=90)
     silk(board, "TERM", P["JP1"]["at"][0] + 2.6, P["JP1"]["at"][1], 0.8, rot=90)
     # wire pads: the display's names under each (pad 1 is the origin)
     x, y = P["J2"]["at"][:2]
@@ -259,7 +259,7 @@ def build():
     silk(board, "3V75 > LCD BAT", x + 2.1, y - 2.6, 0.8)
     silk(board, "+", x, y + 2.0, 1.0)
     silk(board, "-", x + 4.2, y + 2.0, 1.0)
-    silk(board, "rev 5", -3.5, -8.4, 0.8)
+    silk(board, "rev 6", -3.0, -6.6, 0.8)
     for fp in board.GetFootprints():
         for g in list(fp.GraphicalItems()):
             if g.GetLayer() != pcbnew.F_SilkS or g.GetClass() == "FP_TEXT":
