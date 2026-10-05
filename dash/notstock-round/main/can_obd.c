@@ -6,10 +6,12 @@
  * for what has not been read, which the gauge shows as "--".
  */
 #include "can_obd.h"
-/* the board: the 2.1" LCD here, the 1.75" AMOLED from its own project
- * (../notstock-round-amoled, which defines BOARD_AMOLED) */
-#ifdef BOARD_AMOLED
+/* the board: the 2.1" LCD here, the others from their own projects
+ * (../notstock-round-amoled, ../notstock-round-lcd185) */
+#if defined(BOARD_AMOLED)
 #include "board_amoled.h"
+#elif defined(BOARD_LCD185)
+#include "board_lcd185.h"
 #else
 #include "board_round.h"
 #endif

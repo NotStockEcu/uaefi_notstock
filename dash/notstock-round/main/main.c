@@ -1,6 +1,7 @@
 /* NOT STOCK round gauge, OBD-II. Built here for the Waveshare
  * ESP32-S3-Touch-LCD-2.1, and by ../notstock-round-amoled for the
- * ESP32-S3-Touch-AMOLED-1.75 (hw.c is the board's own there).
+ * ESP32-S3-Touch-AMOLED-1.75 and by ../notstock-round-lcd185 for the
+ * ESP32-S3-Touch-LCD-1.85 (hw.c is the board's own there).
  *
  * Build: idf.py set-target esp32s3 && idf.py build flash monitor
  * 2.1": flash and monitor over the board's "UART" USB-C. CAN is on
@@ -12,10 +13,12 @@
  */
 #include <string.h>
 
-/* the board: the 2.1" LCD here, the 1.75" AMOLED from its own project
- * (../notstock-round-amoled, which defines BOARD_AMOLED) */
-#ifdef BOARD_AMOLED
+/* the board: the 2.1" LCD here, the others from their own projects
+ * (../notstock-round-amoled, ../notstock-round-lcd185) */
+#if defined(BOARD_AMOLED)
 #include "board_amoled.h"
+#elif defined(BOARD_LCD185)
+#include "board_lcd185.h"
 #else
 #include "board_round.h"
 #endif

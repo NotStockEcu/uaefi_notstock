@@ -10,7 +10,10 @@ Target board: **Waveshare ESP32-S3-Touch-LCD-2.1** (480 x 480, ST7701 on
 RGB like the 7" dash, CST820 touch). The same sources also build for the
 **Waveshare ESP32-S3-Touch-AMOLED-1.75** (466 x 466, CO5300 on QSPI,
 speaker instead of a buzzer): see [`../notstock-round-amoled`](../notstock-round-amoled),
-which takes everything from here but `main/hw.c` (sim: `make SIZE=466`).
+which takes everything from here but `main/hw.c` (sim: `make SIZE=466`),
+and the **Waveshare ESP32-S3-Touch-LCD-1.85** (360 x 360, the 480 frame
+scaled down): [`../notstock-round-lcd185`](../notstock-round-lcd185), with
+its power and CAN board [`../notstock-can185`](../notstock-can185).
 
 **State: first firmware for the board, not tried on it yet.** The UI is
 real LVGL 8.4 code that also runs in the PC simulator; `main/hw.c` and

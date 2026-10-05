@@ -30,16 +30,18 @@ reads once: after adding a source file there, `idf.py reconfigure`.
 
 ![wiring](docs/wiring.png)
 
-8-pin header (H2): 1 VBUS, 2 GND, 3 3V3, 4 GPIO44, 5 GPIO43, 6 GPIO17,
-7 GPIO18, 8 GPIO16.
+8-pin header (H2), in the order of its silkscreen: VBUS, GND, 3V3, TXD
+(GPIO43), RXD (GPIO44), IO16, IO17, IO18. (Waveshare's hardware reference
+numbers pins 4..8 differently from their own schematic and silkscreen; the
+silkscreen labels are what counts.)
 
-| Header | To |
+| Header (silkscreen) | To |
 | --- | --- |
-| 1 VBUS | power box +5 V |
-| 2 GND | power box GND, SN65HVD230 GND |
-| 3 3V3 | SN65HVD230 3V3 |
-| 6 GPIO17 | SN65HVD230 CTX (TWAI TX) |
-| 7 GPIO18 | SN65HVD230 CRX (TWAI RX) |
+| VBUS | power box +5 V |
+| GND | power box GND, SN65HVD230 GND |
+| 3V3 | SN65HVD230 3V3 |
+| IO17 | SN65HVD230 CTX (TWAI TX) |
+| IO18 | SN65HVD230 CRX (TWAI RX) |
 
 VBUS is the USB 5 V rail: flash with the power box unplugged. 3V3 is an
 output, never feed it.

@@ -10,9 +10,9 @@
  *   ES8311 0x18
  *   I2S to the ES8311: MCLK 42, BCLK 9, WS 45, DOUT 8; amplifier enable 46
  *
- * CAN: the SN65HVD230 board on the 8-pin header, GPIO17 (pin 6) to its CTX
- * and GPIO18 (pin 7) to its CRX; 3V3 (pin 3) and GND (pin 2) feed it, VBUS
- * (pin 1) takes the 5 V supply. The USB-C stays the console and flashing
+ * CAN: the SN65HVD230 board on the 8-pin header, IO17 to its CTX and IO18
+ * to its CRX (silkscreen labels); 3V3 and GND feed it, VBUS takes the 5 V
+ * supply. The USB-C stays the console and flashing
  * port. No backlight: brightness is a panel command.
  */
 #pragma once
@@ -46,8 +46,8 @@
 #define PIN_I2S_DOUT 8
 #define PIN_PA       46
 
-#define PIN_TWAI_TX 17      /* header pin 6 */
-#define PIN_TWAI_RX 18      /* header pin 7 */
+#define PIN_TWAI_TX 17      /* header IO17 */
+#define PIN_TWAI_RX 18      /* header IO18 */
 
 /* touch to screen: Waveshare's BSP mirrors both; flip these if a tap lands
  * mirrored */

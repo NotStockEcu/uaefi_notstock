@@ -6,23 +6,23 @@
   <!-- ===== 8-pin header ===== -->
   <rect x="40" y="110" width="270" height="400" rx="10" fill="#e8f0fb" stroke="#2b5fa8" stroke-width="2"/>
   <text x="175" y="138" font-size="17" font-weight="bold" text-anchor="middle" fill="#1d3f70">Display, 8-pin header</text>
-  <text x="175" y="158" font-size="12" text-anchor="middle" fill="#1d3f70">2.54 mm, pin 1 = VBUS</text>
+  <text x="175" y="158" font-size="12" text-anchor="middle" fill="#1d3f70">2.54 mm, labels as on the silkscreen</text>
   <g font-size="15" fill="#111">
     <text x="60" y="195" font-weight="bold" fill="#c0392b">1  VBUS (5V)</text>
     <text x="60" y="235" font-weight="bold">2  GND</text>
     <text x="60" y="275" font-weight="bold" fill="#c0392b">3  3V3</text>
-    <text x="60" y="315" fill="#999">4  RXD (GPIO44)</text>
-    <text x="60" y="355" fill="#999">5  TXD (GPIO43)</text>
-    <text x="60" y="395" font-weight="bold" fill="#1e7e34">6  GPIO17</text>
-    <text x="60" y="435" font-weight="bold" fill="#1e7e34">7  GPIO18</text>
-    <text x="60" y="475" fill="#999">8  GPIO16</text>
+    <text x="60" y="315" fill="#999">4  TXD (GPIO43)</text>
+    <text x="60" y="355" fill="#999">5  RXD (GPIO44)</text>
+    <text x="60" y="395" fill="#999">6  IO16</text>
+    <text x="60" y="435" font-weight="bold" fill="#1e7e34">7  IO17</text>
+    <text x="60" y="475" font-weight="bold" fill="#1e7e34">8  IO18</text>
   </g>
   <g fill="#2b5fa8">
     <circle cx="300" cy="190" r="6"/><circle cx="300" cy="230" r="6"/><circle cx="300" cy="270" r="6"/>
-    <circle cx="300" cy="390" r="6"/><circle cx="300" cy="430" r="6"/>
+    <circle cx="300" cy="430" r="6"/><circle cx="300" cy="470" r="6"/>
   </g>
   <g fill="#bbb">
-    <circle cx="300" cy="310" r="5"/><circle cx="300" cy="350" r="5"/><circle cx="300" cy="470" r="5"/>
+    <circle cx="300" cy="310" r="5"/><circle cx="300" cy="350" r="5"/><circle cx="300" cy="390" r="5"/>
   </g>
   <text x="175" y="500" font-size="12" text-anchor="middle" fill="#888">grey: not connected</text>
 
@@ -49,14 +49,14 @@
   <g fill="none" stroke-width="3.5" stroke-linejoin="round">
     <path d="M300 270 H440 V320 H526" stroke="#c0392b"/>
     <path d="M300 230 H460 V360 H526" stroke="#111"/>
-    <path d="M300 390 H400 V400 H526" stroke="#1e7e34"/>
-    <path d="M300 430 H400 V440 H526" stroke="#27ae60" stroke-dasharray="10 5"/>
+    <path d="M300 430 H380 V400 H526" stroke="#1e7e34"/>
+    <path d="M300 470 H400 V440 H526" stroke="#27ae60" stroke-dasharray="10 5"/>
   </g>
   <g font-size="12" fill="#333">
     <text x="380" y="262" fill="#c0392b">3V3</text>
     <text x="468" y="350">GND</text>
-    <text x="410" y="392" fill="#1e7e34">GPIO17 -&gt; CTX</text>
-    <text x="410" y="458" fill="#1e7e34">GPIO18 &lt;- CRX</text>
+    <text x="390" y="392" fill="#1e7e34">GPIO17 -&gt; CTX</text>
+    <text x="410" y="490" fill="#1e7e34">GPIO18 &lt;- CRX</text>
   </g>
 
   <!-- power box -->
@@ -101,6 +101,6 @@
     <text x="40" y="584">- Speaker: 8 ohm, 1-2 W, on the board's 2-pin MX1.25 speaker socket. The regeneration beeps go there.</text>
     <text x="40" y="606">- Flash and monitor over the USB-C, with the power box unplugged (VBUS is the USB 5 V rail: never two 5 V sources at once).</text>
     <text x="40" y="628">- Never put 5 V on 3V3 (pin 3): it is an output of the board's power chip. All GPIOs are 3.3 V only.</text>
-    <text x="40" y="650">- Firmware: PIN_TWAI_TX 17, PIN_TWAI_RX 18 in main/board_amoled.h. Pin order per Waveshare's H2 table; check the silkscreen.</text>
+    <text x="40" y="650">- Firmware: PIN_TWAI_TX 17, PIN_TWAI_RX 18 in main/board_amoled.h. Order from Waveshare's schematic and silkscreen.</text>
   </g>
 </svg>
