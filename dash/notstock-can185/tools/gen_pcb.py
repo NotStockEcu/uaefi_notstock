@@ -247,7 +247,7 @@ def build():
     silk(board, "NOT STOCK", 3.5, 6.5, 1.4, bold=True)
     silk(board, "CAN 1.85", 3.5, 8.6, 1.0)
     jx, jy = P["J1"]["at"][:2]
-    for i, t in enumerate(("12V", "GND", "CH", "CL", "K")):
+    for i, t in enumerate(("12V", "GND", "CH", "CL", "15")):
         silk(board, t, jx - 4 + 2 * i, jy + 5.8, 0.8, rot=90)
     silk(board, "TERM", P["JP1"]["at"][0] + 2.6, P["JP1"]["at"][1], 0.8, rot=90)
     # wire pads: the display's names under each (pad 1 is the origin)

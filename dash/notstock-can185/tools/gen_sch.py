@@ -78,7 +78,7 @@ def pins_of(lib_id):
 BLOCKS = [
     ("Input: fuse, reverse polarity, load dump", 30, 50,
      ["J1", "F1", "D1", "D2", "C1", "C2"]),
-    ("12 V -> 3.75 V for the display's battery input, on with the key (K-line)", 30, 140,
+    ("12 V -> 3.75 V for the display's battery input, on with the key (OBD 1, terminal 15)", 30, 140,
      ["U1", "R1", "R9", "C9", "C3", "D3", "L1", "R2", "R3", "C4", "C5"]),
     ("CAN transceiver, ESD, termination (JP1 open: the car's bus is "
      "terminated already)", 230, 50,

@@ -15,7 +15,7 @@ PDF: [docs/schematic.pdf](docs/schematic.pdf). Placement:
 **State: rev 5, designed, DRC clean (0 errors, 0 unconnected), ready to
 order with assembly; not built yet.** Rev 4 feeds the display through its
 battery socket instead of its USB-C (no room for a USB cable). Rev 5
-switches on and off with the key, through the K-line.
+switches on and off with the key, through OBD pin 1 (terminal 15).
 
 ## How it connects
 
@@ -28,50 +28,28 @@ The display has no plug-on header. What it has, and what this board uses
 | UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | the 4-wire cable that comes with the display, free ends cut to length | J2 pads, marked with the display's names: IO44, IO43, 3V3, GND (CAN, and the display's 3.3 V for the transceiver) |
 | three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
 
-The car: J1, JST PH 5-pin, vertical (12V, GND, CAN-H, CAN-L, K, marked on
-the board).
+The car: J1, JST PH 5-pin, vertical (12V, GND, CAN-H, CAN-L, 15, marked
+on the board).
 
-## On and off with the key: the K-line
+## On and off with the key: OBD pin 1
 
-OBD pin 16 is permanent +12 V. The K-line (OBD pin 7) sits at battery
-voltage with the key on and drops when the car goes to sleep, so it is the
-ignition signal here: R1 100 k / R9 13 k bring it onto the regulator's EN
-(1.21 V rising, 1.07 V falling), so the 3.75 V comes on above 10.5 V on the
-K-line and goes off below 9.3 V; C9 keeps K-line traffic from a tester off
-EN. With the key out the board draws microamps (the regulator in
-shutdown). The board only listens on the K-line: 113 k to ground, about
-0.1 mA while it is up, nothing is sent.
+OBD pin 16 is permanent +12 V. Pin 1 is free for the maker; VW puts
+terminal 15 there (+12 V switched by the key; the CANcheck display takes
+its power from it). Here it only switches: R1 100 k / R9 13 k bring it onto
+the regulator's EN (1.21 V rising, 1.07 V falling), so the 3.75 V comes on
+above 10.5 V on pin 1 and goes off below 9.3 V; C9 against spikes. The
+power itself still comes from pin 16. With the key out the board draws
+microamps (the regulator in shutdown); pin 1 sees 113 k, about 0.1 mA.
 
-Check on the car first: pin 7 against pin 4 or 5 with the key on (near the
-battery voltage) and with the car locked for a while (well below 9 V). A
-meter on volts draws next to nothing and cannot hurt the K-line.
-
-GPIO44 is CAN TX, GPIO43 CAN RX: `../notstock-round-lcd185` is set up for
-it. The boot ROM prints on GPIO43 for a moment after every reset; R6 (1 k)
-keeps that from fighting the transceiver's RXD. Flashing: through the
-display's USB-C, with the battery wires unplugged from the display (its
-charger would otherwise push 4.2 V back into this board).
-
-### The display's power button must be bridged
-
-Behind the display's battery socket sits a switch (Q1, AO3401) that only
-the power button Key1 turns on; the ESP32 then holds it on (GPIO7). On the
-battery input alone the display never starts by itself, at any voltage.
-Bridge Key1's two pads with solder or a short wire: the switch is then on
-whenever the board gets power. The firmware does not use the button
-(GPIO6) or GPIO7; the button just no longer turns the display off. Check
-before bridging which two of the button's pads are the switch (a meter
-across them shows a short only while pressed).
-
-Why 3.75 V: a Li-ion cell's middle; the display's 3.3 V regulator (ME6217)
-keeps its margin, its speaker amplifier runs from it.
+Check on the car: pin 1 against pin 4 or 5, battery voltage with the key
+on, 0 V with it off.
 
 ## What is on it
 
 | Block | Parts |
 | --- | --- |
 | Input | J1 JST PH 5-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
-| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V; EN from the K-line (R1, R9, C9) |
+| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V; EN from OBD pin 1 (R1, R9, C9) |
 | 3.75 V out | J3, two solder pads for the wires to the display's battery socket |
 | CAN | U2 SN65HVD230 (3.3 V from the display's UART socket, Rs to GND: full speed); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
@@ -82,8 +60,8 @@ stays open. Bridge it only on a bench with no other terminator.
 ## Cable to the car
 
 JST PHR-5 housing with SPH-002T-P0.5S crimps on the board side; at the OBD
-plug: pin 16 +12 V, pin 4 or 5 GND, pin 6 CAN-H, pin 14 CAN-L, pin 7
-K-line. CAN-H and
+plug: pin 16 +12 V, pin 4 or 5 GND, pin 6 CAN-H, pin 14 CAN-L, pin 1
+terminal 15. CAN-H and
 CAN-L twisted.
 
 ## Check before ordering
