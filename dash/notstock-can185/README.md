@@ -2,7 +2,7 @@
 
 A round board that sits behind the **Waveshare ESP32-S3-Touch-LCD-1.85**
 (SKU 28514) on its three M2 holes and turns the car's OBD supply and CAN
-into what the round gauge needs. One 4-wire cable from the OBD plug; to
+into what the round gauge needs. One 5-wire cable from the OBD plug; to
 the display the 4-wire cable that comes with it (CAN) and two wires
 (power), all soldered to pads on this board.
 
@@ -12,9 +12,10 @@ KiCad 7 project: `notstock-can185.kicad_pro` (schematic, PCB). Schematic as
 PDF: [docs/schematic.pdf](docs/schematic.pdf). Placement:
 [docs/assembly.png](docs/assembly.png).
 
-**State: rev 4, designed, DRC clean (0 errors, 0 unconnected), ready to
+**State: rev 5, designed, DRC clean (0 errors, 0 unconnected), ready to
 order with assembly; not built yet.** Rev 4 feeds the display through its
-battery socket instead of its USB-C (no room for a USB cable).
+battery socket instead of its USB-C (no room for a USB cable). Rev 5
+switches on and off with the key, through the K-line.
 
 ## How it connects
 
@@ -27,7 +28,23 @@ The display has no plug-on header. What it has, and what this board uses
 | UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | the 4-wire cable that comes with the display, free ends cut to length | J2 pads, marked with the display's names: IO44, IO43, 3V3, GND (CAN, and the display's 3.3 V for the transceiver) |
 | three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
 
-The car: J1, JST PH 4-pin (12V, GND, CAN-H, CAN-L, marked on the board).
+The car: J1, JST PH 5-pin, vertical (12V, GND, CAN-H, CAN-L, K, marked on
+the board).
+
+## On and off with the key: the K-line
+
+OBD pin 16 is permanent +12 V. The K-line (OBD pin 7) sits at battery
+voltage with the key on and drops when the car goes to sleep, so it is the
+ignition signal here: R1 100 k / R9 13 k bring it onto the regulator's EN
+(1.21 V rising, 1.07 V falling), so the 3.75 V comes on above 10.5 V on the
+K-line and goes off below 9.3 V; C9 keeps K-line traffic from a tester off
+EN. With the key out the board draws microamps (the regulator in
+shutdown). The board only listens on the K-line: 113 k to ground, about
+0.1 mA while it is up, nothing is sent.
+
+Check on the car first: pin 7 against pin 4 or 5 with the key on (near the
+battery voltage) and with the car locked for a while (well below 9 V). A
+meter on volts draws next to nothing and cannot hurt the K-line.
 
 GPIO44 is CAN TX, GPIO43 CAN RX: `../notstock-round-lcd185` is set up for
 it. The boot ROM prints on GPIO43 for a moment after every reset; R6 (1 k)
@@ -53,8 +70,8 @@ keeps its margin, its speaker amplifier runs from it.
 
 | Block | Parts |
 | --- | --- |
-| Input | J1 JST PH 4-pin SMD; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
-| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
+| Input | J1 JST PH 5-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
+| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V; EN from the K-line (R1, R9, C9) |
 | 3.75 V out | J3, two solder pads for the wires to the display's battery socket |
 | CAN | U2 SN65HVD230 (3.3 V from the display's UART socket, Rs to GND: full speed); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
@@ -64,8 +81,9 @@ stays open. Bridge it only on a bench with no other terminator.
 
 ## Cable to the car
 
-JST PHR-4 housing with SPH-002T-P0.5S crimps on the board side; at the OBD
-plug: pin 16 +12 V, pin 4 or 5 GND, pin 6 CAN-H, pin 14 CAN-L. CAN-H and
+JST PHR-5 housing with SPH-002T-P0.5S crimps on the board side; at the OBD
+plug: pin 16 +12 V, pin 4 or 5 GND, pin 6 CAN-H, pin 14 CAN-L, pin 7
+K-line. CAN-H and
 CAN-L twisted.
 
 ## Check before ordering
@@ -108,11 +126,12 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | D3 | Nexperia PMEG6010CEH | C110797 |
 | F1 | SMD1812P050TF/30 (RUILON) | C12559 |
 | L1 | Sunlord SWPA4026S220MT | C88254 |
-| J1 | JST B4B-PH-SM4-TB | C160354 |
+| J1 | JST B5B-PH-SM4-TB (vertical) | C265085 |
 | C1 | 4.7 uF 50 V 1206 (Murata) | C77096 |
-| C2, C3, C6, C7 | 100 nF 50 V 0603 (YAGEO) | C14663 |
+| C2, C3, C6, C7, C9 | 100 nF 50 V 0603 (YAGEO) | C14663 |
 | C4, C5 | 22 uF 16 V 1206 (Samsung) | C90146 |
 | R1 | 100 k 0603 | C25803 |
+| R9 | 13 k 0603 | C22797 |
 | R2 | 39 k 0603 | C23153 |
 | R3 | 10 k 0603 | C25804 |
 | R6 | 1 k 0603 | C21190 |
