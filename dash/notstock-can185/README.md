@@ -95,7 +95,11 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | R2, R7, R8 | 56 k 0603 | C23206 |
 | R3 | 10 k 0603 | C25804 |
 | R6 | 1 k 0603 | C21190 |
-| R4, R5 | 60.4 R 0805 | C273897 |
+| R4, R5 | 62 R 0805 1 % (Walsin MR08X62R0FTL) | C5805111 |
+
+R4/R5: any 0805 1 % from 56 to 62 R will do (the bus wants 2 x 60 R). With
+JP1 open they do nothing; if no such part is in stock, R4, R5 and C8 can be
+left off ("Do not place" in the BOM step).
 
 JP1 is a solder bridge, not a part. Stock changes: JLCPCB marks a part out
 of stock in the BOM step; pick an equivalent there (same value, package,

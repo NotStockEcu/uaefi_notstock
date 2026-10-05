@@ -106,10 +106,10 @@ part("D4", "Power_Protection:NUP2105L", "NUP2105L", "Package_TO_SOT_SMD:SOT-23",
      {"1": "CANH", "2": "CANL", "3": "GND"}, (15.5, -3.5, 0),
      mpn="onsemi NUP2105LT1G", lcsc="C14486")
 # split termination, open by default: the car's bus is terminated already
-part("R4", "Device:R", "60R4", R0805, {"1": "CANH", "2": "TMID"},
-     (11.0, 4.5, 90), mpn="YAGEO RC0805FR-0760R4L (60.4 R 1%)", lcsc="C273897")
-part("R5", "Device:R", "60R4", R0805, {"1": "TMID", "2": "TERM"},
-     (14.0, 4.5, 90), mpn="YAGEO RC0805FR-0760R4L (60.4 R 1%)", lcsc="C273897")
+part("R4", "Device:R", "62R", R0805, {"1": "CANH", "2": "TMID"},
+     (11.0, 4.5, 90), mpn="Walsin MR08X62R0FTL (62 R 1%)", lcsc="C5805111")
+part("R5", "Device:R", "62R", R0805, {"1": "TMID", "2": "TERM"},
+     (14.0, 4.5, 90), mpn="Walsin MR08X62R0FTL (62 R 1%)", lcsc="C5805111")
 part("C8", "Device:C", "4.7n", C0603, {"1": "TMID", "2": "GND"},
      (16.8, 4.5, 90), mpn="FH 0603B472K500NT (4.7 nF 50 V X7R)", lcsc="C53987")
 part("JP1", "Jumper:SolderJumper_2_Open", "TERM",
