@@ -19,6 +19,8 @@ takes its 12 V from OBD pin 1 (terminal 15): on and off with the key.
 
 ## How it connects
 
+![wiring](docs/wiring.png)
+
 The display has no plug-on header. What it has, and what this board uses
 (Waveshare's schematic and drawing of the board, `ESP32-S3-LCD-1.85`):
 
