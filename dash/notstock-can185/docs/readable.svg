@@ -1,0 +1,316 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 730" font-family="DejaVu Sans, Arial, sans-serif">
+<rect width="1520" height="730" fill="#fff"/>
+<text x="30" y="34" font-size="22" text-anchor="start" fill="#111" font-weight="bold">NOT STOCK CAN 1.85: schematic with wires (rev 4 / rev 6)</text>
+<text x="30" y="56" font-size="13" text-anchor="start" fill="#555">Grey dashed: not assembled. Same parts and nets as the KiCad project.</text>
+<rect x="30" y="90" width="80" height="140" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="52" y="223" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J1</text>
+<text x="52" y="240" font-size="11" text-anchor="middle" fill="#111">PH 4</text>
+<text x="104" y="114" font-size="11" text-anchor="end" fill="#111">12V</text>
+<text x="114" y="106" font-size="10" text-anchor="start" fill="#666">1</text>
+<text x="104" y="144" font-size="11" text-anchor="end" fill="#111">GND</text>
+<text x="114" y="136" font-size="10" text-anchor="start" fill="#666">2</text>
+<text x="104" y="174" font-size="11" text-anchor="end" fill="#111">CANH</text>
+<text x="114" y="166" font-size="10" text-anchor="start" fill="#666">3</text>
+<text x="104" y="204" font-size="11" text-anchor="end" fill="#111">CANL</text>
+<text x="114" y="196" font-size="10" text-anchor="start" fill="#666">4</text>
+<text x="70" y="250" font-size="11" text-anchor="middle" fill="#555">to OBD: 1, 4, 6, 14</text>
+<path d="M110,140 L130,140" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M130,140 L130,152" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M118,152 L142,152" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M122,156 L138,156" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M126,160 L134,160" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M110,110 L150,110" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M150,110 L170,110" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M210,110 L230,110" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="170" y="103" width="40" height="14" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="190" y="136" font-size="12" text-anchor="middle" fill="#111">F1  0.5 A PTC</text>
+<text x="150" y="100" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">VBAT</text>
+<path d="M230,110 L255,110" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M275,110 L300,110" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M255,120 L255,100 L275,110 Z" fill="#fff" stroke="#111" stroke-width="2"/>
+<path d="M275,120 L275,100" fill="none" stroke="#111" stroke-width="2"/>
+<text x="265" y="136" font-size="12" text-anchor="middle" fill="#111">D1  SS16</text>
+<text x="232" y="100" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">VBAT_F</text>
+<path d="M300,110 L680,110" fill="none" stroke="#111" stroke-width="2"/>
+<text x="560" y="100" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">VIN</text>
+<circle cx="340" cy="110" r="4" fill="#111"/>
+<circle cx="410" cy="110" r="4" fill="#111"/>
+<circle cx="480" cy="110" r="4" fill="#111"/>
+<circle cx="540" cy="110" r="4" fill="#111"/>
+<path d="M340,190 L340,160" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M340,140 L340,110" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M350,160 L330,160 L340,140 Z" fill="#fff" stroke="#111" stroke-width="2"/>
+<path d="M350,140 L330,140" fill="none" stroke="#111" stroke-width="2"/>
+<text x="326" y="147" font-size="13" text-anchor="end" fill="#111" font-weight="bold">D2</text>
+<text x="326" y="163" font-size="12" text-anchor="end" fill="#111">SMAJ26A</text>
+<path d="M340,190 L340,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M328,202 L352,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M332,206 L348,206" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M336,210 L344,210" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M410,110 L410,146" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M410,154 L410,190" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M422,146 L398,146" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M422,154 L398,154" fill="none" stroke="#111" stroke-width="2"/>
+<text x="424" y="147" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C1</text>
+<text x="424" y="163" font-size="12" text-anchor="start" fill="#111">4u7</text>
+<path d="M410,190 L410,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M398,202 L422,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M402,206 L418,206" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M406,210 L414,210" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M480,110 L480,146" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M480,154 L480,190" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M492,146 L468,146" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M492,154 L468,154" fill="none" stroke="#111" stroke-width="2"/>
+<text x="494" y="147" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C2</text>
+<text x="494" y="163" font-size="12" text-anchor="start" fill="#111">100n</text>
+<path d="M480,190 L480,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M468,202 L492,202" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M472,206 L488,206" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M476,210 L484,210" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M540,110 L540,135" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M540,175 L540,200" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="533" y="135" width="14" height="40" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="554" y="152" font-size="13" text-anchor="start" fill="#111" font-weight="bold">R1</text>
+<text x="554" y="168" font-size="12" text-anchor="start" fill="#111">100k</text>
+<path d="M540,200 L700,200" fill="none" stroke="#111" stroke-width="2"/>
+<text x="600" y="194" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">EN</text>
+<rect x="700" y="130" width="130" height="120" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="765" y="188" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">U1</text>
+<text x="765" y="205" font-size="11" text-anchor="middle" fill="#111">LMR16006Y</text>
+<text x="706" y="154" font-size="11" text-anchor="start" fill="#111">VIN</text>
+<text x="696" y="146" font-size="10" text-anchor="end" fill="#666">5</text>
+<text x="706" y="204" font-size="11" text-anchor="start" fill="#111">EN</text>
+<text x="696" y="196" font-size="10" text-anchor="end" fill="#666">4</text>
+<text x="765" y="244" font-size="11" text-anchor="middle" fill="#111">GND</text>
+<text x="769" y="262" font-size="10" text-anchor="start" fill="#666">2</text>
+<text x="800" y="144" font-size="11" text-anchor="middle" fill="#111">FB</text>
+<text x="804" y="126" font-size="10" text-anchor="start" fill="#666">3</text>
+<text x="824" y="154" font-size="11" text-anchor="end" fill="#111">CB</text>
+<text x="834" y="146" font-size="10" text-anchor="start" fill="#666">1</text>
+<text x="824" y="204" font-size="11" text-anchor="end" fill="#111">SW</text>
+<text x="834" y="196" font-size="10" text-anchor="start" fill="#666">6</text>
+<path d="M680,110 L680,150 L700,150" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="680" cy="110" r="4" fill="#111"/>
+<path d="M765,250 L765,262" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M765,262 L765,274" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M753,274 L777,274" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M757,278 L773,278" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M761,282 L769,282" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M800,130 L800,80 L1230,80" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1000" y="74" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">FB</text>
+<path d="M830,150 L880,150" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M880,150 L880,171" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M880,179 L880,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M892,171 L868,171" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M892,179 L868,179" fill="none" stroke="#111" stroke-width="2"/>
+<text x="894" y="172" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C3</text>
+<text x="894" y="188" font-size="12" text-anchor="start" fill="#111">100n</text>
+<path d="M830,200 L960,200" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="880" cy="200" r="4" fill="#111"/>
+<text x="860" y="220" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">SW</text>
+<circle cx="930" cy="200" r="4" fill="#111"/>
+<path d="M930,280 L930,250" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M930,230 L930,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M940,250 L920,250 L930,230 Z" fill="#fff" stroke="#111" stroke-width="2"/>
+<path d="M940,230 L920,230" fill="none" stroke="#111" stroke-width="2"/>
+<text x="916" y="237" font-size="13" text-anchor="end" fill="#111" font-weight="bold">D3</text>
+<text x="916" y="253" font-size="12" text-anchor="end" fill="#111">PMEG6010</text>
+<path d="M930,280 L930,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M918,292 L942,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M922,296 L938,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M926,300 L934,300" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M960,200 L970,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1050,200 L1060,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M970,200 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1010" y="182" font-size="12" text-anchor="middle" fill="#111">L1  22u</text>
+<path d="M1060,200 L1400,200" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1265" y="194" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">BAT_LCD 3.75 V</text>
+<circle cx="1110" cy="200" r="4" fill="#111"/>
+<circle cx="1160" cy="200" r="4" fill="#111"/>
+<circle cx="1230" cy="200" r="4" fill="#111"/>
+<path d="M1110,200 L1110,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1110,244 L1110,280" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1122,236 L1098,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1122,244 L1098,244" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1096" y="237" font-size="13" text-anchor="end" fill="#111" font-weight="bold">C4</text>
+<text x="1096" y="253" font-size="12" text-anchor="end" fill="#111">22u</text>
+<path d="M1110,280 L1110,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1098,292 L1122,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1102,296 L1118,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1106,300 L1114,300" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1160,200 L1160,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1160,244 L1160,280" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1172,236 L1148,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1172,244 L1148,244" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1174" y="237" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C5</text>
+<text x="1174" y="253" font-size="12" text-anchor="start" fill="#111">22u</text>
+<path d="M1160,280 L1160,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1148,292 L1172,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1152,296 L1168,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1156,300 L1164,300" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1230,200 L1230,160" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1230,120 L1230,80" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="1223" y="120" width="14" height="40" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="1216" y="137" font-size="13" text-anchor="end" fill="#111" font-weight="bold">R2</text>
+<text x="1216" y="153" font-size="12" text-anchor="end" fill="#111">39k</text>
+<circle cx="1230" cy="80" r="4" fill="#111"/>
+<path d="M1230,80 L1250,80" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1250,80 L1275,80" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1315,80 L1340,80" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="1275" y="73" width="40" height="14" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="1295" y="66" font-size="12" text-anchor="middle" fill="#111">R3  10k</text>
+<path d="M1340,80 L1360,80" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1360,80 L1360,92" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1348,92 L1372,92" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1352,96 L1368,96" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1356,100 L1364,100" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1190" y="330" font-size="12" text-anchor="middle" fill="#555">0.765 V x (1 + 39k/10k) = 3.75 V</text>
+<rect x="1400" y="180" width="80" height="80" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="1440" y="218" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J3</text>
+<text x="1440" y="235" font-size="11" text-anchor="middle" fill="#111">pads</text>
+<text x="1406" y="204" font-size="11" text-anchor="start" fill="#111">+</text>
+<text x="1396" y="196" font-size="10" text-anchor="end" fill="#666">1</text>
+<text x="1406" y="244" font-size="11" text-anchor="start" fill="#111">-</text>
+<text x="1396" y="236" font-size="10" text-anchor="end" fill="#666">2</text>
+<path d="M1400,240 L1380,240" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1380,240 L1380,252" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1368,252 L1392,252" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1372,256 L1388,256" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1376,260 L1384,260" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1440" y="285" font-size="11" text-anchor="middle" fill="#555">to display</text>
+<text x="1440" y="299" font-size="11" text-anchor="middle" fill="#555">battery socket</text>
+<path d="M110,170 L170,170 L170,520 L600,520" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M110,200 L150,200 L150,560 L600,560" fill="none" stroke="#111" stroke-width="2"/>
+<text x="200" y="514" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">CANH</text>
+<text x="200" y="576" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">CANL</text>
+<rect x="225" y="600" width="70" height="50" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="260" y="623" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">D4</text>
+<text x="260" y="640" font-size="11" text-anchor="middle" fill="#111">NUP2105L</text>
+<path d="M240,520 L240,600" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="240" cy="520" r="4" fill="#111"/>
+<text x="234" y="596" font-size="10" text-anchor="end" fill="#666">1</text>
+<path d="M280,560 L280,600" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="280" cy="560" r="4" fill="#111"/>
+<text x="286" y="596" font-size="10" text-anchor="start" fill="#666">2</text>
+<path d="M260,650 L260,662" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M260,662 L260,674" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M248,674 L272,674" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M252,678 L268,678" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M256,682 L264,682" fill="none" stroke="#111" stroke-width="2"/>
+<text x="266" y="662" font-size="10" text-anchor="start" fill="#666">3</text>
+<circle cx="380" cy="520" r="4" fill="#111"/>
+<path d="M380,520 L380,560" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M380,600 L380,640" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<rect x="373" y="560" width="14" height="40" fill="#fff" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="366" y="577" font-size="13" text-anchor="end" fill="#888" font-weight="bold">R4</text>
+<text x="366" y="593" font-size="12" text-anchor="end" fill="#888">60R (DNP)</text>
+<path d="M380,640 L400,640" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M400,640 L420,640" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M460,640 L480,640" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<rect x="420" y="633" width="40" height="14" fill="#fff" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="440" y="626" font-size="12" text-anchor="middle" fill="#888">R5  60R (DNP)</text>
+<path d="M380,640 L380,666" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M380,674 L380,700" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M392,666 L368,666" fill="none" stroke="#888" stroke-width="2"/>
+<path d="M392,674 L368,674" fill="none" stroke="#888" stroke-width="2"/>
+<text x="366" y="667" font-size="13" text-anchor="end" fill="#888" font-weight="bold">C8</text>
+<text x="366" y="683" font-size="12" text-anchor="end" fill="#888">4n7 (DNP)</text>
+<path d="M380,700 L380,712" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M368,712 L392,712" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M372,716 L388,716" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M376,720 L384,720" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M480,640 L500,640" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<rect x="490" y="585" width="20" height="30" fill="#fff" stroke="#888" stroke-width="2" stroke-dasharray="4 3"/>
+<path d="M500,640 L500,615" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M500,585 L500,560" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="6 4"/>
+<circle cx="500" cy="560" r="4" fill="#111"/>
+<text x="516" y="605" font-size="12" text-anchor="start" fill="#888">JP1 (open)</text>
+<rect x="600" y="480" width="160" height="170" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="680" y="563" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">U2</text>
+<text x="680" y="580" font-size="11" text-anchor="middle" fill="#111">SN65HVD230</text>
+<text x="606" y="524" font-size="11" text-anchor="start" fill="#111">CANH</text>
+<text x="596" y="516" font-size="10" text-anchor="end" fill="#666">7</text>
+<text x="606" y="564" font-size="11" text-anchor="start" fill="#111">CANL</text>
+<text x="596" y="556" font-size="10" text-anchor="end" fill="#666">6</text>
+<text x="606" y="614" font-size="11" text-anchor="start" fill="#111">Vref</text>
+<text x="596" y="606" font-size="10" text-anchor="end" fill="#666">5</text>
+<text x="754" y="504" font-size="11" text-anchor="end" fill="#111">D</text>
+<text x="764" y="496" font-size="10" text-anchor="start" fill="#666">1</text>
+<text x="754" y="544" font-size="11" text-anchor="end" fill="#111">R</text>
+<text x="764" y="536" font-size="10" text-anchor="start" fill="#666">4</text>
+<text x="754" y="584" font-size="11" text-anchor="end" fill="#111">VCC</text>
+<text x="764" y="576" font-size="10" text-anchor="start" fill="#666">3</text>
+<text x="754" y="629" font-size="11" text-anchor="end" fill="#111">Rs</text>
+<text x="764" y="621" font-size="10" text-anchor="start" fill="#666">8</text>
+<text x="680" y="644" font-size="11" text-anchor="middle" fill="#111">GND</text>
+<text x="684" y="662" font-size="10" text-anchor="start" fill="#666">2</text>
+<path d="M600,610 L585,610" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M578,603 L592,617" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M578,617 L592,603" fill="none" stroke="#111" stroke-width="2"/>
+<text x="572" y="614" font-size="11" text-anchor="end" fill="#555">nc</text>
+<path d="M680,650 L680,662" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M680,662 L680,674" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M668,674 L692,674" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M672,678 L688,678" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M676,682 L684,682" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M760,625 L790,625" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M790,625 L790,637" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M778,637 L802,637" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M782,641 L798,641" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M786,645 L794,645" fill="none" stroke="#111" stroke-width="2"/>
+<text x="700" y="712" font-size="11" text-anchor="start" fill="#555">Rs to GND: full speed, no slope control</text>
+<path d="M760,500 L1150,500" fill="none" stroke="#111" stroke-width="2"/>
+<text x="800" y="494" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">TXD</text>
+<path d="M760,540 L940,540" fill="none" stroke="#111" stroke-width="2"/>
+<text x="800" y="534" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">RXD_T</text>
+<path d="M940,540 L960,540" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1000,540 L1020,540" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="960" y="533" width="40" height="14" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="980" y="526" font-size="12" text-anchor="middle" fill="#111">R6  1k</text>
+<path d="M1020,540 L1150,540" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1040" y="534" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">RXD</text>
+<path d="M760,580 L1150,580" fill="none" stroke="#111" stroke-width="2"/>
+<text x="950" y="574" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">+3V3 from display</text>
+<circle cx="860" cy="580" r="4" fill="#111"/>
+<circle cx="920" cy="580" r="4" fill="#111"/>
+<path d="M860,580 L860,616" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M860,624 L860,660" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M872,616 L848,616" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M872,624 L848,624" fill="none" stroke="#111" stroke-width="2"/>
+<text x="846" y="617" font-size="13" text-anchor="end" fill="#111" font-weight="bold">C6</text>
+<text x="846" y="633" font-size="12" text-anchor="end" fill="#111">100n</text>
+<path d="M860,660 L860,672" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M848,672 L872,672" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M852,676 L868,676" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M856,680 L864,680" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M920,580 L920,616" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M920,624 L920,660" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M932,616 L908,616" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M932,624 L908,624" fill="none" stroke="#111" stroke-width="2"/>
+<text x="934" y="617" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C7</text>
+<text x="934" y="633" font-size="12" text-anchor="start" fill="#111">100n</text>
+<path d="M920,660 L920,672" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M908,672 L932,672" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M912,676 L928,676" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M916,680 L924,680" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="1150" y="470" width="90" height="180" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="1195" y="558" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J2</text>
+<text x="1195" y="575" font-size="11" text-anchor="middle" fill="#111">pads</text>
+<text x="1156" y="504" font-size="11" text-anchor="start" fill="#111">IO44</text>
+<text x="1146" y="496" font-size="10" text-anchor="end" fill="#666">1</text>
+<text x="1156" y="544" font-size="11" text-anchor="start" fill="#111">IO43</text>
+<text x="1146" y="536" font-size="10" text-anchor="end" fill="#666">2</text>
+<text x="1156" y="584" font-size="11" text-anchor="start" fill="#111">3V3</text>
+<text x="1146" y="576" font-size="10" text-anchor="end" fill="#666">3</text>
+<text x="1156" y="624" font-size="11" text-anchor="start" fill="#111">GND</text>
+<text x="1146" y="616" font-size="10" text-anchor="end" fill="#666">4</text>
+<path d="M1150,620 L1110,620" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1110,620 L1110,632" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1098,632 L1122,632" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1102,636 L1118,636" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1106,640 L1114,640" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1195" y="670" font-size="11" text-anchor="middle" fill="#555">to display</text>
+<text x="1195" y="684" font-size="11" text-anchor="middle" fill="#555">UART socket 1..4</text>
+<text x="1260" y="500" font-size="12" text-anchor="start" fill="#555">GPIO44 = CAN TX</text>
+<text x="1260" y="540" font-size="12" text-anchor="start" fill="#555">GPIO43 = CAN RX</text>
+</svg>

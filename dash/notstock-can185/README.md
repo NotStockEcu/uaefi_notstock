@@ -8,8 +8,10 @@ the display the 4-wire cable that comes with it (CAN) and two wires
 
 ![top](docs/top.png)
 
-KiCad 7 project: `notstock-can185.kicad_pro` (schematic, PCB). Schematic as
-PDF: [docs/schematic.pdf](docs/schematic.pdf). Placement:
+KiCad 7 project: `notstock-can185.kicad_pro` (schematic, PCB). The KiCad
+schematic joins pins by net labels (same name, same net): PDF in
+[docs/schematic.pdf](docs/schematic.pdf). The same circuit drawn with wires,
+for reading: [docs/readable.png](docs/readable.png). Placement:
 [docs/assembly.png](docs/assembly.png).
 
 **State: rev 6, designed, DRC clean (0 errors, 0 unconnected), ready to
@@ -140,6 +142,7 @@ python3 tools/check_net.py /tmp/n.net          # schematic = design.py
 python3 tools/gen_pcb.py --freerouting freerouting-2.0.1.jar
 python3 tools/drc_summary.py                   # DRC of the routed board
 python3 tools/gen_fab.py                       # fab/ and docs/
+python3 tools/gen_readable.py                  # docs/readable.svg
 ```
 
 Needs KiCad 7 with its python module and libraries, Java 21 and
