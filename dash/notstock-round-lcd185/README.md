@@ -48,8 +48,8 @@ All in `main/board_lcd185.h`:
 - PCM5101: BCK 48, LRCK 38, DOUT 47. The beep is a 2.4 kHz tone: three when
   a regeneration starts, one when it ends. Loudness: `BEEP_AMP` in
   `hw_lcd185.c`.
-- CAN: through the display's 4-pin 1.0 mm UART socket, 1:1 on a JST SH
-  cable to the CAN board: GPIO44 (socket pin 1, RXD) is CAN TX, GPIO43
+- CAN: through the display's 4-pin 1.0 mm UART socket, on the cable that
+  comes with the display, soldered to the CAN board: GPIO44 (socket pin 1, RXD) is CAN TX, GPIO43
   (pin 2, TXD) CAN RX. The console is on the USB; the boot loader is quiet.
 - Power: 3.75 V into the display's battery socket from the CAN board, with
   the display's power button (Key1) bridged; see `../notstock-can185`.

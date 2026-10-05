@@ -8,8 +8,9 @@ seen from behind the display (this board's component side).
 The board sits behind the Waveshare ESP32-S3-Touch-LCD-1.85 on spacers in
 the display's three M2 holes. The display has no plug-on header: CAN goes
 through its 4-pin 1.0 mm UART socket (J9 on the display: 1 RXD/GPIO44,
-2 TXD/GPIO43, 3 3V3, 4 GND) on a JST SH cable, which also brings the
-display's 3.3 V for the transceiver. The display is powered through its
+2 TXD/GPIO43, 3 3V3, 4 GND) on the 4-wire cable that comes with the
+display (free ends soldered here), which also brings the display's 3.3 V
+for the transceiver. The display is powered through its
 battery socket (MX1.25 2-pin, J1 on the display: 1 BAT, 2 GND) with 3.75 V
 on two wires soldered to this board; the display's power button (Key1)
 must be bridged, or its battery switch never turns on. Mechanics from Waveshare's drawing of the board
@@ -88,7 +89,7 @@ part("C5", "Device:C", "22u 16V", C1206, {"1": "BAT_LCD", "2": "GND"},
 # with an MX1.25 2-pin plug at the display. Not assembled (pads only).
 part("J3", "Connector_Generic:Conn_01x02", "BAT to display",
      "Connector_Wire:SolderWire-0.25sqmm_1x02_P4.2mm_D0.65mm_OD1.7mm",
-     {"1": "BAT_LCD", "2": "GND"}, (0.0, 19.0, 0), mpn="(wires)", dnp=True)
+     {"1": "BAT_LCD", "2": "GND"}, (-2.1, 19.0, 0), mpn="(wires)", dnp=True)
 
 # CAN: SN65HVD230 on the display's 3.3 V (UART socket pin 3); Rs to GND:
 # full speed, no slope control
@@ -117,15 +118,17 @@ part("JP1", "Jumper:SolderJumper_2_Open", "TERM",
      "Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm",
      {"1": "TERM", "2": "CANL"}, (14.0, 8.4, 270), mpn="(solder bridge)")
 
-# the display's UART socket, 1:1 on a JST SH 4-pin cable. GPIO43 (the
+# the display's UART socket, through the 4-wire cable that comes with the
+# display (SH plug at the display, free ends soldered here). GPIO43 (the
 # display's TXD) is also where the boot ROM prints its messages for a
 # moment after reset: 1 k keeps that from fighting the transceiver's RXD.
-part("J2", "Connector_Generic:Conn_01x04", "to display UART",
-     "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical",
+# Pads only, not assembled. The footprint's pad 1 is its origin.
+part("J2", "Connector_Generic:Conn_01x04", "UART wires from display",
+     "Connector_Wire:SolderWire-0.15sqmm_1x04_P4mm_D0.5mm_OD1.5mm",
      {"1": "TXD", "2": "RXD", "3": "+3V3", "4": "GND"},
-     (12.0, 13.0, 0), mpn="JST BM04B-SRSS-TB(LF)(SN)", lcsc="C160390")
+     (6.0, 12.0, 0), mpn="(wires)", dnp=True)
 part("R6", "Device:R", "1k", R0603, {"1": "RXD", "2": "RXD_T"},
-     (6.8, 15.5, 90), mpn="UNI-ROYAL 0603WAF1001T5E (1 k 1%)", lcsc="C21190")
+     (5.6, 16.8, 90), mpn="UNI-ROYAL 0603WAF1001T5E (1 k 1%)", lcsc="C21190")
 
 for i, (x, y) in enumerate(HOLES, 1):
     part("H%d" % i, "Mechanical:MountingHole", "M2",

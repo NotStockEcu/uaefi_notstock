@@ -250,12 +250,15 @@ def build():
     for i, t in enumerate(("12V", "GND", "CH", "CL")):
         silk(board, t, jx - 3 + 2 * i, jy + 5.8, 0.8, rot=90)
     silk(board, "TERM", P["JP1"]["at"][0] + 2.6, P["JP1"]["at"][1], 0.8, rot=90)
+    # wire pads: the display's names under each (pad 1 is the origin)
     x, y = P["J2"]["at"][:2]
-    silk(board, "UART", x, y + 4.0, 0.8)
+    for i, t in enumerate(("IO44", "IO43", "3V3", "GND")):
+        silk(board, t, x + 4.0 * i, y + 1.9, 0.8)
+    silk(board, "UART from LCD", x + 6.0, y + 3.3, 0.8)
     x, y = P["J3"]["at"][:2]
-    silk(board, "3V75 > LCD BAT", x, y - 2.6, 0.8)
-    silk(board, "+", x - 2.1, y + 2.0, 1.0)
-    silk(board, "-", x + 2.1, y + 2.0, 1.0)
+    silk(board, "3V75 > LCD BAT", x + 2.1, y - 2.6, 0.8)
+    silk(board, "+", x, y + 2.0, 1.0)
+    silk(board, "-", x + 4.2, y + 2.0, 1.0)
     silk(board, "rev 4", -3.0, -6.6, 0.8)
     for fp in board.GetFootprints():
         for g in list(fp.GraphicalItems()):

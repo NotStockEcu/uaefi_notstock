@@ -83,8 +83,8 @@ BLOCKS = [
     ("CAN transceiver, ESD, termination (JP1 open: the car's bus is "
      "terminated already)", 230, 50,
      ["U2", "C6", "C7", "D4", "R4", "R5", "C8", "JP1"]),
-    ("To the display ESP32-S3-Touch-LCD-1.85: UART socket (SH 1.0 cable, "
-     "1:1) and battery socket (wires, MX1.25 plug; bridge the display's Key1)",
+    ("To the display ESP32-S3-Touch-LCD-1.85: UART socket (its own cable, "
+     "free ends soldered to J2) and battery socket (wires, MX1.25 plug; bridge the display's Key1)",
      230, 172, ["J2", "R6", "J3"]),
     ("Mounting: the display's M2 holes", 230, 245, ["H1", "H2", "H3"]),
 ]

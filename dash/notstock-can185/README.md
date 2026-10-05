@@ -3,7 +3,8 @@
 A round board that sits behind the **Waveshare ESP32-S3-Touch-LCD-1.85**
 (SKU 28514) on its three M2 holes and turns the car's OBD supply and CAN
 into what the round gauge needs. One 4-wire cable from the OBD plug; to
-the display a short SH cable (CAN) and two wires (power).
+the display the 4-wire cable that comes with it (CAN) and two wires
+(power), all soldered to pads on this board.
 
 ![top](docs/top.png)
 
@@ -22,8 +23,8 @@ The display has no plug-on header. What it has, and what this board uses
 
 | Display | Cable | This board |
 | --- | --- | --- |
-| battery socket J1, MX1.25 2-pin (1 BAT, 2 GND) | MX1.25 2-pin plug with wires, about 5 cm | J3 solder pads: "+" to BAT, "-" to GND, 3.75 V |
-| UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | JST SH 4-pin, 1:1 (Qwiic/STEMMA QT style), about 5 cm | J2 JST SH 4-pin (CAN, and the display's 3.3 V for the transceiver) |
+| battery socket J1, MX1.25 2-pin (1 BAT, 2 GND); seen from the back with the USB-C down, the 2-pin socket on the left | MX1.25 2-pin plug with wires, or two wires soldered to the socket's pins | J3 pads: "+" to BAT, "-" to GND, 3.75 V |
+| UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | the 4-wire cable that comes with the display, free ends cut to length | J2 pads, marked with the display's names: IO44, IO43, 3V3, GND (CAN, and the display's 3.3 V for the transceiver) |
 | three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
 
 The car: J1, JST PH 4-pin (12V, GND, CAN-H, CAN-L, marked on the board).
@@ -69,14 +70,18 @@ CAN-L twisted.
 
 ## Check before ordering
 
-- The SH cable is 1:1: pin 1 to pin 1. Some ready-made SH cables are
-  crossed (reversed); check with a meter: display pin 3 (3V3) must reach J2
-  pin 3.
+- Which wire is which on the display's cable: the colours mean nothing.
+  Plugged into the display, powered from its USB: 3.3 V between the 3V3
+  wire and the GND wire. With the display unpowered, the GND wire beeps to
+  the USB-C shell. Of the other two, IO44 is on socket pin 1 (next to the
+  edge marked 1 or the triangle on the display's silkscreen).
 - The battery plug's polarity: ready-made MX1.25 cables come both ways.
   Red is not proof: with the plug in the display, the wire on the
   display's "+" (or BAT) side goes to J3 "+".
 - Height: the spacers must clear the display's tallest parts (USB-C, SD
-  slot, the 1.0 mm sockets, about 4.5 mm) plus the cables' plugs.
+  slot, the 1.0 mm sockets, about 4.5 mm) plus the cables' plugs. The wire
+  pads are through holes: solder the wires from the display's side, or
+  from the back with the ends trimmed flat.
 - Waveshare's drawing was the source of the outline and the holes; hold
   the printed board (1:1 PDF of `docs/top.svg`) against the display first.
 
@@ -104,7 +109,6 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | F1 | SMD1812P050TF/30 (RUILON) | C12559 |
 | L1 | Sunlord SWPA4026S220MT | C88254 |
 | J1 | JST B4B-PH-SM4-TB | C160354 |
-| J2 | JST BM04B-SRSS-TB | C160390 |
 | C1 | 4.7 uF 50 V 1206 (Murata) | C77096 |
 | C2, C3, C6, C7 | 100 nF 50 V 0603 (YAGEO) | C14663 |
 | C4, C5 | 22 uF 16 V 1206 (Samsung) | C90146 |
@@ -118,14 +122,14 @@ they do nothing, and the car's bus is terminated already. For a bench
 without a terminator solder them by hand: R4, R5 any 0805 56..62 R 1 %, C8
 4.7 nF 0603 (C53987), then bridge JP1.
 
-JP1 is a solder bridge, J3 two pads for wires: not parts. Stock changes: JLCPCB marks a part out
+JP1 is a solder bridge, J2 and J3 pads for wires: not parts. Stock changes: JLCPCB marks a part out
 of stock in the BOM step; pick an equivalent there (same value, package,
 voltage). The passives are JLCPCB basic parts, the rest extended (a small
 loading fee each).
 
 In the placement preview, check the parts with a direction: U1 (pin 1 dot),
 U2 (pin 1 at the notch), D4, D1/D2/D3 (the band towards the "K" side of the
-footprint's silkscreen), J1, J2 (openings upwards). KiCad and JLCPCB do not always agree on rotations; turn any
+footprint's silkscreen), J1 (opening upwards). KiCad and JLCPCB do not always agree on rotations; turn any
 that are off in 90° steps there.
 
 ## Regenerate
