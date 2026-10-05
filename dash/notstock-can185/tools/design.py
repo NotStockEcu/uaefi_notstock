@@ -64,7 +64,9 @@ part("C2", "Device:C", "100n 50V", C0603, {"1": "VIN", "2": "GND"},
      (-13.7, 1.5, 180), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
 
 # 12 V -> 3.75 V for the display's battery input, LMR16006 (60 V, 0.6 A,
-# 700 kHz Y version)
+# 2.1 MHz Y version; the X version is 0.7 MHz). At 2.1 MHz the 80 ns
+# minimum on-time allows down to 3.75 V from up to about 22 V before the
+# chip folds its frequency back; 22 uH gives about 60 mA ripple.
 part("U1", "Regulator_Switching:LMR16006YQ", "LMR16006YDDCR",
      "Package_TO_SOT_SMD:SOT-23-6",
      {"1": "CB", "2": "GND", "3": "FB", "4": "EN", "5": "VIN", "6": "SW"},

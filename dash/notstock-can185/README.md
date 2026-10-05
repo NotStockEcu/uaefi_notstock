@@ -47,13 +47,16 @@ regulator runs down to 4 V input, so the display rides through the dip.
 | Block | Parts |
 | --- | --- |
 | Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
-| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
+| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
 | 3.75 V out | J3, two solder pads for the wires to the display's battery socket |
 | CAN | U2 SN65HVD230 (3.3 V from the display's UART socket, Rs to GND: full speed); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
 
-Termination: the car's bus is terminated at both ends already, so JP1
-stays open. Bridge it only on a bench with no other terminator.
+Termination: JP1 open, R4/R5/C8 not assembled. Measure the resistance
+between OBD pins 6 and 14 with the key out: about 60 R, the bus is
+terminated at both ends and nothing is needed; about 120 R, only one end
+is (on the power box, the T5.1 needed a 120 R at the OBD end to talk):
+solder R4 and R5 (any 0805 56..62 R) and bridge JP1, C8 optional.
 
 ## Cable to the car
 
