@@ -1,71 +1,71 @@
 # NOT STOCK CAN 1.85
 
-A round board that plugs onto the back of the **Waveshare
-ESP32-S3-Touch-LCD-1.85** and turns the car's OBD supply and CAN into what
-the round gauge needs: 12 V in, 5 V for the display, a CAN transceiver on
-two of its GPIOs. One 4-wire cable from the OBD plug, nothing else.
+A round board that sits behind the **Waveshare ESP32-S3-Touch-LCD-1.85**
+(SKU 28514) on its three M2 holes and turns the car's OBD supply and CAN
+into what the round gauge needs. One 4-wire cable from the OBD plug; two
+short cables to the display.
 
-![top](docs/top.png) ![bottom](docs/bottom.png)
+![top](docs/top.png)
 
 KiCad 7 project: `notstock-can185.kicad_pro` (schematic, PCB). Schematic as
 PDF: [docs/schematic.pdf](docs/schematic.pdf). Placement:
 [docs/assembly.png](docs/assembly.png).
 
-**State: designed, DRC clean (0 errors, 0 unconnected), not built.** Read
-[Before ordering](#before-ordering) first.
+**State: rev 2, designed, DRC clean (0 errors, 0 unconnected), not built.**
+
+## How it connects
+
+The display has no plug-on header. What it has, and what this board uses
+(Waveshare's schematic and drawing of the board, `ESP32-S3-LCD-1.85`):
+
+| Display | Cable | This board |
+| --- | --- | --- |
+| USB-C (5 V in) | short USB-C to USB-C, angled ends | J3 USB-C, 5 V out |
+| UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | JST SH 4-pin, 1:1 (Qwiic/STEMMA QT style), about 5 cm | J2 JST SH 4-pin |
+| three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
+
+The car: J1, JST PH 4-pin (12V, GND, CAN-H, CAN-L, marked on the board).
+
+GPIO44 is CAN TX, GPIO43 CAN RX: `../notstock-round-lcd185` is set up for
+it. The boot ROM prints on GPIO43 for a moment after every reset; R6 (1 k)
+keeps that from fighting the transceiver's RXD. Flashing: unplug the USB-C
+cable from J3 and plug the computer into the display instead.
 
 ## What is on it
 
 | Block | Parts |
 | --- | --- |
-| Input | J1 JST PH 4-pin SMD (12 V, GND, CAN-H, CAN-L); F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
+| Input | J1 JST PH 4-pin SMD; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
 | 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 56 k / 10 k sets 5.05 V |
-| CAN | U2 TJA1051T/3 (5 V supply, 3.3 V logic from the display); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open |
-| Display | J2 2 x 14 socket, 1.27 mm, on the back: 5 V in, 3V3, GND, GPIO12 (TX), GPIO13 (RX) |
-| Mechanics | Ø 53 mm, three M2 holes matching the display's (23.75 mm radius) |
-
-The display pins it uses, as Waveshare's 1.85C schematic numbers its
-header: 1 USB_5V, 3/4/11/12 GND, 9/10 3V3, 18 GPIO13, 20 GPIO12. The other
-pins are left open. The firmware (`../notstock-round-lcd185`) has CAN on
-GPIO12/13.
+| 5 V out | J3 USB-C (power only), 56 k on CC1/CC2: a plain 5 V source |
+| CAN | U2 TJA1051T/3 (5 V supply, 3.3 V logic from the display's socket); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open; R6 1 k in RXD |
+| Mechanics | Ø 48 mm like the display, the display's three M2 holes |
 
 Termination: the car's bus is terminated at both ends already, so JP1
 stays open. Bridge it only on a bench with no other terminator.
 
-## Cable
+## Cable to the car
 
 JST PHR-4 housing with SPH-002T-P0.5S crimps on the board side; at the OBD
 plug: pin 16 +12 V, pin 4 or 5 GND, pin 6 CAN-H, pin 14 CAN-L. CAN-H and
-CAN-L twisted. Pin 1 of J1 is marked 12V on the board.
+CAN-L twisted.
 
-## Before ordering
+## Check before ordering
 
-The mechanics and the header pinout come from Waveshare's drawing and
-schematic of the **ESP32-S3-Touch-LCD-1.85C** (their hardware folder); the
-1.85 shares the header and the board, as far as can be told, but check on
-the real board:
-
-1. **Pin 1 of the 28-pin header.** Its silkscreen marks pin 1. On this
-   board pin 1 (5 V) is the left end of the row nearer the centre, seen
-   from behind with the header at the top (the "1" and "5V" on the
-   silkscreen). If the display has it at the other end, set
-   `PIN1_END = "right"` and `ODD_ROW = "outer"` in `tools/design.py` and
-   regenerate. A mirrored board puts 5 V on a GPIO.
-2. **Which pins are which.** USB_5V on pin 1, 3V3 on 9/10, GPIO13 on 18,
-   GPIO12 on 20, against the 1.85's own pin table.
-3. **Gender and height.** J2 has to mate with what the display has (pins or
-   a socket). The board then sits at the mated height behind the display;
-   the parts on the display's back must fit under it.
-4. **The three holes.** M2, at the positions of the display's mounting
-   holes; spacers to the mated header height.
+- The SH cable is 1:1: pin 1 to pin 1. Some ready-made SH cables are
+  crossed (reversed); check with a meter: display pin 3 (3V3) must reach J2
+  pin 3.
+- Height: the spacers must clear the display's tallest parts (USB-C, SD
+  slot, the two 1.0 mm sockets, about 4.5 mm) plus the cables' plugs.
+- Waveshare's drawing was the source of the outline and the holes; hold
+  the printed board (1:1 PDF of `docs/top.svg`) against the display first.
 
 ## Make it
 
-PCB: `fab/notstock-can185-gerbers.zip` (2 layers, 1.6 mm, any colour) to
-JLCPCB or similar. Assembly: `fab/bom.csv` and `fab/cpl.csv` are in
-JLCPCB's columns; the LCSC numbers are to be filled in when ordering
-(stock changes), and check the part rotations in their preview. J2 is
-through-hole on the back: solder it by hand. Everything else is on the top.
+PCB: `fab/notstock-can185-gerbers.zip` (2 layers, 1.6 mm) to JLCPCB or
+similar. Assembly: `fab/bom.csv` and `fab/cpl.csv` are in JLCPCB's columns;
+the LCSC numbers are to be filled in when ordering (stock changes), and
+check the part rotations in their preview. All parts on the top side.
 
 ## Regenerate
 

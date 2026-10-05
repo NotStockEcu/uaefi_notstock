@@ -27,9 +27,11 @@ CONFIG_SPI_MASTER_ISR_IN_IRAM=n
 
 # ---- console on the native USB ---------------------------------------------
 # The board's only USB-C is the ESP32-S3's own USB: flash and monitor there.
-# CAN is on the 28-pin header (GPIO12/13), UART0 stays free.
+# CAN takes UART0's pins (GPIO43/44, the display's UART socket): the
+# console and the boot loader stay off them.
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
 
 # ---- no radio: nothing starts Wi-Fi, Bluetooth is not even built ----------
 CONFIG_BT_ENABLED=n

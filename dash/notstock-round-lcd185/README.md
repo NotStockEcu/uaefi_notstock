@@ -8,11 +8,11 @@ sources of `../notstock-round/main` with its own board layer,
 `main/hw_lcd185.c`, and Espressif's ST77916 driver (`main/st77916`, as in
 Waveshare's demo).
 
-The power and CAN board that plugs onto its back:
+The power and CAN board that sits behind it:
 [`../notstock-can185`](../notstock-can185).
 
 Not yet run on the board: built, and the scaled UI checked against the
-simulator's frames.
+simulator's frames. Pins from Waveshare's schematic of this board.
 
 ## One UI, scaled
 
@@ -34,8 +34,8 @@ idf.py build flash monitor
 ```
 
 The board's USB-C is the ESP32-S3's own USB: flashing and the console go
-there. With the CAN board plugged in, its 5 V and the USB's meet on the
-display: flash with the car side unplugged.
+there: unplug the CAN board's USB-C cable and plug the computer in its
+place.
 
 ## Pins
 
@@ -43,14 +43,17 @@ All in `main/board_lcd185.h`:
 
 - ST77916: CLK 40, D0..3 46/45/42/41, CS 21; reset on the TCA9554's EXIO2;
   backlight PWM on GPIO5.
-- I2C GPIO10/11: TCA9554 0x20, CST816 0x15 (INT GPIO4, reset EXIO1). The
-  first board revision had the touch on GPIO1/3; it is looked for there
-  when it does not answer on 10/11.
+- I2C GPIO10/11: TCA9554 0x20, IMU, RTC. The CST816 touch (0x15, INT
+  GPIO4, reset EXIO1) is on GPIO1/3 on this board; it is looked for on
+  10/11 first, where later boards have it.
 - PCM5101: BCK 48, LRCK 38, DOUT 47. The beep is a 2.4 kHz tone: three when
   a regeneration starts, one when it ends. Loudness: `BEEP_AMP` in
   `hw_lcd185.c`.
-- CAN: TX GPIO12, RX GPIO13, on the 28-pin header (pins 20 and 18 in
-  Waveshare's 1.85C numbering), which the CAN board uses.
+- CAN: through the display's 4-pin 1.0 mm UART socket, 1:1 on a JST SH
+  cable to the CAN board: GPIO44 (socket pin 1, RXD) is CAN TX, GPIO43
+  (pin 2, TXD) CAN RX. The console is on the USB; the boot loader is quiet.
+- Power: 5 V into the display's USB-C, from the CAN board's USB-C on a
+  short USB-C cable.
 
 The panel comes in two revisions with different set-up tables; the ID read
 at start picks one, as Waveshare's demo does, and the log says which.

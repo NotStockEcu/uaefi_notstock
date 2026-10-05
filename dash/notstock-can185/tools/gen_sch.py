@@ -13,7 +13,7 @@ import os
 import re
 import uuid
 
-from design import P, HDR_NAMES
+from design import P
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -83,11 +83,11 @@ BLOCKS = [
     ("CAN transceiver, ESD, termination (JP1 open: the car's bus is "
      "terminated already)", 230, 50,
      ["U2", "C6", "C7", "D4", "R4", "R5", "C8", "JP1"]),
-    ("Display ESP32-S3-Touch-LCD-1.85, 28-pin 1.27 mm header", 250, 172,
-     ["J2"]),
-    ("Mounting: the display's M2 holes", 250, 235, ["H1", "H2", "H3"]),
+    ("To the display ESP32-S3-Touch-LCD-1.85: UART socket (SH 1.0 cable, "
+     "1:1) and USB-C (5 V)", 230, 172, ["J2", "R6", "J3", "R7", "R8"]),
+    ("Mounting: the display's M2 holes", 230, 245, ["H1", "H2", "H3"]),
 ]
-STEP = {"U1": 45, "U2": 45, "J1": 30}
+STEP = {"U1": 45, "U2": 45, "J1": 30, "J2": 30, "J3": 40}
 WRAP = 150
 
 FONT = '(effects (font (size 1.27 1.27))'
@@ -158,16 +158,6 @@ def main():
             p = P[ref]
             used.add(p["sym"])
             props = []
-            if ref == "J2":
-                # the header's own pin names, next to it
-                for k in range(1, 29):
-                    n = str(k)
-                    px, py, ang, _ = pins_of(p["sym"])[n]
-                    tx = x + px + (-17 if ang == 0 else 10)
-                    body.append('  (text "%s" (at %s %s 0)\n    (effects (font'
-                                ' (size 1 1)) (justify left bottom))\n    (uuid'
-                                ' "%s")\n  )\n' % (HDR_NAMES[n], fmt(tx),
-                                                    fmt(y - py - 0.5), U()))
             body.append(symbol(ref, p["sym"], p["val"], p["fp"], x, y,
                                p["pins"], props))
             x += STEP.get(ref, 26)

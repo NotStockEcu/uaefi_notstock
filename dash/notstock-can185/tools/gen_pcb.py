@@ -22,7 +22,7 @@ import uuid
 
 import pcbnew
 
-from design import (BOARD_R, HDR_Y, HOLES, ODD_ROW, P, PIN1_END, POWER)
+from design import BOARD_R, HOLES, P, POWER
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -107,38 +107,6 @@ def pad_xy(fp, num):
     return None
 
 
-def place_header(fp):
-    """The 2 x 14 socket on the back, its pad array centred on the
-    display's header, pin 1 and the odd row where design.py says."""
-    best = None
-    for flip in (True,):
-        for rot in (0, 90, 180, 270):
-            fp.SetOrientationDegrees(0)
-            if fp.IsFlipped():
-                fp.Flip(fp.GetPosition(), False)
-            fp.SetPosition(V(0, 0))
-            fp.SetOrientationDegrees(rot)
-            if flip:
-                fp.Flip(fp.GetPosition(), False)
-            p1, p2, p28 = pad_xy(fp, "1"), pad_xy(fp, "2"), pad_xy(fp, "28")
-            cx, cy = (p1[0] + p28[0]) / 2, (p1[1] + p28[1]) / 2
-            along_x = abs(p28[0] - p1[0]) > abs(p28[1] - p1[1])
-            left = p1[0] < p28[0]
-            outer = p1[1] < p2[1]          # the header is at -y: outer is lower y
-            ok = (along_x and left == (PIN1_END == "left")
-                  and outer == (ODD_ROW == "outer"))
-            if ok:
-                best = (rot, cx, cy)
-                break
-        if best:
-            break
-    if not best:
-        sys.exit("PIN1_END %s with ODD_ROW %s is a mirrored header; see "
-                 "design.py" % (PIN1_END, ODD_ROW))
-    rot, cx, cy = best
-    fp.SetPosition(V(-cx, HDR_Y - cy))
-
-
 def silk(board, txt, x, y, size=0.8, layer=pcbnew.F_SilkS, rot=0, bold=False):
     t = pcbnew.PCB_TEXT(board)
     t.SetText(txt)
@@ -163,7 +131,8 @@ def place_refs(board):
     def hit(a, b):
         return not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1])
 
-    taken = []
+    taken = [box(d.GetBoundingBox(), 0.1) for d in board.GetDrawings()
+             if d.GetClass() == "PCB_TEXT"]
     for fp in board.GetFootprints():
         for pad in fp.Pads():
             taken.append(box(pad.GetBoundingBox(), 0.15))
@@ -193,6 +162,32 @@ def place_refs(board):
         else:
             ref.SetVisible(False)           # on the fab drawing only
             print("no room for", fp.GetReference(), "on the silkscreen")
+
+
+def edge_keepout(board, n=48):
+    """No tracks or vias in the last 0.7 mm to the edge. Freerouting does
+    not know KiCad's edge clearance, but it keeps out of rule areas; a
+    ring of small ones, as the DSN export drops a rule area's hole."""
+    r0, r1 = BOARD_R - 0.7, BOARD_R + 1.0
+    for i in range(n):
+        a0, a1 = 2 * math.pi * i / n, 2 * math.pi * (i + 1.02) / n
+        z = pcbnew.ZONE(board)
+        z.SetIsRuleArea(True)
+        z.SetDoNotAllowTracks(True)
+        z.SetDoNotAllowVias(True)
+        z.SetDoNotAllowCopperPour(False)
+        z.SetDoNotAllowPads(False)
+        z.SetDoNotAllowFootprints(False)
+        ls = pcbnew.LSET()
+        ls.AddLayer(pcbnew.F_Cu)
+        ls.AddLayer(pcbnew.B_Cu)
+        z.SetLayerSet(ls)
+        ol = z.Outline()
+        ol.NewOutline()
+        for r, a in ((r0, a0), (r1, a0), (r1, a1), (r0, a1)):
+            ol.Append(V(r * math.cos(a), r * math.sin(a)))
+        z.SetZoneName("edge%d" % i)
+        board.Add(z)
 
 
 def circle_pts(r, n=96):
@@ -229,13 +224,10 @@ def build():
         fp.SetPath(pcbnew.KIID_PATH("/" + sym_uuid(ref)))
         board.Add(fp)
         x, y, rot = p["at"]
-        if ref == "J2":
-            place_header(fp)
-        else:
-            fp.SetPosition(V(x, y))
-            fp.SetOrientationDegrees(rot)
-            if p["side"] == "B":
-                fp.Flip(fp.GetPosition(), False)
+        fp.SetPosition(V(x, y))
+        fp.SetOrientationDegrees(rot)
+        if p["side"] == "B":
+            fp.Flip(fp.GetPosition(), False)
         for pad in fp.Pads():
             net = p["pins"].get(pad.GetNumber())
             if net:
@@ -249,22 +241,20 @@ def build():
             fp.Reference().SetVisible(False)
         fp.Value().SetVisible(False)
 
-    place_refs(board)
-
     # silkscreen: what plugs where
-    silk(board, "NOT STOCK", 3.6, 2.4, 1.4, bold=True)
-    silk(board, "CAN 1.85", 3.6, 4.5, 1.0)
-    jx = P["J1"]["at"][0]
+    silk(board, "NOT STOCK", 3.5, 6.5, 1.4, bold=True)
+    silk(board, "CAN 1.85", 3.5, 8.6, 1.0)
+    jx, jy = P["J1"]["at"][:2]
     for i, t in enumerate(("12V", "GND", "CH", "CL")):
-        silk(board, t, jx - 3 + 2 * i, 18.9, 0.8, rot=90)
+        silk(board, t, jx - 3 + 2 * i, jy + 5.8, 0.8, rot=90)
     silk(board, "TERM", P["JP1"]["at"][0] + 2.6, P["JP1"]["at"][1], 0.8, rot=90)
-    p1 = pad_xy(board.FindFootprintByReference("J2"), "1")
-    silk(board, "1", p1[0] + (-1.6 if PIN1_END == "left" else 1.6), p1[1], 0.8)
-    silk(board, "5V", p1[0] + (-1.6 if PIN1_END == "left" else 1.6),
-         p1[1] + 1.6, 0.8)
-    silk(board, "LCD SIDE", 0, -10.0, 1.0,
-         layer=pcbnew.B_SilkS)
-    silk(board, "rev 1", 9.5, 18.0, 0.8)
+    x, y = P["J2"]["at"][:2]
+    silk(board, "UART", x, y + 4.0, 0.8)
+    x, y = P["J3"]["at"][:2]
+    silk(board, "5V > LCD USB-C", x, y - 6.6, 0.8)
+    silk(board, "rev 2", -3.0, -6.6, 0.8)
+    place_refs(board)
+    edge_keepout(board)
 
     path = os.path.join(ROOT, NAME + ".kicad_pcb")
     board.Save(path)

@@ -2,19 +2,21 @@
  * CST816 touch, TCA9554 I/O expander, PCM5101 audio DAC with a speaker
  * amplifier.
  *
- * Pins from Waveshare's demo for the 1.85/1.85C (ST77916.c, CST816.c,
- * TCA9554PWR.c) and the ESPHome configs for the board:
+ * Pins from Waveshare's schematic of the board (ESP32-S3-LCD-1.85) and
+ * their demo for it:
  *   ST77916 QSPI: CLK GPIO40, D0..3 GPIO46/45/42/41, CS GPIO21, TE GPIO18,
  *   reset on EXIO2. Backlight GPIO5 (PWM).
- *   I2C: SCL GPIO10, SDA GPIO11 (board V2). TCA9554 0x20, CST816 0x15
- *   (INT GPIO4, reset EXIO1). Board V1 had the touch on its own pins,
- *   SDA GPIO1 / SCL GPIO3: hw_lcd185.c looks there when it is not found.
+ *   I2C GPIO10/11: TCA9554 0x20, IMU, RTC. CST816 0x15 on its own pins,
+ *   SDA GPIO1 / SCL GPIO3 (INT GPIO4, reset EXIO1); hw_lcd185.c looks on
+ *   10/11 first, as later boards have it there.
  *   I2S to the PCM5101: BCK GPIO48, LRCK GPIO38, DOUT GPIO47 (no MCLK).
  *
- * CAN: on the 28-pin 1.27 mm header (2 x 14), as Waveshare's 1.85C
- * schematic numbers it: GPIO12 (pin 20) to the transceiver's TXD, GPIO13
- * (pin 18) from its RXD; 5 V in on pin 1 (USB_5V), 3V3 on pins 9/10, GND
- * on 3/4/11/12. Check against the board's own silkscreen first.
+ * CAN: through the display's 4-pin 1.0 mm UART socket (pin 1 RXD/GPIO44,
+ * 2 TXD/GPIO43, 3 3V3, 4 GND), 1:1 on a JST SH cable to the CAN board
+ * (../../notstock-can185). GPIO44 drives the transceiver's TXD; GPIO43
+ * reads its RXD through 1 k on that board, as the boot ROM prints on
+ * GPIO43 for a moment after reset. The console is on the USB, nothing
+ * else may use UART0.
  */
 #pragma once
 
@@ -47,8 +49,8 @@
 #define PIN_I2S_WS   38
 #define PIN_I2S_DOUT 47
 
-#define PIN_TWAI_TX 12      /* header pin 20 */
-#define PIN_TWAI_RX 13      /* header pin 18 */
+#define PIN_TWAI_TX 44      /* UART socket pin 1 (RXD) */
+#define PIN_TWAI_RX 43      /* UART socket pin 2 (TXD) */
 
 /* touch to screen: flip these if a tap lands mirrored */
 #define TOUCH_SWAP_XY  0
