@@ -71,7 +71,7 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "+5V"
+        "pattern": "BAT_LCD"
       },
       {
         "netclass": "Power",

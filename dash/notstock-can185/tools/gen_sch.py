@@ -78,13 +78,14 @@ def pins_of(lib_id):
 BLOCKS = [
     ("Input: fuse, reverse polarity, load dump", 30, 50,
      ["J1", "F1", "D1", "D2", "C1", "C2"]),
-    ("12 V -> 5 V", 30, 140,
+    ("12 V -> 3.75 V for the display's battery input", 30, 140,
      ["U1", "R1", "C3", "D3", "L1", "R2", "R3", "C4", "C5"]),
     ("CAN transceiver, ESD, termination (JP1 open: the car's bus is "
      "terminated already)", 230, 50,
      ["U2", "C6", "C7", "D4", "R4", "R5", "C8", "JP1"]),
     ("To the display ESP32-S3-Touch-LCD-1.85: UART socket (SH 1.0 cable, "
-     "1:1) and USB-C (5 V)", 230, 172, ["J2", "R6", "J3", "R7", "R8"]),
+     "1:1) and battery socket (wires, MX1.25 plug; bridge the display's Key1)",
+     230, 172, ["J2", "R6", "J3"]),
     ("Mounting: the display's M2 holes", 230, 245, ["H1", "H2", "H3"]),
 ]
 STEP = {"U1": 45, "U2": 45, "J1": 30, "J2": 30, "J3": 40}
@@ -168,7 +169,7 @@ def main():
                 x, y = bx, y + 40
     # PWR_FLAGs: these nets are fed from outside or through passives
     fx = 30
-    for net in ("GND", "VIN", "+5V", "+3V3", "VBAT"):
+    for net in ("GND", "VIN", "BAT_LCD", "+3V3", "VBAT"):
         ref = "#FLG_%s" % net.strip("+")
         body.append(symbol(ref, "power:PWR_FLAG", "PWR_FLAG", "", fx, 270,
                            {"1": net}).replace('"Reference" "%s" (at' % ref,
@@ -181,7 +182,7 @@ def main():
     out = ['(kicad_sch (version 20230121) (generator eeschema)\n\n'
            '  (uuid "%s")\n\n  (paper "A3")\n\n' % ROOT_UUID,
            '  (title_block\n    (title "NOT STOCK CAN 1.85")\n'
-           '    (rev "1")\n    (comment 1 "12 V -> 5 V, CAN (TJA1051T/3) for '
+           '    (rev "4")\n    (comment 1 "12 V -> 3.75 V, CAN (SN65HVD230) for '
            'the round gauge")\n  )\n\n  (lib_symbols\n']
     for lib_id in sorted(used):
         out.append("    " + embedded(lib_id).replace("\n", "\n    ") + "\n")

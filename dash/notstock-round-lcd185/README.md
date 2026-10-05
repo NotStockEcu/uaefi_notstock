@@ -34,8 +34,7 @@ idf.py build flash monitor
 ```
 
 The board's USB-C is the ESP32-S3's own USB: flashing and the console go
-there: unplug the CAN board's USB-C cable and plug the computer in its
-place.
+there. Unplug the CAN board's battery wires from the display first.
 
 ## Pins
 
@@ -52,8 +51,8 @@ All in `main/board_lcd185.h`:
 - CAN: through the display's 4-pin 1.0 mm UART socket, 1:1 on a JST SH
   cable to the CAN board: GPIO44 (socket pin 1, RXD) is CAN TX, GPIO43
   (pin 2, TXD) CAN RX. The console is on the USB; the boot loader is quiet.
-- Power: 5 V into the display's USB-C, from the CAN board's USB-C on a
-  short USB-C cable.
+- Power: 3.75 V into the display's battery socket from the CAN board, with
+  the display's power button (Key1) bridged; see `../notstock-can185`.
 
 The panel comes in two revisions with different set-up tables; the ID read
 at start picks one, as Waveshare's demo does, and the log says which.

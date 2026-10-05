@@ -164,32 +164,6 @@ def place_refs(board):
             print("no room for", fp.GetReference(), "on the silkscreen")
 
 
-def vbus_bridge(board, net):
-    """The USB-C's VBUS pads sit left and right of the data pins, with no
-    way between them on top: join them underneath, before the autorouter."""
-    fp = board.FindFootprintByReference("J3")
-    l, r = pad_xy(fp, "A4"), pad_xy(fp, "A9")
-    y = l[1] - 1.7
-    pts = [((r[0], r[1]), (r[0], y), pcbnew.F_Cu),
-           ((r[0], y), (l[0], y), pcbnew.B_Cu),
-           ((l[0], y), (l[0], l[1]), pcbnew.F_Cu)]
-    for (x1, y1), (x2, y2), layer in pts:
-        t = pcbnew.PCB_TRACK(board)
-        t.SetStart(V(x1, y1))
-        t.SetEnd(V(x2, y2))
-        t.SetWidth(mm(0.4))
-        t.SetLayer(layer)
-        t.SetNet(net)
-        board.Add(t)
-    for x in (l[0], r[0]):
-        v = pcbnew.PCB_VIA(board)
-        v.SetPosition(V(x, y))
-        v.SetWidth(mm(0.6))
-        v.SetDrill(mm(0.3))
-        v.SetNet(net)
-        board.Add(v)
-
-
 def edge_keepout(board, n=48):
     """No tracks or vias in the last 0.7 mm to the edge. Freerouting does
     not know KiCad's edge clearance, but it keeps out of rule areas; a
@@ -279,8 +253,10 @@ def build():
     x, y = P["J2"]["at"][:2]
     silk(board, "UART", x, y + 4.0, 0.8)
     x, y = P["J3"]["at"][:2]
-    silk(board, "5V > LCD USB-C", x, y - 6.6, 0.8)
-    silk(board, "rev 2", -3.0, -6.6, 0.8)
+    silk(board, "3V75 > LCD BAT", x, y - 2.6, 0.8)
+    silk(board, "+", x - 2.1, y + 2.0, 1.0)
+    silk(board, "-", x + 2.1, y + 2.0, 1.0)
+    silk(board, "rev 4", -3.0, -6.6, 0.8)
     for fp in board.GetFootprints():
         for g in list(fp.GraphicalItems()):
             if g.GetLayer() != pcbnew.F_SilkS or g.GetClass() == "FP_TEXT":
@@ -293,7 +269,6 @@ def build():
                 fp.Remove(g)
     place_refs(board)
     edge_keepout(board)
-    vbus_bridge(board, nets["+5V"])
 
     path = os.path.join(ROOT, NAME + ".kicad_pcb")
     board.Save(path)

@@ -8,8 +8,11 @@ seen from behind the display (this board's component side).
 The board sits behind the Waveshare ESP32-S3-Touch-LCD-1.85 on spacers in
 the display's three M2 holes. The display has no plug-on header: CAN goes
 through its 4-pin 1.0 mm UART socket (J9 on the display: 1 RXD/GPIO44,
-2 TXD/GPIO43, 3 3V3, 4 GND) on a JST SH cable, the 5 V through its USB-C
-on a short USB-C cable. Mechanics from Waveshare's drawing of the board
+2 TXD/GPIO43, 3 3V3, 4 GND) on a JST SH cable, which also brings the
+display's 3.3 V for the transceiver. The display is powered through its
+battery socket (MX1.25 2-pin, J1 on the display: 1 BAT, 2 GND) with 3.75 V
+on two wires soldered to this board; the display's power button (Key1)
+must be bridged, or its battery switch never turns on. Mechanics from Waveshare's drawing of the board
 (ESP32-S3-LCD-1.85 structure chart: DXF and STEP), pins from its
 schematic.
 """
@@ -56,7 +59,8 @@ part("C1", "Device:C", "4.7u 50V", C1206, {"1": "VIN", "2": "GND"},
 part("C2", "Device:C", "100n 50V", C0603, {"1": "VIN", "2": "GND"},
      (-13.7, 1.5, 180), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
 
-# 12 V -> 5 V, LMR16006 (60 V, 0.6 A, 700 kHz Y version)
+# 12 V -> 3.75 V for the display's battery input, LMR16006 (60 V, 0.6 A,
+# 700 kHz Y version)
 part("U1", "Regulator_Switching:LMR16006YQ", "LMR16006YDDCR",
      "Package_TO_SOT_SMD:SOT-23-6",
      {"1": "CB", "2": "GND", "3": "FB", "4": "EN", "5": "VIN", "6": "SW"},
@@ -68,37 +72,32 @@ part("C3", "Device:C", "100n", C0603, {"1": "CB", "2": "SW"},
 part("D3", "Device:D_Schottky", "PMEG6010CEH", "Diode_SMD:D_SOD-123F",
      {"1": "SW", "2": "GND"}, (-14.3, 5.0, 180), mpn="Nexperia PMEG6010CEH,115", lcsc="C110797")
 part("L1", "Device:L", "22u", "Inductor_SMD:L_Sunlord_SWPA4026S",
-     {"1": "SW", "2": "+5V"}, (-10.5, 8.7, 90),
+     {"1": "SW", "2": "BAT_LCD"}, (-10.5, 8.7, 90),
      mpn="Sunlord SWPA4026S220MT (22 uH)", lcsc="C88254")
-part("R2", "Device:R", "56k", R0603, {"1": "+5V", "2": "FB"},
-     (-6.0, -2.1, 90), mpn="UNI-ROYAL 0603WAF5602T5E (56 k 1%)", lcsc="C23206")
+# 0.765 V x (1 + 39 k / 10 k) = 3.75 V
+part("R2", "Device:R", "39k", R0603, {"1": "BAT_LCD", "2": "FB"},
+     (-6.0, -2.1, 90), mpn="UNI-ROYAL 0603WAF3902T5E (39 k 1%)", lcsc="C23153")
 part("R3", "Device:R", "10k", R0603, {"1": "FB", "2": "GND"},
      (-7.6, -2.1, 270), mpn="UNI-ROYAL 0603WAF1002T5E (10 k 1%)", lcsc="C25804")
-part("C4", "Device:C", "22u 16V", C1206, {"1": "+5V", "2": "GND"},
+part("C4", "Device:C", "22u 16V", C1206, {"1": "BAT_LCD", "2": "GND"},
      (-6.6, 7.1, 90), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
-part("C5", "Device:C", "22u 16V", C1206, {"1": "+5V", "2": "GND"},
+part("C5", "Device:C", "22u 16V", C1206, {"1": "BAT_LCD", "2": "GND"},
      (-4.0, 7.1, 90), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
 
-# 5 V out to the display's USB-C, through a short USB-C cable. 56 k on
-# CC: a plain 5 V source ("default USB power") to whatever is plugged in
-part("J3", "Connector:USB_C_Receptacle_USB2.0_16P", "5V to display",
-     "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
-     {"A4": "+5V", "A9": "+5V", "B4": "+5V", "B9": "+5V",
-      "A1": "GND", "A12": "GND", "B1": "GND", "B12": "GND", "S1": "GND",
-      "A5": "CC1", "B5": "CC2"}, (0.0, 20.1, 0),
-     mpn="HRO TYPE-C-31-M-12 (USB-C, data pins open)", lcsc="C165948")
-part("R7", "Device:R", "56k", R0603, {"1": "+5V", "2": "CC1"},
-     (-7.0, 15.5, 90), mpn="UNI-ROYAL 0603WAF5602T5E (56 k 1%)", lcsc="C23206")
-part("R8", "Device:R", "56k", R0603, {"1": "+5V", "2": "CC2"},
-     (-8.6, 15.5, 90), mpn="UNI-ROYAL 0603WAF5602T5E (56 k 1%)", lcsc="C23206")
+# 3.75 V out to the display's battery socket: two wires, soldered here,
+# with an MX1.25 2-pin plug at the display. Not assembled (pads only).
+part("J3", "Connector_Generic:Conn_01x02", "BAT to display",
+     "Connector_Wire:SolderWire-0.25sqmm_1x02_P4.2mm_D0.65mm_OD1.7mm",
+     {"1": "BAT_LCD", "2": "GND"}, (0.0, 19.0, 0), mpn="(wires)", dnp=True)
 
-# CAN: TJA1051T/3, 5 V core, 3.3 V logic from the display's UART socket
-part("U2", "Interface_CAN_LIN:TJA1051T-3", "TJA1051T/3",
+# CAN: SN65HVD230 on the display's 3.3 V (UART socket pin 3); Rs to GND:
+# full speed, no slope control
+part("U2", "Interface_CAN_LIN:SN65HVD230", "SN65HVD230",
      "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
-     {"1": "TXD", "2": "GND", "3": "+5V", "4": "RXD_T", "5": "+3V3",
+     {"1": "TXD", "2": "GND", "3": "+3V3", "4": "RXD_T",
       "6": "CANL", "7": "CANH", "8": "GND"},
-     (8.0, -3.0, 0), mpn="NXP TJA1051T/3/1J", lcsc="C38695")
-part("C6", "Device:C", "100n", C0603, {"1": "+5V", "2": "GND"},
+     (8.0, -3.0, 0), mpn="TI SN65HVD230DR", lcsc="C12084")
+part("C6", "Device:C", "100n", C0603, {"1": "+3V3", "2": "GND"},
      (3.0, -3.0, 90), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
 part("C7", "Device:C", "100n", C0603, {"1": "+3V3", "2": "GND"},
      (12.0, -8.0, 0), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
@@ -133,4 +132,4 @@ for i, (x, y) in enumerate(HOLES, 1):
          "MountingHole:MountingHole_2.2mm_M2", {}, (x, y, 0), mpn="")
 
 # nets that carry current, for the wider tracks
-POWER = {"VBAT", "VBAT_F", "VIN", "SW", "+5V", "GND"}
+POWER = {"VBAT", "VBAT_F", "VIN", "SW", "BAT_LCD", "GND"}
