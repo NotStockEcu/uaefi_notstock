@@ -11,7 +11,8 @@ KiCad 7 project: `notstock-can185.kicad_pro` (schematic, PCB). Schematic as
 PDF: [docs/schematic.pdf](docs/schematic.pdf). Placement:
 [docs/assembly.png](docs/assembly.png).
 
-**State: rev 2, designed, DRC clean (0 errors, 0 unconnected), not built.**
+**State: rev 3, designed, DRC clean (0 errors, 0 unconnected), ready to
+order with assembly; not built yet.**
 
 ## How it connects
 
@@ -20,7 +21,7 @@ The display has no plug-on header. What it has, and what this board uses
 
 | Display | Cable | This board |
 | --- | --- | --- |
-| USB-C (5 V in) | short USB-C to USB-C, angled ends | J3 USB-C, 5 V out |
+| USB-C (5 V in) | short USB-C to USB-C, angled ends | J3 USB-C (HRO TYPE-C-31-M-12), 5 V out |
 | UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | JST SH 4-pin, 1:1 (Qwiic/STEMMA QT style), about 5 cm | J2 JST SH 4-pin |
 | three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
 
@@ -37,7 +38,7 @@ cable from J3 and plug the computer into the display instead.
 | --- | --- |
 | Input | J1 JST PH 4-pin SMD; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
 | 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 56 k / 10 k sets 5.05 V |
-| 5 V out | J3 USB-C (power only), 56 k on CC1/CC2: a plain 5 V source |
+| 5 V out | J3 USB-C (data pins open), 56 k on CC1/CC2: a plain 5 V source |
 | CAN | U2 TJA1051T/3 (5 V supply, 3.3 V logic from the display's socket); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
 
@@ -60,12 +61,52 @@ CAN-L twisted.
 - Waveshare's drawing was the source of the outline and the holes; hold
   the printed board (1:1 PDF of `docs/top.svg`) against the display first.
 
-## Make it
+## Make it (JLCPCB, with assembly)
 
-PCB: `fab/notstock-can185-gerbers.zip` (2 layers, 1.6 mm) to JLCPCB or
-similar. Assembly: `fab/bom.csv` and `fab/cpl.csv` are in JLCPCB's columns;
-the LCSC numbers are to be filled in when ordering (stock changes), and
-check the part rotations in their preview. All parts on the top side.
+Three files in `fab/`:
+
+| File | Where on JLCPCB |
+| --- | --- |
+| `notstock-can185-gerbers.zip` | "Add gerber file": 2 layers, 1.6 mm, any colour |
+| `bom.csv` | PCB Assembly, "Add BOM File" |
+| `cpl.csv` | PCB Assembly, "Add CPL File" |
+
+Assembly: top side only, all SMD. Every part has its LCSC number in
+`bom.csv` (also in the schematic and on the footprints, field "LCSC"):
+
+| Ref | Part | LCSC |
+| --- | --- | --- |
+| U1 | TI LMR16006YDDCR | C290195 |
+| U2 | NXP TJA1051T/3/1J | C38695 |
+| D4 | onsemi NUP2105LT1G | C14486 |
+| D1 | SS16 (UMW) | C2758574 |
+| D2 | SMAJ26A | C383018 |
+| D3 | Nexperia PMEG6010CEH | C110797 |
+| F1 | SMD1812P050TF/30 (RUILON) | C12559 |
+| L1 | Sunlord SWPA4026S220MT | C88254 |
+| J1 | JST B4B-PH-SM4-TB | C160354 |
+| J2 | JST BM04B-SRSS-TB | C160390 |
+| J3 | HRO TYPE-C-31-M-12 | C165948 |
+| C1 | 4.7 uF 50 V 1206 (Murata) | C77096 |
+| C2, C3, C6, C7 | 100 nF 50 V 0603 (YAGEO) | C14663 |
+| C4, C5 | 22 uF 16 V 1206 (Samsung) | C90146 |
+| C8 | 4.7 nF 50 V 0603 | C53987 |
+| R1 | 100 k 0603 | C25803 |
+| R2, R7, R8 | 56 k 0603 | C23206 |
+| R3 | 10 k 0603 | C25804 |
+| R6 | 1 k 0603 | C21190 |
+| R4, R5 | 60.4 R 0805 | C273897 |
+
+JP1 is a solder bridge, not a part. Stock changes: JLCPCB marks a part out
+of stock in the BOM step; pick an equivalent there (same value, package,
+voltage). The passives are JLCPCB basic parts, the rest extended (a small
+loading fee each).
+
+In the placement preview, check the parts with a direction: U1 (pin 1 dot),
+U2 (pin 1 at the notch), D4, D1/D2/D3 (the band towards the "K" side of the
+footprint's silkscreen), J1, J2, J3 (openings: J1 and J2 upwards, J3 to the
+board edge). KiCad and JLCPCB do not always agree on rotations; turn any
+that are off in 90° steps there.
 
 ## Regenerate
 

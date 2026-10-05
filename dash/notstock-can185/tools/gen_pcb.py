@@ -164,6 +164,32 @@ def place_refs(board):
             print("no room for", fp.GetReference(), "on the silkscreen")
 
 
+def vbus_bridge(board, net):
+    """The USB-C's VBUS pads sit left and right of the data pins, with no
+    way between them on top: join them underneath, before the autorouter."""
+    fp = board.FindFootprintByReference("J3")
+    l, r = pad_xy(fp, "A4"), pad_xy(fp, "A9")
+    y = l[1] - 1.7
+    pts = [((r[0], r[1]), (r[0], y), pcbnew.F_Cu),
+           ((r[0], y), (l[0], y), pcbnew.B_Cu),
+           ((l[0], y), (l[0], l[1]), pcbnew.F_Cu)]
+    for (x1, y1), (x2, y2), layer in pts:
+        t = pcbnew.PCB_TRACK(board)
+        t.SetStart(V(x1, y1))
+        t.SetEnd(V(x2, y2))
+        t.SetWidth(mm(0.4))
+        t.SetLayer(layer)
+        t.SetNet(net)
+        board.Add(t)
+    for x in (l[0], r[0]):
+        v = pcbnew.PCB_VIA(board)
+        v.SetPosition(V(x, y))
+        v.SetWidth(mm(0.6))
+        v.SetDrill(mm(0.3))
+        v.SetNet(net)
+        board.Add(v)
+
+
 def edge_keepout(board, n=48):
     """No tracks or vias in the last 0.7 mm to the edge. Freerouting does
     not know KiCad's edge clearance, but it keeps out of rule areas; a
@@ -221,6 +247,8 @@ def build():
         fp = load_fp(p["fp"])
         fp.SetReference(ref)
         fp.SetValue(p["val"])
+        if p["lcsc"]:
+            fp.SetProperty("LCSC", p["lcsc"])
         fp.SetPath(pcbnew.KIID_PATH("/" + sym_uuid(ref)))
         board.Add(fp)
         x, y, rot = p["at"]
@@ -253,8 +281,19 @@ def build():
     x, y = P["J3"]["at"][:2]
     silk(board, "5V > LCD USB-C", x, y - 6.6, 0.8)
     silk(board, "rev 2", -3.0, -6.6, 0.8)
+    for fp in board.GetFootprints():
+        for g in list(fp.GraphicalItems()):
+            if g.GetLayer() != pcbnew.F_SilkS or g.GetClass() == "FP_TEXT":
+                continue
+            bb = g.GetBoundingBox()
+            far = max(math.hypot(pcbnew.ToMM(x) - CX, pcbnew.ToMM(y) - CY)
+                      for x in (bb.GetLeft(), bb.GetRight())
+                      for y in (bb.GetTop(), bb.GetBottom()))
+            if far > BOARD_R - 0.3:
+                fp.Remove(g)
     place_refs(board)
     edge_keepout(board)
+    vbus_bridge(board, nets["+5V"])
 
     path = os.path.join(ROOT, NAME + ".kicad_pcb")
     board.Save(path)
@@ -345,6 +384,15 @@ def import_ses(board, ses):
     layers = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu}
     out = next(x for x in routes if isinstance(x, list) and x[0] == "network_out")
     count = 0
+    # what was routed before (the VBUS bridge) comes back in the session too
+    have = set()
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            have.add(("v", t.GetPosition().x, t.GetPosition().y))
+        else:
+            a_, b_ = t.GetStart(), t.GetEnd()
+            have.add(("t", t.GetLayer(), min((a_.x, a_.y), (b_.x, b_.y)),
+                      max((a_.x, a_.y), (b_.x, b_.y))))
     for net in out[1:]:
         ni = board.FindNet(net[1])
         for item in net[2:]:
@@ -354,6 +402,9 @@ def import_ses(board, ses):
                 pts = [(float(path[i]) * scale, -float(path[i + 1]) * scale)
                        for i in range(3, len(path) - 1, 2)]
                 for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+                    p1, p2 = (mm(x1), mm(y1)), (mm(x2), mm(y2))
+                    if ("t", layer, min(p1, p2), max(p1, p2)) in have:
+                        continue
                     t = pcbnew.PCB_TRACK(board)
                     t.SetStart(pcbnew.VECTOR2I(mm(x1), mm(y1)))
                     t.SetEnd(pcbnew.VECTOR2I(mm(x2), mm(y2)))
@@ -367,9 +418,12 @@ def import_ses(board, ses):
                 m = re.search(r"_(\d+):(\d+)_um", item[1])
                 d, drill = (int(m.group(1)) / 1000, int(m.group(2)) / 1000) \
                     if m else (0.6, 0.3)
+                pos = pcbnew.VECTOR2I(mm(float(item[2]) * scale),
+                                      mm(-float(item[3]) * scale))
+                if ("v", pos.x, pos.y) in have:
+                    continue
                 v = pcbnew.PCB_VIA(board)
-                v.SetPosition(pcbnew.VECTOR2I(mm(float(item[2]) * scale),
-                                              mm(-float(item[3]) * scale)))
+                v.SetPosition(pos)
                 v.SetWidth(mm(d))
                 v.SetDrill(mm(drill))
                 v.SetNet(ni)

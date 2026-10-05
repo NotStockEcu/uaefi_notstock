@@ -157,7 +157,9 @@ def main():
         for ref in refs:
             p = P[ref]
             used.add(p["sym"])
-            props = []
+            # LCSC and part number for JLCPCB's assembly (and its tools)
+            props = [(k, v, x, y, None, True) for k, v in
+                     (("LCSC", p["lcsc"]), ("MPN", p["mpn"])) if v]
             body.append(symbol(ref, p["sym"], p["val"], p["fp"], x, y,
                                p["pins"], props))
             x += STEP.get(ref, 26)
