@@ -26,9 +26,9 @@ HOLES = [(-15.73, -14.10), (-15.73, 14.90), (21.27, 0.0)]
 P = {}
 
 
-def part(ref, sym, val, fp, pins, at, side="F", mpn="", lcsc=""):
+def part(ref, sym, val, fp, pins, at, side="F", mpn="", lcsc="", dnp=False):
     P[ref] = dict(sym=sym, val=val, fp=fp, pins=pins, at=at, side=side,
-                  mpn=mpn or val, lcsc=lcsc)
+                  mpn=mpn or val, lcsc=lcsc, dnp=dnp)
 
 
 R0603 = "Resistor_SMD:R_0603_1608Metric"
@@ -105,13 +105,15 @@ part("C7", "Device:C", "100n", C0603, {"1": "+3V3", "2": "GND"},
 part("D4", "Power_Protection:NUP2105L", "NUP2105L", "Package_TO_SOT_SMD:SOT-23",
      {"1": "CANH", "2": "CANL", "3": "GND"}, (15.5, -3.5, 0),
      mpn="onsemi NUP2105LT1G", lcsc="C14486")
-# split termination, open by default: the car's bus is terminated already
+# split termination, open by default: the car's bus is terminated already.
+# Not assembled (dnp): only for a bench, soldered by hand then; any 0805
+# 56..62 R 1 %
 part("R4", "Device:R", "62R", R0805, {"1": "CANH", "2": "TMID"},
-     (11.0, 4.5, 90), mpn="Walsin MR08X62R0FTL (62 R 1%)", lcsc="C5805111")
+     (11.0, 4.5, 90), mpn="62 R 1% 0805", dnp=True)
 part("R5", "Device:R", "62R", R0805, {"1": "TMID", "2": "TERM"},
-     (14.0, 4.5, 90), mpn="Walsin MR08X62R0FTL (62 R 1%)", lcsc="C5805111")
+     (14.0, 4.5, 90), mpn="62 R 1% 0805", dnp=True)
 part("C8", "Device:C", "4.7n", C0603, {"1": "TMID", "2": "GND"},
-     (16.8, 4.5, 90), mpn="FH 0603B472K500NT (4.7 nF 50 V X7R)", lcsc="C53987")
+     (16.8, 4.5, 90), mpn="FH 0603B472K500NT (4.7 nF 50 V X7R)", lcsc="C53987", dnp=True)
 part("JP1", "Jumper:SolderJumper_2_Open", "TERM",
      "Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm",
      {"1": "TERM", "2": "CANL"}, (14.0, 8.4, 270), mpn="(solder bridge)")

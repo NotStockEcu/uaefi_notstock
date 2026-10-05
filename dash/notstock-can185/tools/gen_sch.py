@@ -112,9 +112,10 @@ def label_angle(pin_ang):
 def symbol(ref, lib_id, value, fp, x, y, pins_nets, extra_props=()):
     pins = pins_of(lib_id)
     s = ['  (symbol (lib_id "%s") (at %s %s 0) (unit 1)\n'
-         '    (in_bom %s) (on_board yes) (dnp no)\n    (uuid "%s")\n'
+         '    (in_bom %s) (on_board yes) (dnp %s)\n    (uuid "%s")\n'
          % (lib_id, fmt(x), fmt(y), "no" if ref.startswith(("H", "#"))
-            else "yes", sym_uuid(ref))]
+            else "yes", "yes" if P.get(ref, {}).get("dnp") else "no",
+            sym_uuid(ref))]
     ry = y - 3 if pins else y - 2
     flag = ref.startswith("#")
     props = [("Reference", ref, x + 2.5, ry, "left", flag),

@@ -39,7 +39,7 @@ cable from J3 and plug the computer into the display instead.
 | Input | J1 JST PH 4-pin SMD; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
 | 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 700 kHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 56 k / 10 k sets 5.05 V |
 | 5 V out | J3 USB-C (data pins open), 56 k on CC1/CC2: a plain 5 V source |
-| CAN | U2 TJA1051T/3 (5 V supply, 3.3 V logic from the display's socket); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open; R6 1 k in RXD |
+| CAN | U2 TJA1051T/3 (5 V supply, 3.3 V logic from the display's socket); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
 
 Termination: the car's bus is terminated at both ends already, so JP1
@@ -90,16 +90,15 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | C1 | 4.7 uF 50 V 1206 (Murata) | C77096 |
 | C2, C3, C6, C7 | 100 nF 50 V 0603 (YAGEO) | C14663 |
 | C4, C5 | 22 uF 16 V 1206 (Samsung) | C90146 |
-| C8 | 4.7 nF 50 V 0603 | C53987 |
 | R1 | 100 k 0603 | C25803 |
 | R2, R7, R8 | 56 k 0603 | C23206 |
 | R3 | 10 k 0603 | C25804 |
 | R6 | 1 k 0603 | C21190 |
-| R4, R5 | 62 R 0805 1 % (Walsin MR08X62R0FTL) | C5805111 |
 
-R4/R5: any 0805 1 % from 56 to 62 R will do (the bus wants 2 x 60 R). With
-JP1 open they do nothing; if no such part is in stock, R4, R5 and C8 can be
-left off ("Do not place" in the BOM step).
+R4, R5 and C8 (the split termination) are not assembled: with JP1 open
+they do nothing, and the car's bus is terminated already. For a bench
+without a terminator solder them by hand: R4, R5 any 0805 56..62 R 1 %, C8
+4.7 nF 0603 (C53987), then bridge JP1.
 
 JP1 is a solder bridge, not a part. Stock changes: JLCPCB marks a part out
 of stock in the BOM step; pick an equivalent there (same value, package,

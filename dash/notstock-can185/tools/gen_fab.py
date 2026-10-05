@@ -58,7 +58,7 @@ def main():
         w = csv.writer(f)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for r in rows:
-            if r["Ref"].startswith(("H", "JP")):
+            if r["Ref"].startswith(("H", "JP")) or P.get(r["Ref"], {}).get("dnp"):
                 continue
             w.writerow([r["Ref"], r["PosX"] + "mm", r["PosY"] + "mm",
                         "Top" if r["Side"] == "top" else "Bottom", r["Rot"]])
@@ -66,7 +66,7 @@ def main():
     # parts, grouped by value and footprint
     groups = {}
     for ref, p in P.items():
-        if ref.startswith(("H", "JP")):
+        if ref.startswith(("H", "JP")) or p["dnp"]:
             continue
         key = (p["mpn"], p["fp"].split(":")[1], p["lcsc"])
         groups.setdefault(key, []).append(ref)
