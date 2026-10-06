@@ -7,7 +7,8 @@ const uint8_t PIN_RELAYS = 8;
 const uint8_t PIN_SOL1 = 9, PIN_SOL2 = 10, PIN_SOL3 = 11;
 const uint8_t PIN_SER = 12, PIN_SRCLK = 13, PIN_RCLK = A0;
 
-// Solenoidy S1, S2 podle stupně (1..4). OVĚŘIT na převodovce!
+// Solenoidy S1, S2 podle stupně (1..4) – servisní manuál AW-4, Fig. 8.
+// Lockup = solenoid 3 (ON = zamčeno). Povolen od 3. stupně (v originále 3. a 4. v poloze D).
 const bool GEAR_TABLE[4][2] = {
   {true,  false},  // 1.
   {true,  true},   // 2.
@@ -22,7 +23,12 @@ const uint8_t SEG[] = {
 const uint8_t SEG_DASH = 0x40;
 const uint8_t SEG_DP   = 0x80;
 
-uint8_t gear = 1;
+const uint8_t LOCKUP_MIN_GEAR = 3;
+// POZOR: po READY nevíme, jaký stupeň zrovna drží původní TCU. Zapínat READY ve stoje,
+// nebo nastavit INITIAL_GEAR podle rychlosti, jinak hrozí přetočení motoru.
+const uint8_t INITIAL_GEAR = 1;
+
+uint8_t gear = INITIAL_GEAR;
 bool lockup = false;
 bool ready = false;
 
@@ -73,12 +79,12 @@ void loop() {
   pressed(btns[2]); pressed(btns[3]);        // aktualizace stavů
 
   bool newReady = btns[2].state;
-  if (newReady != ready) { ready = newReady; if (ready) { gear = 1; lockup = false; } apply(); }
+  if (newReady != ready) { ready = newReady; if (ready) { gear = INITIAL_GEAR; lockup = false; } apply(); }
 
   if (ready) {
     if (up   && gear < 4) gear++;
     if (down && gear > 1) gear--;
-    lockup = btns[3].state && gear == 4;     // lockup jen ve 4. a po dobu držení tlačítka
+    lockup = btns[3].state && gear >= LOCKUP_MIN_GEAR;   // lockup jen od 3. a po dobu držení tlačítka
     apply();
   }
 
