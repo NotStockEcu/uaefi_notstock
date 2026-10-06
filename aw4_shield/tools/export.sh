@@ -7,6 +7,7 @@ kicad-cli pcb export gerbers --layers F.Cu,B.Cu,F.Mask,B.Mask,F.SilkS,B.SilkS,Ed
 kicad-cli pcb export drill -o gerb2/ aw4_shield.kicad_pcb >/dev/null
 kicad-cli sch export pdf -o aw4_shield_schema_kicad.pdf aw4_shield.kicad_sch >/dev/null
 kicad-cli pcb export pdf --mode-multipage --layers F.Cu,B.Cu,F.SilkS,F.Fab --common-layers Edge.Cuts -o aw4_shield_pcb.pdf aw4_shield.kicad_pcb >/dev/null
+kicad-cli pcb export svg --mode-single --layers F.Fab,F.Mask,Edge.Cuts --black-and-white --exclude-drawing-sheet --fit-page-to-board -o fab.svg aw4_shield.kicad_pcb >/dev/null
 kicad-cli pcb render --side top -w 1800 --height 1300 --quality high -o pcb_top.png aw4_shield.kicad_pcb >/dev/null
 kicad-cli pcb render --side bottom -w 1800 --height 1300 --quality high -o pcb_bottom.png aw4_shield.kicad_pcb >/dev/null
 kicad-cli pcb render --perspective --rotate "-40,0,20" --zoom 1.1 -w 1800 --height 1300 --quality high -o pcb_3d.png aw4_shield.kicad_pcb >/dev/null

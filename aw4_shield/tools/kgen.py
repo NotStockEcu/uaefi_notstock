@@ -84,7 +84,7 @@ def add(sym,val,fp,x,y,nets,pref,dnp=False,note="",ref=None):
     parts.append(dict(ref=ref,sym=sym,val=val,fp=fp,x=x,y=y,nets=nets,dnp=dnp,note=note,uuid=U())); return ref
 def text(x,y,t,size=2.5):
     texts.append((x,y,t,size))
-R0805="Resistor_SMD:R_0805_2012Metric"; C0805="Capacitor_SMD:C_0805_2012Metric"
+R0805="Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"; C0805="Capacitor_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm"
 def res(val,x,y,a,b,note=""): return add('R',val,R0805,x,y,{"1":a,"2":b},"R",note=note)
 def cap(val,x,y,a,b): return add('C',val,C0805,x,y,{"1":a,"2":b},"C")
 def diode(val,fp,x,y,k,a,note=""): return add('D',val,fp,x,y,{"1":k,"2":a},"D",note=note)
@@ -92,17 +92,17 @@ def diode(val,fp,x,y,k,a,note=""): return add('D',val,fp,x,y,{"1":k,"2":a},"D",n
 # --- Power ---
 text(20,25,"NAPÁJENÍ: +12V → F1 → Q0 (ochrana proti přepólování) → +12V_SW; TSR 1-2450 → +5V; PGND ↔ GND jen přes R 0R (hvězda)",3)
 add('CONN2',"J1 +12V / PGND","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",40,50,{"1":"+12V_IN","2":"PGND"},"J",ref="J1")
-add('FUSE',"5A","Fuse:Fuseholder_Cylinder-5x20mm_Schurter_0031_8201_Horizontal_Open",75,50,{"1":"+12V_IN","2":"+12V_FUSED"},"F",note="pojistka 5 A, 5x20 mm držák nebo ATO")
+add('FUSE',"5A","Fuse:Fuseholder_TR5_Littelfuse_No560_No460",75,50,{"1":"+12V_IN","2":"+12V_FUSED"},"F",note="pojistka TR5 5 A (T) v patici TR5")
 add('PFET',"IRF4905","Package_TO_SOT_THT:TO-220-3_Vertical",110,50,{"1":"Q0_G","2":"+12V_FUSED","3":"+12V_SW"},"Q",note="ochrana proti přepólování (D na vstupu, S na zátěži)")
 res("100k",150,50,"Q0_G","PGND")
-diode("BZT52C12","Diode_SMD:D_SOD-123",170,50,"+12V_SW","Q0_G",note="zener 12 V gate-source Q0")
-diode("SMBJ24A","Diode_SMD:D_SMB",190,50,"+12V_SW","PGND",note="TVS load dump")
+diode("BZX55C12","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",170,50,"+12V_SW","Q0_G",note="zener 12 V gate-source Q0")
+diode("P6KE27A","Diode_THT:D_DO-15_P5.08mm_Vertical_CathodeUp",190,50,"+12V_SW","PGND",note="TVS 600 W (load dump), VBR 25,7-28,4 V")
 add('CP',"470uF 25V","Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",210,50,{"1":"+12V_SW","2":"PGND"},"C")
 cap("100nF",230,50,"+12V_SW","PGND")
 add('REG_5V',"TSR 1-2450 (12V->5V 1A)","Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT",275,50,{"1":"+12V_SW","2":"GND","3":"+5V_BUCK"},"U",note="spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V")
-add('C',"10uF 25V","Capacitor_SMD:C_1206_3216Metric",300,50,{"1":"+12V_SW","2":"GND"},"C")
+add('CP',"10uF 25V","Capacitor_THT:CP_Radial_D5.0mm_P2.00mm",300,50,{"1":"+12V_SW","2":"GND"},"C")
 res("0R",320,50,"PGND","GND",note="hvězda PGND-GND (jediné spojení zemí)")
-add('FERRITE',"600R@100MHz","Inductor_SMD:L_0805_2012Metric",345,50,{"1":"+5V_BUCK","2":"+5V"},"L")
+add('FERRITE',"600R@100MHz","Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical",345,50,{"1":"+5V_BUCK","2":"+5V"},"L")
 add('CP',"47uF 10V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",370,50,{"1":"+5V","2":"GND"},"C")
 add('CONN2',"JP1 5V -> Nano (jumper)","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",405,50,{"1":"+5V","2":"NANO_5V"},"J",note="sundat při programování po USB",ref="JP1")
 
@@ -122,19 +122,19 @@ for nm in ("UP","DOWN","READY","LOCKUP"):
     res("1k",x,197,nm+"_IN",nm+"_D")
     res("10k",x+24,197,nm+"_D","GND")
     cap("100nF",x+48,197,nm+"_D","GND")
-    diode("PESD5V0S1BL","Diode_SMD:D_SOD-323",x+72,197,nm+"_D","GND")
+    diode("BZX55C5V6","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",x+72,197,nm+"_D","GND")
     x+=96
 
 # --- Display ---
 text(330,100,"DISPLEJ NEXTION (J5)",3)
 add('CONN4',"J5 Nextion +5V GND RX TX","Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical",350,140,{"1":"+5V_DISP","2":"GND","3":"DISP_RX","4":"DISP_TX"},"J",ref="J5")
-add('FERRITE',"600R@100MHz","Inductor_SMD:L_0805_2012Metric",395,140,{"1":"+5V","2":"+5V_DISP"},"L")
+add('FERRITE',"600R@100MHz","Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical",395,140,{"1":"+5V","2":"+5V_DISP"},"L")
 add('CP',"100uF 10V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",420,140,{"1":"+5V_DISP","2":"GND"},"C")
 cap("100nF",445,140,"+5V_DISP","GND")
 res("100R",470,140,"D3_UART_TX","DISP_RX",note="Nano TX -> Nextion RX")
 res("100R",500,140,"DISP_TX","D2_UART_RX",note="Nextion TX -> Nano RX")
-diode("PESD5V0S1BL","Diode_SMD:D_SOD-323",530,140,"DISP_RX","GND")
-diode("PESD5V0S1BL","Diode_SMD:D_SOD-323",560,140,"DISP_TX","GND")
+diode("BZX55C5V6","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",530,140,"DISP_RX","GND")
+diode("BZX55C5V6","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",560,140,"DISP_TX","GND")
 
 # --- Relay coil drive ---
 text(20,232,"CÍVKY RELÉ K1-K3 (společné): READY přepínač AND D8 (aktivní LOW)",3)
@@ -143,7 +143,7 @@ add('PC817',"PC817","Package_DIP:DIP-4_W7.62mm",75,258,{"1":"RLY_A","2":"K_CTRL"
 res("220",110,258,"+12V_SW","RLY_C")
 res("10k",130,258,"Q4_B","PGND")
 add('NPN',"BC337","Package_TO_SOT_THT:TO-92_Inline_Wide",160,258,{"2":"Q4_B","1":"K_LOW","3":"PGND"},"Q",note="TO-92 pinout BC337: 1=C 2=B 3=E")
-diode("1N4148W","Diode_SMD:D_SOD-123",190,258,"+12V_SW","K_LOW",note="flyback cívek")
+diode("1N4148","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",190,258,"+12V_SW","K_LOW",note="flyback cívek")
 res("2k2",210,258,"+12V_SW","LED_A")
 add('LED',"zelená READY","LED_THT:LED_D3.0mm",230,258,{"1":"K_LOW","2":"LED_A"},"D")
 
@@ -157,10 +157,10 @@ for n in (1,2,3):
     add('PC817',"PC817","Package_DIP:DIP-4_W7.62mm",xb+28,yy+25,{"1":f"S{n}_LEDA","2":"GND","4":f"S{n}_C","3":"PGND"},"U")
     res("1k",xb+52,yy,f"S{n}_C",f"G{n}")
     res("10k",xb+70,yy,"+12V_SW",f"G{n}")
-    diode("BZT52C15","Diode_SMD:D_SOD-123",xb+88,yy,"+12V_SW",f"G{n}",note="zener 15 V gate-source")
+    diode("BZX55C15","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",xb+88,yy,"+12V_SW",f"G{n}",note="zener 15 V gate-source")
     add('PFET',"IRF9540N","Package_TO_SOT_THT:TO-220-3_Vertical",xb+118,yy+25,{"1":f"G{n}","2":f"SOL{n}_NO","3":"+12V_SW"},"Q")
     add('RELAY_SPDT',"G5LE-1 12V SPDT","Relay_THT:Relay_SPDT_Omron-G5LE-1",xb+158,yy+25,{"2":"+12V_SW","5":"K_LOW","1":f"SOL{n}_OUT","4":f"TCU{n}","3":f"SOL{n}_NO"},"K",note="čísla pinů relé ověřit podle footprintu")
-    diode("SS34","Diode_SMD:D_SMA",xb+158,yy+60,f"SOL{n}_OUT","PGND",note="flyback na straně solenoidu")
+    diode("1N4007","Diode_THT:D_DO-41_SOD81_P5.08mm_Vertical_CathodeUp",xb+158,yy+60,f"SOL{n}_OUT","PGND",note="flyback na straně solenoidu")
 
 # ---------------- connectivity check ----------------
 nets=collections.defaultdict(list)

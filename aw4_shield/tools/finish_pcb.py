@@ -14,8 +14,8 @@ def zone(netname, layer, pts, prio=0):
     z.SetLocalClearance(MM(0.4)); z.SetMinThickness(MM(0.3)); z.SetAssignedPriority(prio)
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL); z.SetThermalReliefGap(MM(0.4)); z.SetThermalReliefSpokeWidth(MM(0.6))
     b.Add(z); return z
-zone("PGND", pcbnew.B_Cu, [(100.5,100.5),(177.5,100.5),(177.5,199.5),(100.5,199.5)])
-zone("GND",  pcbnew.B_Cu, [(179,119),(244.5,119),(244.5,199.5),(179,199.5)])
+zone("PGND", pcbnew.B_Cu, [(100.5,100.5),(171,100.5),(171,172.5),(100.5,172.5)])
+zone("GND",  pcbnew.B_Cu, [(100.5,174),(171,174),(171,118),(199.5,118),(199.5,199.5),(100.5,199.5)])
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
 pcbnew.SaveBoard(sys.argv[1], b)
 tr=[t for t in b.GetTracks()]
