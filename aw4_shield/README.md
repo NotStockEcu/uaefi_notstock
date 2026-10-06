@@ -51,7 +51,7 @@ Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky 
 | DOWN | D5 | vstup | aktivní = HIGH, pull-down na desce |
 | READY | D6 | vstup | aktivní = HIGH, pull-down na desce |
 | LOCKUP | D7 | vstup | aktivní = HIGH, pull-down na desce |
-| READY_RELAYS (K1–K3) | D8 | výstup | HIGH = převzít solenoidy |
+| READY_RELAYS (K1–K3) | D8 | výstup | LOW = převzít solenoidy (a zároveň READY přepínač zapnutý) |
 | SOL1 (S1) | D9 | výstup (PWM) | → opto → Q1 |
 | SOL2 (S2) | D10 | výstup (PWM) | → opto → Q2 |
 | SOL3 (lockup) | D11 | výstup (PWM) | → opto → Q3 |
@@ -90,10 +90,18 @@ Proč MOSFET místo relé pro solenoidy: tlak lockupu se dnes moduluje jen zapnu
 
 **Volitelně:** zátěž na straně TCU (NC kontakt) – rezistor 12 Ω / 5 W na každý vodič, ať TCU po odpojení nehlásí „open circuit" a nehází chybu. Topí se (až 12 W na kanál při sepnutí TCU), proto jen jako nepájená varianta.
 
-### 3. Přepínací relé K1–K3
-* 3× relé SPDT 12 V, kontakty min. 5 A (např. Omron G5LE-14 / Songle SRD-12VDC-SL-C).
-* Cívky z +12V_SW, spínání NPN tranzistorem (BC337/2N2222) s optočlenem z D8 + flyback dioda 1N4148 na každé cívce.
-* LED indikace READY (zelená).
+### 3. Přepínací relé K1–K3 (fail-safe na původní TCU)
+* 3× relé SPDT 12 V, kontakty min. 5 A (např. Omron G5LE-14 / Songle SRD-12VDC-SL-C). Cívky paralelně, 3 × ~40 mA.
+* **Klid / výpadek napájení / READY vypnuto** → cívky bez proudu → COM–NC → solenoidy řídí původní TCU.
+* **READY zapnuto** → COM–NO → solenoidy řídí naše P-MOSFETy, TCU je rozpojená.
+* Spínání NPN tranzistorem (BC337) s optočlenem + flyback dioda 1N4148 na cívkách.
+* **Hardwarové AND:** LED optočlenu relé je napájená z +5 V **přes READY přepínač** (signál READY_5V z J3) a zároveň zapínaná pinem D8:
+
+```
+ READY_5V (z přepínače) ─[R 330 Ω]─ LED opto (PC817) ─ pin D8 (aktivní LOW na straně pinu)
+```
+  Relé tedy přitáhne jen při zapnutém přepínači **a** HIGH/LOW z Arduina ve správné úrovni. Vypnutí přepínače relé shodí i při zamrzlém firmwaru. (Úroveň pinu D8 se v návrhu otočí: D8 = LOW přitahuje.)
+* LED indikace READY (zelená) na cívce relé.
 
 ### 4. Vstupy (×4: UP, DOWN, READY, LOCKUP)
 Spínače jsou vaše a spínají **+5 V z Arduina** na vstupní pin (aktivní = HIGH). Pro každý vstup:
