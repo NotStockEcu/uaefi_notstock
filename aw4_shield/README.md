@@ -32,7 +32,7 @@ Lockup (solenoid 3): v originále ve 2. jen v poloze 1-2, ve 3. v poloze 3 a ve 
                                                                        │
                                   TVS D2 SMBJ24A ─ GND                 │
                                                                        └─[buck 5 V / 1 A]── +5V ── Arduino Micro (pin 5V)
-                                                                                                   └─ 74HC595, optočleny (LED strana)
+                                                                                                   └─ displej Nextion, optočleny (LED strana)
 
  Vodiče solenoidů (3×)  ──► K1/K2/K3 (přepínací kontakty):
         COM  ← vodič k SOLENOIDU (druhý konec solenoidu je na kostře převodovky)
