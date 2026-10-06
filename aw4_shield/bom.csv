@@ -2,8 +2,7 @@ Ref,Qty,Value,Footprint,Poznámka
 C1,1,470uF 25V,Capacitor_THT:CP_Radial_D10.0mm_P5.00mm,
 C2 C5 C6 C7 C8 C10,6,100nF,Capacitor_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm,
 C3,1,10uF 25V,Capacitor_THT:CP_Radial_D5.0mm_P2.00mm,
-C4,1,47uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
-C9,1,100uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
+C4 C9,2,100uF 16V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
 D1,1,BZX55C12,Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp,zener 12 V gate-source Q0
 D2,1,P6KE27A,Diode_THT:D_DO-15_P5.08mm_Vertical_CathodeUp,"TVS 600 W (load dump), VBR 25,7-28,4 V"
 D3 D4 D5 D6 D7 D8,6,BZX55C5V6,Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp,

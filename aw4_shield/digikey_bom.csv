@@ -1,0 +1,37 @@
+Manufacturer Part Number,Manufacturer,Quantity,Customer Reference,Description
+2743019447,Fair-Rite,4,L1 L2,"Feritová perla – axiální, ≥ 600 Ω @ 100 MHz, ≥ 1 A (montáž nastojato)"
+C320C104K5R5TA,KEMET,8,C2 C5 C6 C7 C8 C10,"Kondenzátor 100 nF – keramický, 50 V, X7R, rozteč 2,54 mm"
+P6KE27A,Littelfuse,3,D2,"Transil (TVS) 27 V – 600 W, jednosměrný, DO-15"
+BZX55C12-TAP,Vishay,3,D1,"Zenerova dioda 12 V – 0,5 W, DO-35"
+BZX55C15-TAP,Vishay,5,D11 D13 D15,"Zenerova dioda 15 V – 0,5 W, DO-35"
+BZX55C5V6-TAP,Vishay,8,D3 D4 D5 D6 D7 D8,"Zenerova dioda 5,6 V – 0,5 W, DO-35 – ochrana vstupů"
+MFR-25FBF52-100K,Yageo,3,R1,"Rezistor 100 kΩ – 0,25 W, 1 %, DIN 0207"
+MFR-25FBF52-100R,Yageo,4,R11 R12,"Rezistor 100 Ω – 0,25 W, 1 %, DIN 0207"
+MFR-25FBF52-10K,Yageo,10,R4 R6 R8 R10 R15 R19 R22 R25,"Rezistor 10 kΩ – 0,25 W, 1 %, DIN 0207"
+MFR-25FBF52-1K,Yageo,9,R3 R5 R7 R9 R18 R21 R24,"Rezistor 1 kΩ – 0,25 W, 1 %, DIN 0207"
+MFR-25FBF52-2K2,Yageo,4,R14 R16,"Rezistor 2,2 kΩ – 0,25 W, 1 %, DIN 0207"
+MFR-25FBF52-330R,Yageo,6,R13 R17 R20 R23,"Rezistor 330 Ω – 0,25 W, 1 %, metalizovaný, DIN 0207 (montáž nastojato, rozteč 2,54)"
+ZOR-25-B-52-0R,Yageo,3,R2,"Rezistor 0 Ω (propojka) – 0,25 W, DIN 0207 – spojuje PGND a GND (lze nahradit drátkem)"
+1N4007G,onsemi,5,D12 D14 D16,"Dioda 1N4007 – 1 A / 1000 V, DO-41 – flyback solenoidů"
+1N4148,onsemi,3,D9,Dioda 1N4148 – DO-35
+A000005,Arduino,1,U2,"Arduino Nano (ATmega328P, 5 V) – zasouvá se do patic (viz níže) (originál; klon s CH340 je levnější, ale DigiKey ho nevede)"
+IRF4905PBF,Infineon,1,Q1,P-MOSFET IRF4905 – TO-220 – ochrana proti přepólování
+IRF9540NPBF,Infineon,3,Q3 Q4 Q5,P-MOSFET IRF9540N – TO-220 – spínání solenoidů
+B4B-XH-A(LF)(SN),JST,1,J5,"Konektor JST-XH 4 pin (do DPS) – rozteč 2,5 mm, vertikální"
+SXH-001T-P0.6,JST,4,kabel J5,Krimpovací kontakt JST-XH
+XHP-4,JST,1,kabel J5,Pouzdro JST-XH 4 pin (kabelová část)
+WP7104GD,Kingbright,1,D10,LED zelená 3 mm – indikace READY
+LTV-817,Lite-On,4,U3 U4 U5 U6,Optočlen PC817 – DIP-4 (pinově shodný s PC817)
+37215000411,Littelfuse,1,F1 (pojistka),"Pojistka TR5 5 A, pomalá (OVĚŘIT – řada 372, 5 A T)"
+56000001009,Littelfuse,1,F1,"Patice pro pojistku TR5 – rozteč 5,08 mm (OVĚŘIT – patice TR5 (řada 560))"
+G5LE-1 DC12,Omron,3,K1 K2 K3,"Relé 12 V SPDT – kontakty 10 A, cívka 12 V"
+EEU-FR1C101,Panasonic,2,C4 C9,"Elektrolyt 100 µF / 16 V – Ø6,3 mm, rozteč 2,5 mm, 105 °C"
+EEU-FR1E100,Panasonic,1,C3,"Elektrolyt 10 µF / 25 V – Ø5 mm, rozteč 2,0 mm, 105 °C"
+EEU-FR1E471,Panasonic,1,C1,"Elektrolyt 470 µF / 25 V – Ø10 mm, rozteč 5 mm, 105 °C, low-ESR"
+1715721,Phoenix Contact,1,J1,"Svorkovnice 2 pól – rozteč 5,08 mm, do DPS (MKDS 1,5/2-5,08)"
+1715763,Phoenix Contact,2,J2 J3,"Svorkovnice 6 pól – rozteč 5,08 mm, do DPS (MKDS 1,5/6-5,08)"
+PPTC151LFBN-RC,Sullins,2,U2 patice,"Dutinková lišta 1×15, 2,54 mm (patice Nana)"
+PRPC040SAAN-RC,Sullins,1,"J6, JP1","Kolíková lišta 1×40, 2,54 mm (odlomit 1×7 a 1×2)"
+SPC02SYAN,Sullins,1,JP1,"Zkratovací propojka 2,54 mm"
+TSR 1-2450,Traco Power,1,U1,"Spínaný stabilizátor 5 V / 1 A – formát 7805 (SIP-3), vstup 6,5–36 V"
+BC33740TA,onsemi,1,Q2,"Tranzistor NPN BC337 – TO-92, pinout C-B-E (pad 1 = C)"

@@ -66,7 +66,7 @@ for ref,p in parts.items():
 def silk(x,y,t,size=1.2,rot=0,bold=False):
     tx=pcbnew.PCB_TEXT(b); tx.SetText(t); tx.SetPosition(pcbnew.VECTOR2I_MM(x,y)); tx.SetLayer(pcbnew.F_SilkS)
     tx.SetTextSize(pcbnew.VECTOR2I_MM(size,size)); tx.SetTextThickness(MM(size*0.15)); tx.SetTextAngleDegrees(rot); tx.SetBold(bold); b.Add(tx)
-SHORT={'330': '330', '1k': '1k', '10k': '10k', '100k': '100k', '220': '220', '2k2': '2k2', '100R': '100R', '0R': '0R', '100nF': '100n', '10uF 25V': '10u', '47uF 10V': '47u', '100uF 10V': '100u', '470uF 25V': '470u', '600R@100MHz': 'FB', 'BZX55C12': '12V', 'BZX55C15': '15V', 'BZX55C5V6': '5V6', '1N4148': '4148', '1N4007': '4007', 'P6KE27A': 'P6KE27', 'IRF4905': 'IRF4905', 'IRF9540N': '9540N', 'BC337': 'BC337', 'PC817': 'PC817', 'zelená READY': 'LED', '5A': '5A', 'TSR 1-2450 (12V->5V 1A)': 'TSR1-2450', 'G5LE-1 12V SPDT': '', 'Arduino Nano': 'ARDUINO NANO'}
+SHORT={'330': '330', '1k': '1k', '10k': '10k', '100k': '100k', '220': '220', '2k2': '2k2', '100R': '100R', '0R': '0R', '100nF': '100n', '10uF 25V': '10u', '47uF 10V': '47u', '100uF 10V': '100u', '100uF 16V': '100u', '470uF 25V': '470u', '600R@100MHz': 'FB', 'BZX55C12': '12V', 'BZX55C15': '15V', 'BZX55C5V6': '5V6', '1N4148': '4148', '1N4007': '4007', 'P6KE27A': 'P6KE27', 'IRF4905': 'IRF4905', 'IRF9540N': '9540N', 'BC337': 'BC337', 'PC817': 'PC817', 'zelená READY': 'LED', '5A': '5A', 'TSR 1-2450 (12V->5V 1A)': 'TSR1-2450', 'G5LE-1 12V SPDT': '', 'Arduino Nano': 'ARDUINO NANO'}
 for i,t in enumerate(["SOL1","SOL2","SOL3","TCU1","TCU2","TCU3"]): silk(115.4,119+5.08*i,t,0.8,90)
 silk(118,113.4,"+12V",0.8); silk(112.9,113.4,"GND",0.8)
 for i,t in enumerate(["+5V","GND","UP","DOWN","READY","LOCK"]): silk(112+5.08*i,187.1,t,0.8)

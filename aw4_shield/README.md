@@ -14,7 +14,8 @@ Deska (shield) s Arduinem Nano, která:
 | Cesta | Obsah |
 |---|---|
 | `kicad/` | **celý KiCad projekt** (schéma + PCB), formát KiCad 8, ověřeno v KiCadu 10.0.6 |
-| `bom_objednavka.xlsx` | **seznam k objednání** (list *Objednávka*, počet desek se dá změnit) a **postup osazení** (list *Osazení*) |
+| `bom_objednavka.xlsx` | **seznam k objednání** (list *Objednávka*, počet desek se dá změnit), **postup osazení** (list *Osazení*) a **DigiKey** (výrobní čísla dílů) |
+| `digikey_bom.csv` | soubor pro nahrání do DigiKey BOM Manageru (1 deska + rezerva u drobných dílů) |
 | `docs/aw4_shield_ibom.html` | interaktivní BOM – klik na součástku ukáže, kam patří; odškrtávání osazených |
 | `docs/aw4_shield_osazovaci_vykres.pdf` | osazovací výkres s označením součástek (R1, D12 …) |
 | `fab/aw4_shield_gerber.zip` | Gerbery + vrtání pro výrobu DPS |
@@ -151,6 +152,12 @@ Co z desky nejde poznat a je potřeba ověřit / dát pozor:
 5. **READY zapínat ve stoje** (firmware po READY nastaví 1. stupeň).
 6. **Neprovozovat se sundaným JP1:** pokud je Nano bez napájení a READY zapnuté, mohou relé přitáhnout a solenoidy zůstanou bez proudu (= 4. stupeň).
 7. První zapnutí: nejdřív bez Nana a bez připojené převodovky změřit 5 V za TSR, pak Nano, pak zkoušet relé a výstupy na žárovce 12 V / 21 W místo solenoidu.
+
+## Objednání u DigiKey
+Na digikey.com (nebo digikey.cz) → *BOM Manager* → *Upload a BOM* → nahrát `digikey_bom.csv` (sloupce *Manufacturer Part Number*, *Manufacturer*, *Quantity*, *Customer Reference*). DigiKey díly spáruje podle výrobního čísla. Pro víc desek upravte množství v listu *DigiKey* v `bom_objednavka.xlsx` (počet desek je na listu *Objednávka*).
+* Dostupnost a ceny nebyly ověřené (DigiKey nebyl z prostředí, kde podklady vznikly, dostupný). Pokud některý díl není skladem, BOM Manager nabídne náhradu – hodnota a pouzdro musí zůstat stejné (rozteč vývodů!).
+* Pojistka TR5 a její patice jsou označené *OVĚŘIT* – zkontrolujte při nahrání.
+* Displej Nextion DigiKey nevede (koupit přímo u Nextion/Itead nebo v e-shopech), distanční sloupky M3 libovolné.
 
 ## Napájení Nana a programování
 JP1 spojuje +5 V desky s pinem 5V Nana. **Při programování po USB jumper sundejte** (nebo odpojte 12 V), nikdy nenapájet z obou stran zároveň.

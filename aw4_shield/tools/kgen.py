@@ -103,7 +103,7 @@ add('REG_5V',"TSR 1-2450 (12V->5V 1A)","Converter_DCDC:Converter_DCDC_TRACO_TSR-
 add('CP',"10uF 25V","Capacitor_THT:CP_Radial_D5.0mm_P2.00mm",300,50,{"1":"+12V_SW","2":"GND"},"C")
 res("0R",320,50,"PGND","GND",note="hvězda PGND-GND (jediné spojení zemí)")
 add('FERRITE',"600R@100MHz","Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical",345,50,{"1":"+5V_BUCK","2":"+5V"},"L")
-add('CP',"47uF 10V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",370,50,{"1":"+5V","2":"GND"},"C")
+add('CP',"100uF 16V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",370,50,{"1":"+5V","2":"GND"},"C")
 add('CONN2',"JP1 5V -> Nano (jumper)","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",405,50,{"1":"+5V","2":"NANO_5V"},"J",note="sundat při programování po USB",ref="JP1")
 
 # --- Arduino + connectors ---
@@ -129,7 +129,7 @@ for nm in ("UP","DOWN","READY","LOCKUP"):
 text(330,100,"DISPLEJ NEXTION (J5)",3)
 add('CONN4',"J5 Nextion +5V GND RX TX","Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical",350,140,{"1":"+5V_DISP","2":"GND","3":"DISP_RX","4":"DISP_TX"},"J",ref="J5")
 add('FERRITE',"600R@100MHz","Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical",395,140,{"1":"+5V","2":"+5V_DISP"},"L")
-add('CP',"100uF 10V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",420,140,{"1":"+5V_DISP","2":"GND"},"C")
+add('CP',"100uF 16V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",420,140,{"1":"+5V_DISP","2":"GND"},"C")
 cap("100nF",445,140,"+5V_DISP","GND")
 res("100R",470,140,"D3_UART_TX","DISP_RX",note="Nano TX -> Nextion RX")
 res("100R",500,140,"DISP_TX","D2_UART_RX",note="Nextion TX -> Nano RX")
