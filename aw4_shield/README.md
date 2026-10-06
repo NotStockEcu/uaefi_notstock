@@ -119,6 +119,26 @@ List *Osazení* v `bom_objednavka.xlsx` jde od nejnižších součástek: rezist
 * Relé: číslování pinů je podle KiCad symbolu a footprintu G5LE-1 (cívka 2–5, COM 1, NC 4, NO 3). U jiného relé ověřit pinout.
 * Ochrana vstupů je zenerkou 5,6 V (vývodové ESD diody se běžně nevyrábějí); s 1 kΩ / 100 Ω v sérii je to pro tento účel dostačující.
 
+## Bude to fungovat? – revize zapojení a rizika
+
+Výpočty klíčových míst (ověřeno při revizi):
+
+* **Spínání solenoidů (Q3–Q5):** gate se přes dělič 10 kΩ / 1 kΩ stáhne na Vgs ≈ −11 V (při 14,4 V −13 V, zener 15 V chrání), IRF9540N při 1,3 A ztrácí ~0,2 W – bez chladiče. Optočlen potřebuje ~1,1 mA, při LED 11,5 mA a CTR ≥ 50 % má rezervu 5×.
+* **Cívky relé (Q2):** 3 × ~30 mA = 90 mA. R14 = **2,2 kΩ** omezuje proud báze na ≤ 5 mA (v1 měla 220 Ω – při optočlenu s vysokým CTR by se rezistor spálil; opraveno).
+* **Ochrana proti přepólování (Q1):** Vgs ≈ −11 až −12 V (zener 12 V), IRF4905 při 4 A ~0,3 W.
+* **Vstupy:** sepnutý spínač dá na pin 4,5 V (dělič 1k/10k), Nano bere HIGH od 3 V.
+* **Napájení 5 V:** Nano ~30 mA + optočleny ~50 mA + Nextion 2,4″ ~90 mA ≪ 1 A z TSR.
+
+Co z desky nejde poznat a je potřeba ověřit / dát pozor:
+
+1. **Polarita solenoidů v autě** – návrh počítá s tím, že TCU spíná na drát +12 V a druhý konec solenoidu je na kostře (podle manuálu). Ověřit multimetrem.
+2. **Zem:** PGND (J1) musí být spolehlivě spojený s kostrou / mínusem baterie – přes kostru se vrací proud solenoidů.
+3. **Původní TCU po přepnutí zpět** může mít zapsanou chybu (viděla rozpojené solenoidy) a jet v nouzovém režimu do dalšího otočení klíčkem.
+4. **Bezpečnost řazení je na firmwaru** – deska nemá vstup rychlosti, takže nic nebrání podřazení do 1. při vysoké rychlosti. Doporučuji přidat čidlo rychlosti na rezervní vstup (J6, A0–A3) a ve firmwaru blokovat podřazení.
+5. **READY zapínat ve stoje** (firmware po READY nastaví 1. stupeň).
+6. **Neprovozovat se sundaným JP1:** pokud je Nano bez napájení a READY zapnuté, mohou relé přitáhnout a solenoidy zůstanou bez proudu (= 4. stupeň).
+7. První zapnutí: nejdřív bez Nana a bez připojené převodovky změřit 5 V za TSR, pak Nano, pak zkoušet relé a výstupy na žárovce 12 V / 21 W místo solenoidu.
+
 ## Napájení Nana a programování
 JP1 spojuje +5 V desky s pinem 5V Nana. **Při programování po USB jumper sundejte** (nebo odpojte 12 V), nikdy nenapájet z obou stran zároveň.
 

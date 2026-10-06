@@ -140,7 +140,7 @@ diode("BZX55C5V6","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",560,140,"
 text(20,232,"CÍVKY RELÉ K1-K3 (společné): READY přepínač AND D8 (aktivní LOW)",3)
 res("330",40,258,"READY_IN","RLY_A")
 add('PC817',"PC817","Package_DIP:DIP-4_W7.62mm",75,258,{"1":"RLY_A","2":"K_CTRL","4":"RLY_C","3":"Q4_B"},"U")
-res("220",110,258,"+12V_SW","RLY_C")
+res("2k2",110,258,"+12V_SW","RLY_C")
 res("10k",130,258,"Q4_B","PGND")
 add('NPN',"BC337","Package_TO_SOT_THT:TO-92_Inline_Wide",160,258,{"2":"Q4_B","1":"K_LOW","3":"PGND"},"Q",note="TO-92 pinout BC337: 1=C 2=B 3=E")
 diode("1N4148","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",190,258,"+12V_SW","K_LOW",note="flyback cívek")
