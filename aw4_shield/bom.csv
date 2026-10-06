@@ -1,5 +1,5 @@
 Ref,Qty,Popis,Hodnota / typ,Poznámka
-U1,1,Arduino Micro (ATmega32U4),Arduino Micro,přes 2x 17pin female header
+U1,1,Arduino Nano (ATmega328P),Arduino Nano,přes 2x 15pin female header
 U3,1,Buck měnič 12V->5V,LMR14006 / TPS54302 nebo modul MP1584,1 A
 U4-U7,4,Optočlen,PC817 / TLP185,3x výstup solenoid + 1x relé
 Q1-Q3,3,P-MOSFET,IRF9540N (TO-220) nebo AO4407A (SMD),spínání +12 V na solenoid (high-side)
@@ -34,4 +34,4 @@ R32-R33,2,Rezistor,100 Ω,série v UART signálech
 D21-D22,2,ESD dioda,PESD5V0S1BL,UART signály
 L2,1,Ferit,BLM21 / 600R @100 MHz,5 V displeje
 C13,1,Elektrolyt,100 µF / 10 V,5 V displeje
-J_USB,1,Jumper 2pin,,napájení Micro
+J_USB,1,Jumper 2pin,,napájení Nano

@@ -1,6 +1,6 @@
-# AW4 shield – ovladač automatické převodovky Aisin AW4 pro Arduino Micro
+# AW4 shield – ovladač automatické převodovky Aisin AW4 pro Arduino Nano
 
-Deska (shield) s Arduinem Micro, která:
+Deska (shield) s Arduinem Nano, která:
 
 * při přepínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
@@ -31,7 +31,7 @@ Lockup (solenoid 3): v originále ve 2. jen v poloze 1-2, ve 3. v poloze 3 a ve 
  +12V (zapalování) ──[F1 5A]──[Q0 P-MOSFET proti přepólování]──┬─ +12V_SW ── cívky relé K1-K3
                                                                        │
                                   TVS D2 SMBJ24A ─ GND                 │
-                                                                       └─[buck 5 V / 1 A]── +5V ── Arduino Micro (pin 5V)
+                                                                       └─[buck 5 V / 1 A]── +5V ── Arduino Nano (pin 5V)
                                                                                                    └─ displej Nextion, optočleny (LED strana)
 
  Vodiče solenoidů (3×)  ──► K1/K2/K3 (přepínací kontakty):
@@ -43,9 +43,9 @@ Lockup (solenoid 3): v originále ve 2. jen v poloze 1-2, ve 3. v poloze 3 a ve 
 Důležité: kontakty relé K1–K3 jsou **přepínací (SPDT)**, takže jeden relé = jeden solenoid přepnutý buď na původní TCU, nebo na náš výkonový stupeň. Když Arduino nebo napájení vypadne, relé odpadnou a převodovku ovládá zase originální TCU.
 Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky jsou paralelně (3 × ~40 mA).
 
-## Zapojení Arduina Micro
+## Zapojení Arduina Nano
 
-| Funkce | Pin Micro | Směr | Poznámka |
+| Funkce | Pin Nano | Směr | Poznámka |
 |---|---|---|---|
 | UP | D4 | vstup | aktivní = HIGH, pull-down na desce |
 | DOWN | D5 | vstup | aktivní = HIGH, pull-down na desce |
@@ -55,15 +55,15 @@ Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky 
 | SOL1 (S1) | D9 | výstup (PWM) | → opto → Q1 |
 | SOL2 (S2) | D10 | výstup (PWM) | → opto → Q2 |
 | SOL3 (lockup) | D11 | výstup (PWM) | → opto → Q3 |
-| Displej RX (Micro TX1) | D1 | výstup | UART Serial1 → Nextion RX |
-| Displej TX (Micro RX1) | D0 | vstup | UART Serial1 ← Nextion TX |
-| D2, D3, D12, D13, A0 | – | volné | rezerva (header J6) |
+| Displej RX (Nano TX) | D3 | výstup | SoftwareSerial TX → Nextion RX |
+| Displej TX (Nano RX) | D2 | vstup | SoftwareSerial RX ← Nextion TX |
+| D12, D13, A0–A3 | – | volné | rezerva (header J6); D0/D1 jsou USB, nepoužít |
 
 ## Jednotlivé bloky
 
 ### 1. Napájení
 * Konektor 12 V → pojistka F1 (5 A) → P-MOSFET Q0 (IRF4905 / AO4407A, zener 12 V gate–source, rezistor 100 kΩ gate–GND) proti přepólování → TVS D2 (SMBJ24A, ochrana proti load dump) → bulk C1 470 µF/25 V + C2 100 nF.
-* **Buck 12 → 5 V**: LMR14006 / TPS54302 nebo hotový modul (MP1584), 1 A, výstup 5 V do pinu `5V` Arduina Micro (jumper J1: napájení přes USB / přes desku, **nikdy obojí zároveň**; při programování po USB sundat jumper nebo přidat Schottky OR diodu D3).
+* **Buck 12 → 5 V**: LMR14006 / TPS54302 nebo hotový modul (MP1584), 1 A, výstup 5 V do pinu `5V` Arduina Nano (jumper J1: napájení přes USB / přes desku, **nikdy obojí zároveň**; při programování po USB sundat jumper nebo přidat Schottky OR diodu D3).
 * LC filtr 5 V: ferit (BLM21) + C 47 µF + C 100 nF.
 * **Zem do hvězdy**: výkonová zem solenoidů (PGND) a logická zem (GND) se na desce spojují v **jednom místě** (pad R0 = 0 Ω / ferit). Tím šum ze solenoidů neteče přes zem Arduina.
 
@@ -116,7 +116,7 @@ Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojené
 
 ### 5. Zobrazení – Nextion (UART)
 * Doporučený typ: Nextion Basic NX3224T024 (2,4″) nebo NX4024T032 (3,2″), 5 V, UART, ~100 až 250 mA.
-* Propojení: Serial1 Micra (D1 = TX, D0 = RX) přes 100 Ω v sérii s každým signálem, ESD dioda PESD5V0S1BL k GND na obou signálech, napájení 5 V přes ferit L2 s 100 µF + 100 nF u konektoru.
+* Propojení: SoftwareSerial (D3 = TX, D2 = RX, 9600 Bd; D0/D1 zůstávají pro USB) přes 100 Ω v sérii s každým signálem, ESD dioda PESD5V0S1BL k GND na obou signálech, napájení 5 V přes ferit L2 s 100 µF + 100 nF u konektoru.
 * Displej si obraz obnovuje sám (vlastní řadič). Rušení na lince způsobí nanejvýš jeden chybný příkaz. Firmware proto stav displeje periodicky (každých ~0,5 s) posílá znovu.
 * Kabel ke displeji: stíněný nebo kroucený, stínění jen na straně desky.
 
@@ -128,7 +128,7 @@ Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojené
 | J3 | 6pin šroubovací | +5V, GND, UP, DOWN, READY, LOCKUP |
 | J4 | 2pin | rezerva (např. tlakový solenoid) |
 | J5 | 4pin (JST-XH / šroubovací) | displej Nextion: +5V, GND, RX, TX |
-| J6 | 6pin header | D2, D3, D12, D13, A0 + GND (rezerva) |
+| J6 | 6pin header | D12, D13, A0–A3 + GND (rezerva) |
 
 ## Schéma (PDF)
 `docs/aw4_shield.pdf` – 3 strany: přehled, napájení + vstupy + displej, výstupní stupeň a přepínací relé.
@@ -137,14 +137,14 @@ Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojené
 Viz `bom.csv`.
 
 ## Doporučená konstrukce PCB
-* 2 vrstvy, 1,6 mm, 2 oz měď (kvůli proudům solenoidů); rozměr ≈ 75 × 65 mm (zapadne pod Micro ve spodní vrstvě – Micro se připojuje do 2× 17pin female header).
+* 2 vrstvy, 1,6 mm, 2 oz měď (kvůli proudům solenoidů); rozměr ≈ 75 × 65 mm (zapadne pod Nano ve spodní vrstvě – Nano se připojuje do 2× 17pin female header).
 * Dráhy výkonu min. 1 mm, PGND plocha oddělená od logické zem a spojená jen v bodě hvězdy.
 * Optočleny napříč dělicí linkou GND – mezi logickou a výkonovou zemí vyfrézovat mezeru (~2 mm).
 * Šroubovací svorky u okraje, ochranné diody (TVS, flyback) fyzicky u svorek.
 * Krabička: plastová, odvětraná, kabeláž ke svorkám stíněná (alespoň vodiče tlačítek, kroucená dvojice).
 
 ## Firmware
-`firmware/aw4_controller.ino` – základní logika (UP/DOWN, lockup, READY, displej Nextion přes Serial1). Tabulka solenoidů je v `GEAR_TABLE` a **musí se ověřit** na vaší převodovce.
+`firmware/aw4_controller.ino` – základní logika (UP/DOWN, lockup, READY, displej Nextion přes SoftwareSerial). Tabulka solenoidů je v `GEAR_TABLE` a **musí se ověřit** na vaší převodovce.
 
 ## Co dál
 Návrh je zatím popis + BOM + firmware. Dalším krokem je překreslit do KiCadu (schéma + PCB). Řekněte, jestli ho mám připravit, a upřesněte body z úvodu (polarita solenoidů, odpor cívek, typ spínačů).

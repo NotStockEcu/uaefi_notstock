@@ -1,6 +1,9 @@
-// AW4 controller – Arduino Micro
+// AW4 controller – Arduino Nano
 // UP/DOWN řadí stupně 1-4, LOCKUP přepíná zámek měniče, READY přebírá solenoidy od původní TCU.
-// Display: Nextion (UART, Serial1: D1 TX / D0 RX).
+// Display: Nextion (UART, SoftwareSerial: D3 TX / D2 RX; D0/D1 jsou USB).
+
+#include <SoftwareSerial.h>
+SoftwareSerial disp(2, 3);   // RX = D2, TX = D3
 
 const uint8_t PIN_UP = 4, PIN_DOWN = 5, PIN_READY = 6, PIN_LOCKUP = 7;
 const uint8_t PIN_RELAYS = 8;
@@ -34,8 +37,8 @@ bool pressed(Button &b) {           // vrátí true na sestupnou hranu (stisk), 
 
 // Nextion: textové pole "t0" s číslem stupně, "t1" pro lockup; příkaz končí třemi 0xFF.
 void nextionSend(const char *cmd) {
-  Serial1.print(cmd);
-  Serial1.write(0xFF); Serial1.write(0xFF); Serial1.write(0xFF);
+  disp.print(cmd);
+  disp.write(0xFF); disp.write(0xFF); disp.write(0xFF);
 }
 
 void show(const char *gearText, bool lockupOn) {
@@ -65,7 +68,7 @@ void setup() {
   for (auto &b : btns) { pinMode(b.pin, INPUT); b.state = b.last = digitalRead(b.pin); }
   pinMode(PIN_RELAYS, OUTPUT);
   pinMode(PIN_SOL1, OUTPUT); pinMode(PIN_SOL2, OUTPUT); pinMode(PIN_SOL3, OUTPUT);
-  Serial1.begin(9600);
+  disp.begin(9600);
   apply();
 }
 
