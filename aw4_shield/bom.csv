@@ -12,11 +12,11 @@ D11 D13 D15,3,BZT52C15,Diode_SMD:D_SOD-123,zener 15 V gate-source
 D12 D14 D16,3,SS34,Diode_SMD:D_SMA,flyback na straně solenoidu
 F1,1,5A,Fuse:Fuseholder_Cylinder-5x20mm_Schurter_0031_8201_Horizontal_Open,"pojistka 5 A, 5x20 mm držák nebo ATO"
 J1,1,J1 +12V / PGND,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
-J2,1,JP1 5V -> Nano (jumper),Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,sundat při programování po USB
-J3,1,J6 rezerva,Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical,
-J4,1,J2 SOL1-3 / TCU1-3,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal","1-3 k převodovce, 4-6 z původní TCU"
-J5,1,J3 UP DOWN READY LOCKUP,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal",
-J6,1,J5 Nextion +5V GND RX TX,Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,
+JP1,1,JP1 5V -> Nano (jumper),Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,sundat při programování po USB
+J2,1,J2 SOL1-3 / TCU1-3,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal","1-3 k převodovce, 4-6 z původní TCU"
+J3,1,J3 UP DOWN READY LOCKUP,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal",
+J5,1,J5 Nextion +5V GND RX TX,Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,
+J6,1,J6 rezerva,Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical,
 K1 K2 K3,3,G5LE-1 12V SPDT,Relay_THT:Relay_SPDT_Omron-G5LE-1,čísla pinů relé ověřit podle footprintu
 L1 L2,2,600R@100MHz,Inductor_SMD:L_0805_2012Metric,
 Q1,1,IRF4905,Package_TO_SOT_THT:TO-220-3_Vertical,"ochrana proti přepólování (D na vstupu, S na zátěži)"
