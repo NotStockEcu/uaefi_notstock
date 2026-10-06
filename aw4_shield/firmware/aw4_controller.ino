@@ -49,7 +49,7 @@ void show(const char *gearText, bool lockupOn) {
 }
 
 void apply() {
-  digitalWrite(PIN_RELAYS, ready);
+  digitalWrite(PIN_RELAYS, ready ? LOW : HIGH);   // relé: aktivní LOW (a jen při zapnutém READY přepínači)
   if (!ready) {                              // původní TCU řídí, naše stupně vypnout
     digitalWrite(PIN_SOL1, LOW);
     digitalWrite(PIN_SOL2, LOW);
@@ -66,6 +66,7 @@ void apply() {
 
 void setup() {
   for (auto &b : btns) { pinMode(b.pin, INPUT); b.state = b.last = digitalRead(b.pin); }
+  digitalWrite(PIN_RELAYS, HIGH);   // nejdřív HIGH, ať relé při startu nepřitáhnou
   pinMode(PIN_RELAYS, OUTPUT);
   pinMode(PIN_SOL1, OUTPUT); pinMode(PIN_SOL2, OUTPUT); pinMode(PIN_SOL3, OUTPUT);
   disp.begin(9600);

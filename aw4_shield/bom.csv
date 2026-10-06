@@ -1,8 +1,9 @@
 Ref,Qty,Value,Footprint,Poznámka
 C1,1,470uF 25V,Capacitor_THT:CP_Radial_D10.0mm_P5.00mm,
-C2 C4 C5 C6 C7 C9,6,100nF,Capacitor_SMD:C_0805_2012Metric,
-C3,1,47uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
-C8,1,100uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
+C2 C5 C6 C7 C8 C10,6,100nF,Capacitor_SMD:C_0805_2012Metric,
+C3,1,10uF 25V,Capacitor_SMD:C_1206_3216Metric,
+C4,1,47uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
+C9,1,100uF 10V,Capacitor_THT:CP_Radial_D6.3mm_P2.50mm,
 D1,1,BZT52C12,Diode_SMD:D_SOD-123,zener 12 V gate-source Q0
 D2,1,SMBJ24A,Diode_SMD:D_SMB,TVS load dump
 D3 D4 D5 D6 D7 D8,6,PESD5V0S1BL,Diode_SMD:D_SOD-323,
@@ -20,17 +21,17 @@ J6,1,J6 rezerva,Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical,
 K1 K2 K3,3,G5LE-1 12V SPDT,Relay_THT:Relay_SPDT_Omron-G5LE-1,čísla pinů relé ověřit podle footprintu
 L1 L2,2,600R@100MHz,Inductor_SMD:L_0805_2012Metric,
 Q1,1,IRF4905,Package_TO_SOT_THT:TO-220-3_Vertical,"ochrana proti přepólování (D na vstupu, S na zátěži)"
-Q2,1,BC337,Package_TO_SOT_THT:TO-92_Inline,TO-92 pinout BC337: 1=C 2=B 3=E
+Q2,1,BC337,Package_TO_SOT_THT:TO-92_Inline_Wide,TO-92 pinout BC337: 1=C 2=B 3=E
 Q3 Q4 Q5,3,IRF9540N,Package_TO_SOT_THT:TO-220-3_Vertical,
 R1,1,100k,Resistor_SMD:R_0805_2012Metric,
-R2,1,0R,Resistor_SMD:R_0805_2012Metric,hvězda PGND-GND; DNP pokud modul spojuje IN- a OUT-
+R2,1,0R,Resistor_SMD:R_0805_2012Metric,hvězda PGND-GND (jediné spojení zemí)
 R3 R5 R7 R9 R18 R21 R24,7,1k,Resistor_SMD:R_0805_2012Metric,
 R4 R6 R8 R10 R15 R19 R22 R25,8,10k,Resistor_SMD:R_0805_2012Metric,
 R11 R12,2,100R,Resistor_SMD:R_0805_2012Metric,Nano TX -> Nextion RX
 R13 R17 R20 R23,4,330,Resistor_SMD:R_0805_2012Metric,
 R14,1,220,Resistor_SMD:R_0805_2012Metric,
 R16,1,2k2,Resistor_SMD:R_0805_2012Metric,
-U1,1,Buck 12V->5V 1A (modul),Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,"hotový modul MP1584/LM2596 mini, výstup nastavit na 5,0 V"
+U1,1,TSR 1-2450 (12V->5V 1A),Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT,"spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V"
 U2,1,Arduino Nano,Module:Arduino_Nano,"piny 1-15 / 16-30 dle KiCad footprintu Module:Arduino_Nano, ověřit"
 U3 U4 U5 U6,4,PC817,Package_DIP:DIP-4_W7.62mm,
 U_DISP,1,"Nextion NX3224T024 (2,4"") nebo NX4024T032",(mimo desku),"displej, UART 5 V"
