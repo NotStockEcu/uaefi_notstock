@@ -5,7 +5,7 @@ Deska (shield) s Arduinem Micro, která:
 * při přepínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
 * čte spínače **UP, DOWN, READY, LOCKUP** (5 V z Arduina, aktivní = HIGH, s ochranou vstupu),
-* zobrazuje zařazený stupeň na **7segmentovce řízené přímo na desce** (74HC595, bez dlouhých vodičů).
+* zobrazuje zařazený stupeň na **displeji Nextion (UART)**, který má vlastní řadič a obraz si obnovuje sám, takže rušení na lince nanejvýš způsobí jeden chybný příkaz.
 
 > **Podle servisního manuálu AW-4 (v zipu, str. 5-6 a Solenoid Testing):**
 > * Solenoid se měří mezi **držákem (kostra převodovky) a drátem** → druhý konec solenoidu je na kostře, TCU na drát spíná **+12 V (high-side)**. Výstupy desky jsou proto high-side (P-MOSFET), ne low-side.
@@ -55,10 +55,9 @@ Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky 
 | SOL1 (S1) | D9 | výstup (PWM) | → opto → Q1 |
 | SOL2 (S2) | D10 | výstup (PWM) | → opto → Q2 |
 | SOL3 (lockup) | D11 | výstup (PWM) | → opto → Q3 |
-| 595 SER (DS) | D12 | výstup | zobrazení |
-| 595 SRCLK (SHCP) | D13 | výstup | zobrazení |
-| 595 RCLK (STCP) | A0 | výstup | zobrazení |
-| D2/D3 | – | volné | I2C na rezervu (header J6) |
+| Displej RX (Micro TX1) | D1 | výstup | UART Serial1 → Nextion RX |
+| Displej TX (Micro RX1) | D0 | vstup | UART Serial1 ← Nextion TX |
+| D2, D3, D12, D13, A0 | – | volné | rezerva (header J6) |
 
 ## Jednotlivé bloky
 
@@ -115,11 +114,11 @@ Spínače jsou vaše a spínají **+5 V z Arduina** na vstupní pin (aktivní = 
 
 Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojeném kabelu), 1 kΩ + 100 nF tvoří RC filtr proti rušení z kabeláže spínačů. Optočleny na vstupech nejsou potřeba, 12 V se k nim nedostane. Kabel ke spínačům vést stíněný nebo kroucený (5 V, GND, signál).
 
-### 5. Zobrazení
-* 74HC595 (SOIC-16 / DIP-16) + 1× 7segmentovka 0,56" (společná katoda), 8× 330 Ω.
-* Zobrazuje stupeň **1–4**, tečka (DP) = lockup aktivní. Při ztrátě READY zobrazí `-`.
-* Pár desítek mm od Arduina → odolné proti rušení; lze oddělit na header J5 (8 pinů) k vyvedení na palubní desku.
-* C 100 nF + 10 µF u 595, SRCLR na 5 V, OE na GND.
+### 5. Zobrazení – Nextion (UART)
+* Doporučený typ: Nextion Basic NX3224T024 (2,4″) nebo NX4024T032 (3,2″), 5 V, UART, ~100 až 250 mA.
+* Propojení: Serial1 Micra (D1 = TX, D0 = RX) přes 100 Ω v sérii s každým signálem, ESD dioda PESD5V0S1BL k GND na obou signálech, napájení 5 V přes ferit L2 s 100 µF + 100 nF u konektoru.
+* Displej si obraz obnovuje sám (vlastní řadič). Rušení na lince způsobí nanejvýš jeden chybný příkaz. Firmware proto stav displeje periodicky (každých ~0,5 s) posílá znovu.
+* Kabel ke displeji: stíněný nebo kroucený, stínění jen na straně desky.
 
 ### 6. Konektory
 | Ref | Typ | Signály |
@@ -128,8 +127,11 @@ Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojené
 | J2 | 6pin šroubovací | SOL1, SOL2, SOL3 (k převodovce), TCU1, TCU2, TCU3 (z původní TCU) |
 | J3 | 6pin šroubovací | +5V, GND, UP, DOWN, READY, LOCKUP |
 | J4 | 2pin | rezerva (např. tlakový solenoid) |
-| J5 | 8pin header | displej mimo desku (volitelné) |
-| J6 | 4pin header | D2/D3 + 5V/GND rezerva |
+| J5 | 4pin (JST-XH / šroubovací) | displej Nextion: +5V, GND, RX, TX |
+| J6 | 6pin header | D2, D3, D12, D13, A0 + GND (rezerva) |
+
+## Schéma (PDF)
+`docs/aw4_shield.pdf` – 3 strany: přehled, napájení + vstupy + displej, výstupní stupeň a přepínací relé.
 
 ## Seznam součástek (BOM, orientační)
 Viz `bom.csv`.
@@ -142,7 +144,7 @@ Viz `bom.csv`.
 * Krabička: plastová, odvětraná, kabeláž ke svorkám stíněná (alespoň vodiče tlačítek, kroucená dvojice).
 
 ## Firmware
-`firmware/aw4_controller.ino` – základní logika (UP/DOWN, lockup, READY, 595 displej). Tabulka solenoidů je v `GEAR_TABLE` a **musí se ověřit** na vaší převodovce.
+`firmware/aw4_controller.ino` – základní logika (UP/DOWN, lockup, READY, displej Nextion přes Serial1). Tabulka solenoidů je v `GEAR_TABLE` a **musí se ověřit** na vaší převodovce.
 
 ## Co dál
 Návrh je zatím popis + BOM + firmware. Dalším krokem je překreslit do KiCadu (schéma + PCB). Řekněte, jestli ho mám připravit, a upřesněte body z úvodu (polarita solenoidů, odpor cívek, typ spínačů).

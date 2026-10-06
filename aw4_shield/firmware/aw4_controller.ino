@@ -1,11 +1,10 @@
 // AW4 controller – Arduino Micro
 // UP/DOWN řadí stupně 1-4, LOCKUP přepíná zámek měniče, READY přebírá solenoidy od původní TCU.
-// Display: jedna 7segmentovka přes 74HC595 (společná katoda).
+// Display: Nextion (UART, Serial1: D1 TX / D0 RX).
 
 const uint8_t PIN_UP = 4, PIN_DOWN = 5, PIN_READY = 6, PIN_LOCKUP = 7;
 const uint8_t PIN_RELAYS = 8;
 const uint8_t PIN_SOL1 = 9, PIN_SOL2 = 10, PIN_SOL3 = 11;
-const uint8_t PIN_SER = 12, PIN_SRCLK = 13, PIN_RCLK = A0;
 
 // Solenoidy S1, S2 podle stupně (1..4) – servisní manuál AW-4, Fig. 8.
 // Lockup = solenoid 3 (ON = zamčeno). Povolen od 3. stupně (v originále 3. a 4. v poloze D).
@@ -15,18 +14,6 @@ const bool GEAR_TABLE[4][2] = {
   {false, true},   // 3.
   {false, false},  // 4.
 };
-
-// 7seg, bity: a=0 b=1 c=2 d=3 e=4 f=5 g=6 dp=7 (upravit podle zapojení)
-const uint8_t SEG[] = {
-  0x00, 0x06, 0x5B, 0x4F, 0x66,  // ' ', 1, 2, 3, 4
-};
-const uint8_t SEG_DASH = 0x40;
-const uint8_t SEG_DP   = 0x80;
-
-const uint8_t LOCKUP_MIN_GEAR = 3;
-// POZOR: po READY nevíme, jaký stupeň zrovna drží původní TCU. Zapínat READY ve stoje,
-// nebo nastavit INITIAL_GEAR podle rychlosti, jinak hrozí přetočení motoru.
-const uint8_t INITIAL_GEAR = 1;
 
 uint8_t gear = INITIAL_GEAR;
 bool lockup = false;
@@ -45,10 +32,17 @@ bool pressed(Button &b) {           // vrátí true na sestupnou hranu (stisk), 
   return false;
 }
 
-void show(uint8_t value) {
-  digitalWrite(PIN_RCLK, LOW);
-  shiftOut(PIN_SER, PIN_SRCLK, MSBFIRST, value);
-  digitalWrite(PIN_RCLK, HIGH);
+// Nextion: textové pole "t0" s číslem stupně, "t1" pro lockup; příkaz končí třemi 0xFF.
+void nextionSend(const char *cmd) {
+  Serial1.print(cmd);
+  Serial1.write(0xFF); Serial1.write(0xFF); Serial1.write(0xFF);
+}
+
+void show(const char *gearText, bool lockupOn) {
+  char buf[40];
+  snprintf(buf, sizeof(buf), "t0.txt=\"%s\"", gearText);
+  nextionSend(buf);
+  nextionSend(lockupOn ? "t1.txt=\"LOCKUP\"" : "t1.txt=\"\"");
 }
 
 void apply() {
@@ -57,20 +51,21 @@ void apply() {
     digitalWrite(PIN_SOL1, LOW);
     digitalWrite(PIN_SOL2, LOW);
     digitalWrite(PIN_SOL3, LOW);
-    show(SEG_DASH);
+    show("-", false);
     return;
   }
   digitalWrite(PIN_SOL1, GEAR_TABLE[gear - 1][0]);
   digitalWrite(PIN_SOL2, GEAR_TABLE[gear - 1][1]);
   digitalWrite(PIN_SOL3, lockup);
-  show(SEG[gear] | (lockup ? SEG_DP : 0));
+  char g[2] = {char('0' + gear), 0};
+  show(g, lockup);
 }
 
 void setup() {
   for (auto &b : btns) { pinMode(b.pin, INPUT); b.state = b.last = digitalRead(b.pin); }
   pinMode(PIN_RELAYS, OUTPUT);
   pinMode(PIN_SOL1, OUTPUT); pinMode(PIN_SOL2, OUTPUT); pinMode(PIN_SOL3, OUTPUT);
-  pinMode(PIN_SER, OUTPUT); pinMode(PIN_SRCLK, OUTPUT); pinMode(PIN_RCLK, OUTPUT);
+  Serial1.begin(9600);
   apply();
 }
 
