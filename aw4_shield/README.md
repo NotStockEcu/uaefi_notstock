@@ -129,6 +129,19 @@ Výpočty klíčových míst (ověřeno při revizi):
 * **Vstupy:** sepnutý spínač dá na pin 4,5 V (dělič 1k/10k), Nano bere HIGH od 3 V.
 * **Napájení 5 V:** Nano ~30 mA + optočleny ~50 mA + Nextion 2,4″ ~90 mA ≪ 1 A z TSR.
 
+Ověřeno simulací (ngspice, `tools/spice/sim_channel.py`, optočlen s nejhorším i nejlepším CTR 50 % / 600 %):
+
+| Veličina | 9 V | 12 V | 14,4 V | 27 V (transil) |
+|---|---|---|---|---|
+| Vgs spínače solenoidu Q3 | −8,1 V | −10,8 V | −13,0 V | −15 V (zener) |
+| Proud solenoidem (12 Ω) | – | 0,99 A | 1,18 A | – |
+| Úbytek na Q1 (přepólování) | – | 18 mV | 22 mV | – |
+| Q2 sepnutý (napětí na cívkách relé) | 0,12 V | 0,13 V | 0,15 V | 0,2 V |
+
+* Sepnutí solenoidu 0,7 ms, vypnutí ~2,5 ms; flyback dioda drží výstup na −1 V (žádná špička), MOSFET nikdy nevidí víc než napájení. Cívky relé při vypnutí max. 15,3 V (BC337 snese 45 V).
+* R14 = 2,2 kΩ: 5–6 mA, 56–83 mW. **S původními 220 Ω by to bylo ~59 mA / 0,8 W – rezistor by shořel.**
+* Firmware: přeložen pro ATmega328P bez chyb a varování (`-Wall -Wextra`, 6,1 kB flash), logika ověřena testem `firmware/test/run_test.sh` (řazení podle tabulky, lockup jen od 3., debounce, pořadí přepnutí relé a výstupů, obnovování displeje).
+
 Co z desky nejde poznat a je potřeba ověřit / dát pozor:
 
 1. **Polarita solenoidů v autě** – návrh počítá s tím, že TCU spíná na drát +12 V a druhý konec solenoidu je na kostře (podle manuálu). Ověřit multimetrem.
