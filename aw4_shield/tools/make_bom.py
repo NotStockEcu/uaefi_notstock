@@ -24,7 +24,7 @@ CAT={
  "P6KE27A":    ("Diody","Transil (TVS) 27 V","600 W, jednosměrný, DO-15","P6KE27A","P6KE27","pozor na polaritu – proužek = katoda (K)",2),
  "100nF":      ("Kondenzátory","Kondenzátor 100 nF","keramický, 50 V, X7R, rozteč 2,54 mm","např. KEMET C320C104K5R5TA","100n","",3),
  "600R@100MHz":("Kondenzátory","Feritová perla","axiální, ≥ 600 Ω @ 100 MHz, ≥ 1 A (montáž nastojato)","např. Fair-Rite 2743019447","FB","",3),
- "10uF 25V":   ("Kondenzátory","Elektrolyt 10 µF / 25 V","Ø5 mm, rozteč 2,0 mm, 105 °C","Panasonic EEU-FR1E100","10u","polarita! + na označený pad",6),
+ "10uF 25V":   ("Kondenzátory","Elektrolyt 10 µF / 25 V","Ø5 mm, rozteč 2,0 mm","Panasonic ECA-1EM100","10u","polarita! + na označený pad",6),
  "100uF 16V":  ("Kondenzátory","Elektrolyt 100 µF / 16 V","Ø6,3 mm, rozteč 2,5 mm, 105 °C","Panasonic EEU-FR1C101","100u","polarita! + na označený pad",6),
  "470uF 25V":  ("Kondenzátory","Elektrolyt 470 µF / 25 V","Ø10 mm, rozteč 5 mm, 105 °C, low-ESR","Panasonic EEU-FR1E471","470u","polarita! + na označený pad",6),
  "PC817":      ("Polovodiče","Optočlen PC817","DIP-4","PC817C (Sharp / Everlight / Lite-On)","PC817","tečka = pin 1 (u čtvercového padu)",4),
@@ -52,13 +52,23 @@ DK={
  "BZX55C12":("Vishay","BZX55C12-TAP",""),"BZX55C15":("Vishay","BZX55C15-TAP",""),"BZX55C5V6":("Vishay","BZX55C5V6-TAP",""),
  "1N4148":("onsemi","1N4148",""),"1N4007":("onsemi","1N4007G",""),"P6KE27A":("Littelfuse","P6KE27A",""),
  "100nF":("KEMET","C320C104K5R5TA",""),"600R@100MHz":("Fair-Rite","2743019447",""),
- "10uF 25V":("Panasonic","EEU-FR1E100",""),"100uF 16V":("Panasonic","EEU-FR1C101",""),"470uF 25V":("Panasonic","EEU-FR1E471",""),
+ "10uF 25V":("Panasonic","ECA-1EM100","Ø5×11 mm, rozteč 2,0 mm"),"100uF 16V":("Panasonic","EEU-FR1C101",""),"470uF 25V":("Panasonic","EEU-FR1E471",""),
  "PC817":("Lite-On","LTV-817","pinově shodný s PC817"),"BC337":("onsemi","BC33740TA",""),"zelená READY":("Kingbright","WP7104GD",""),
  "IRF4905":("Infineon","IRF4905PBF",""),"IRF9540N":("Infineon","IRF9540NPBF",""),"TSR 1-2450 (12V->5V 1A)":("Traco Power","TSR 1-2450",""),
  "G5LE-1 12V SPDT":("Omron","G5LE-1 DC12",""),"5A":("Littelfuse","56000001009","OVĚŘIT – patice TR5 (řada 560)"),
  "J1 +12V / PGND":("Phoenix Contact","1715721","MKDS 1,5/2-5,08"),"J2 SOL1-3 / TCU1-3":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),
  "J3 UP DOWN READY LOCKUP":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),"J5 Nextion +5V GND RX TX":("JST","B4B-XH-A(LF)(SN)",""),
  "Arduino Nano":("Arduino","A000005","originál; klon s CH340 je levnější, ale DigiKey ho nevede"),
+}
+ALT={ # MPN -> náhrada (stejná hodnota, pouzdro a rozteč)
+ "ECA-1EM100":"Nichicon UVR1E100MDD",
+ "EEU-FR1C101":"Nichicon UVR1C101MED",
+ "EEU-FR1E471":"Nichicon UHE1E471MPD",
+ "LTV-817":"Sharp PC817X1NSZ1B",
+ "WP7104GD":"libovolná zelená LED 3 mm",
+ "2743019447":"Würth 74270012 (feritová perla)",
+ "56000001009":"libovolná patice TR5, rozteč 5,08 mm",
+ "37215000411":"libovolná pojistka TR5 5 A T",
 }
 DK_EXTRA=[ # (Manufacturer, MPN, qty/board, ref, description, note)
  ("Sullins","PPTC151LFBN-RC",2,"U2 patice","Dutinková lišta 1×15, 2,54 mm (patice Nana)",""),
@@ -165,7 +175,7 @@ ws3=wb.create_sheet("DigiKey")
 ws3["A1"]="DigiKey – seznam pro BOM Manager (digikey.com → BOM Manager → Upload, nebo soubor digikey_bom.csv)"; ws3["A1"].font=Font(name=F,bold=True,size=13)
 ws3["A2"]="Množství = Ks/deska × počet desek (list Objednávka, C2) + rezerva u drobných dílů (G2). DigiKey páruje podle výrobního čísla (MPN). Dostupnost a ceny nebyly ověřené (z tohoto prostředí není DigiKey dostupný) – řádky označené OVĚŘIT zkontrolujte, u ostatních je to běžný katalogový díl."
 ws3["A2"].font=Font(name=F,italic=True,size=9,color="555555")
-H3=["Manufacturer Part Number","Manufacturer","Ks / deska","Quantity","Customer Reference","Popis","Poznámka"]
+H3=["Manufacturer Part Number","Manufacturer","Ks / deska","Quantity","Customer Reference","Popis","Poznámka","Náhrada, když DigiKey díl nezná / nemá"]
 for i,h in enumerate(H3,1):
     c=ws3.cell(row=4,column=i,value=h); c.font=Font(name=F,bold=True,color="FFFFFF"); c.fill=hdr_fill; c.border=B; c.alignment=Alignment(horizontal="center",wrap_text=True)
 dkrows={}
@@ -182,13 +192,13 @@ for man,mpn,q,ref,desc,note in DK_EXTRA: lines.append((mpn,man,q,ref,desc,note,F
 lines.sort(key=lambda l:(not l[6], l[1], l[0]))
 r=5
 for mpn,man,q,ref,desc,note,small in lines:
-    vals=[mpn,man,q,None,ref,desc,note]
+    vals=[mpn,man,q,None,ref,desc,note,ALT.get(mpn,"")]
     for i,v in enumerate(vals,1):
         c=ws3.cell(row=r,column=i,value=v); c.font=Font(name=F,size=10,color=("C00000" if (i==7 and "OVĚŘIT" in str(v)) else "000000")); c.border=B; c.alignment=Alignment(vertical="top",wrap_text=True)
     ws3.cell(row=r,column=4,value=f"=C{r}*'Objednávka'!$C$2"+("+'Objednávka'!$G$2" if small else "")).font=Font(name=F,size=10,bold=True)
     r+=1
 ws3.cell(row=r+1,column=1,value="Mimo DigiKey: displej Nextion NX3224T024 (např. přímo Itead / Nextion, AliExpress, Laskakit), distanční sloupky M3.").font=Font(name=F,italic=True,size=9)
-for i,w in enumerate([24,16,9,9,30,58,40],1): ws3.column_dimensions[get_column_letter(i)].width=w
+for i,w in enumerate([24,16,9,9,30,58,34,34],1): ws3.column_dimensions[get_column_letter(i)].width=w
 ws3.freeze_panes="A5"
 with open(OUT.replace("bom_objednavka.xlsx","digikey_bom.csv"),"w",newline="",encoding="utf-8") as f:
     w=csv.writer(f); w.writerow(["Manufacturer Part Number","Manufacturer","Quantity","Customer Reference","Description"])
