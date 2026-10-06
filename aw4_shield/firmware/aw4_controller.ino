@@ -30,7 +30,7 @@ struct Button { uint8_t pin; bool state; bool last; uint32_t t; };
 Button btns[4] = {{PIN_UP}, {PIN_DOWN}, {PIN_READY}, {PIN_LOCKUP}};
 
 bool pressed(Button &b) {           // vrátí true na sestupnou hranu (stisk), debounce 30 ms
-  bool v = !digitalRead(b.pin);     // opto: aktivní = LOW
+  bool v = digitalRead(b.pin);     // spínač na +5V: aktivní = HIGH, pull-down 10 kΩ na desce
   if (v != b.last) { b.last = v; b.t = millis(); }
   if (millis() - b.t > 30 && v != b.state) {
     b.state = v;
@@ -61,7 +61,7 @@ void apply() {
 }
 
 void setup() {
-  for (auto &b : btns) { pinMode(b.pin, INPUT_PULLUP); b.state = b.last = !digitalRead(b.pin); }
+  for (auto &b : btns) { pinMode(b.pin, INPUT); b.state = b.last = digitalRead(b.pin); }
   pinMode(PIN_RELAYS, OUTPUT);
   pinMode(PIN_SOL1, OUTPUT); pinMode(PIN_SOL2, OUTPUT); pinMode(PIN_SOL3, OUTPUT);
   pinMode(PIN_SER, OUTPUT); pinMode(PIN_SRCLK, OUTPUT); pinMode(PIN_RCLK, OUTPUT);

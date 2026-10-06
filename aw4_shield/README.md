@@ -4,13 +4,12 @@ Deska (shield) s Arduinem Micro, která:
 
 * při přepínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
-* čte tlačítka **UP, DOWN, READY, LOCKUP** (12 V, přes optočleny),
+* čte spínače **UP, DOWN, READY, LOCKUP** (5 V z Arduina, aktivní = HIGH, s ochranou vstupu),
 * zobrazuje zařazený stupeň na **7segmentovce řízené přímo na desce** (74HC595, bez dlouhých vodičů).
 
 > **Co ověřit multimetrem před výrobou** (celý návrh na tom stojí):
 > 1. Solenoidy AW4 jsou běžně napájené spínaným +12 V (zapalování) a TCU je spíná **na zem** (low-side). Návrh s tím počítá. Pokud je to u vás jinak, napište mi.
 > 2. Odpor cívek (typicky 10–15 Ω → cca 1 A na solenoid). Pokud je lockup spínaný PWM, drží se návrh MOSFETů, ne relé.
-> 3. Zda jsou vstupy UP/DOWN/READY/LOCKUP spínače na +12 V, nebo na zem (viz sekce Vstupy, přepíná se pájecím jumperem).
 
 ## Blokové schéma
 
@@ -34,10 +33,10 @@ Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky 
 
 | Funkce | Pin Micro | Směr | Poznámka |
 |---|---|---|---|
-| UP | D4 | vstup | opto, aktivní = LOW |
-| DOWN | D5 | vstup | opto, aktivní = LOW |
-| READY | D6 | vstup | opto, aktivní = LOW |
-| LOCKUP | D7 | vstup | opto, aktivní = LOW |
+| UP | D4 | vstup | aktivní = HIGH, pull-down na desce |
+| DOWN | D5 | vstup | aktivní = HIGH, pull-down na desce |
+| READY | D6 | vstup | aktivní = HIGH, pull-down na desce |
+| LOCKUP | D7 | vstup | aktivní = HIGH, pull-down na desce |
 | READY_RELAYS (K1–K3) | D8 | výstup | HIGH = převzít solenoidy |
 | SOL1 (S1) | D9 | výstup (PWM) | → opto → Q1 |
 | SOL2 (S2) | D10 | výstup (PWM) | → opto → Q2 |
@@ -76,13 +75,16 @@ Proč MOSFET místo relé pro solenoidy: lockup se často PWM-uje, relé na tom 
 * LED indikace READY (zelená).
 
 ### 4. Vstupy (×4: UP, DOWN, READY, LOCKUP)
+Spínače jsou vaše a spínají **+5 V z Arduina** na vstupní pin (aktivní = HIGH). Pro každý vstup:
+
 ```
- IN (12 V z přepínače) ─[R 4,7 kΩ]─ LED opto (PC817) ─ GND_IN      ← dioda 1N4148 antiparalelně na LED
-                                                          └ TVS SMAJ15A IN–GND
- Opto výstup: kolektor → pin Arduina (INPUT_PULLUP), emitor → GND
- C 100 nF na pinu Arduina (debounce hardware)
+ +5V (z desky) ── spínač ──┬─[R 1 kΩ]──┬── pin Arduina (D4..D7)
+                           │           ├─ C 100 nF ─ GND   (debounce, odrušení)
+                           └─[R 10 kΩ pull-down]─ GND
+                                       └─ ESD/TVS dioda 5V (např. PESD5V0S1BL) pin–GND
 ```
-Pájecí jumper JP_IN: přepnutí na vstup „spíná na zem" (pull-up 4,7 kΩ na +12V_SW, přepínač do GND), pokud jsou vaše spínače zapojené jako zemnící.
+
+Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojeném kabelu), 1 kΩ + 100 nF tvoří RC filtr proti rušení z kabeláže spínačů. Optočleny na vstupech nejsou potřeba, 12 V se k nim nedostane. Kabel ke spínačům vést stíněný nebo kroucený (5 V, GND, signál).
 
 ### 5. Zobrazení
 * 74HC595 (SOIC-16 / DIP-16) + 1× 7segmentovka 0,56" (společná katoda), 8× 330 Ω.
@@ -95,7 +97,7 @@ Pájecí jumper JP_IN: přepnutí na vstup „spíná na zem" (pull-up 4,7 kΩ n
 |---|---|---|
 | J1 | 2pin šroubovací 5.08 | +12V, GND |
 | J2 | 6pin šroubovací | SOL1, SOL2, SOL3 (k převodovce), TCU1, TCU2, TCU3 (z původní TCU) |
-| J3 | 4pin šroubovací | UP, DOWN, READY, LOCKUP |
+| J3 | 6pin šroubovací | +5V, GND, UP, DOWN, READY, LOCKUP |
 | J4 | 2pin | +12V_SW pro solenoidy (společné napájení) |
 | J5 | 8pin header | displej mimo desku (volitelné) |
 | J6 | 4pin header | D2/D3 + 5V/GND rezerva |

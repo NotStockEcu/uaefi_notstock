@@ -2,7 +2,7 @@ Ref,Qty,Popis,Hodnota / typ,Poznámka
 U1,1,Arduino Micro (ATmega32U4),Arduino Micro,přes 2x 17pin female header
 U2,1,Posuvný registr,74HC595 (SOIC-16 nebo DIP-16),zobrazení
 U3,1,Buck měnič 12V->5V,LMR14006 / TPS54302 nebo modul MP1584,1 A
-U4-U10,7,Optočlen,PC817 / TLP185,3x výstup solenoid + 1x relé + 4x vstup = 8 ks (viz poznámka)
+U4-U7,4,Optočlen,PC817 / TLP185,3x výstup solenoid + 1x relé
 Q1-Q3,3,N-MOSFET logic-level,IRLZ44N (TO-220) nebo AO3400A (SMD),spínání solenoidů (low-side)
 Q4,1,NPN,BC337 / 2N2222,cívky relé
 K1-K3,3,Relé SPDT 12 V,Omron G5LE-14-DC12 / SRD-12VDC-SL-C,min. kontakty 5 A
@@ -12,8 +12,7 @@ D3,1,Schottky,SS14,OR napájení 5V (USB / deska)
 D4-D6,3,Flyback Schottky,SS34,na každý solenoid
 D7-D9,3,TVS,SMBJ30A,drain–PGND
 D10-D12,3,Dioda 1N4148,1N4148,flyback cívek relé
-D13-D16,4,TVS vstupů,SMAJ15A,vstupy 12 V
-D17-D20,4,Dioda 1N4148,1N4148,ochrana LED optočlenů na vstupech
+D13-D16,4,ESD ochrana vstupů,PESD5V0S1BL,pin–GND
 DS1,1,7segmentovka 0,56" společná katoda,LTS-5601 / podobná,
 LED1,1,LED zelená,0603/3 mm,indikace READY
 F1,1,Pojistka 3 A + držák,ATO / skleněná,
@@ -21,12 +20,12 @@ L1,1,Ferit,BLM21 / 600R @100 MHz,
 C1,1,Elektrolyt,470 µF / 25 V,
 C2-C10,9,Keramika 100 nF,0603,odrušení
 C11-C12,2,Elektrolyt/keramika,47 µF / 10 µF,
-R1-R8,8,Rezistor,330 Ω,LED optočlenů a segmentů
-R9-R12,4,Rezistor,4,7 kΩ,vstupy
+R1-R12,12,Rezistor,330 Ω,LED optočlenů (4) a segmentů (8)
+R27-R30,4,Rezistor,1 kΩ,vstupy (série)
+R23-R26,4,Rezistor,10 kΩ,vstupy (pull-down)
 R13-R15,3,Rezistor,1 kΩ,fototranzistor → gate
 R16-R18,3,Rezistor,10 kΩ,gate pull-down
 R19-R21,3,Rezistor,100 Ω,gate série
 R22,1,Rezistor,0 Ω / ferit,hvězda GND
 J1-J6,6,Šroubovací svorky / header,viz README,
-JP_IN1-4,4,Pájecí jumper,SMD,vstup 12 V / zem
 J_USB,1,Jumper 2pin,,napájení Micro
