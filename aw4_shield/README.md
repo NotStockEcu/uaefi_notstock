@@ -63,7 +63,7 @@ Tři relé K1–K3 se ovládají **jedním signálem** (`READY_RELAYS`), cívky 
 
 ### 1. Napájení
 * Konektor 12 V → pojistka F1 (5 A) → P-MOSFET Q0 (IRF4905 / AO4407A, zener 12 V gate–source, rezistor 100 kΩ gate–GND) proti přepólování → TVS D2 (SMBJ24A, ochrana proti load dump) → bulk C1 470 µF/25 V + C2 100 nF.
-* **Buck 12 → 5 V**: LMR14006 / TPS54302 nebo hotový modul (MP1584), 1 A, výstup 5 V do pinu `5V` Arduina Nano (jumper J1: napájení přes USB / přes desku, **nikdy obojí zároveň**; při programování po USB sundat jumper nebo přidat Schottky OR diodu D3).
+* **Buck 12 → 5 V**: hotový modul (MP1584 / LM2596 mini, 1 A) na 4pinové hlavičce U3, výstup nastavit na 5,0 V *před* připojením Nana. Jumper JP1 spojuje +5V s pinem 5V Nana: při programování po USB sundat (nebo odpojit 12 V), nikdy nenapájet z obou stran zároveň.
 * LC filtr 5 V: ferit (BLM21) + C 47 µF + C 100 nF.
 * **Zem do hvězdy**: výkonová zem solenoidů (PGND) a logická zem (GND) se na desce spojují v **jednom místě** (pad R0 = 0 Ω / ferit). Tím šum ze solenoidů neteče přes zem Arduina.
 
@@ -87,7 +87,7 @@ Flyback dioda D4 je záměrně až **za relé na straně solenoidu**, takže chr
 
 Proč MOSFET místo relé pro solenoidy: tlak lockupu se dnes moduluje jen zapnuto/vypnuto, ale relé má životnost ~10⁵ cyklů a spínací čas 5–10 ms, MOSFET je tichý a bez opotřebení.
 
-**Volitelně:** zátěž na straně TCU (NC kontakt) – rezistor 12 Ω / 5 W na každý vodič, ať TCU po odpojení nehlásí „open circuit" a nehází chybu. Topí se (až 12 W na kanál při sepnutí TCU), proto jen jako nepájená varianta.
+**Poznámka k původní TCU:** po odpojení (READY zapnuto) vidí rozpojený obvod a může si zapsat chybu. Atrapu zátěže (rezistor na straně TCU) nedoporučuji: NC kontakt je v klidu trvale připojený k solenoidu, atrapa by byla neustále paralelně a TCU by viděla poloviční odpor. Řešením by byl další kontakt relé.
 
 ### 3. Přepínací relé K1–K3 (fail-safe na původní TCU)
 * 3× relé SPDT 12 V, kontakty min. 5 A (např. Omron G5LE-14 / Songle SRD-12VDC-SL-C). Cívky paralelně, 3 × ~40 mA.
@@ -126,9 +126,8 @@ Pull-down 10 kΩ drží vstup v LOW při rozepnutém spínači (a při odpojené
 | J1 | 2pin šroubovací 5.08 | +12V, GND |
 | J2 | 6pin šroubovací | SOL1, SOL2, SOL3 (k převodovce), TCU1, TCU2, TCU3 (z původní TCU) |
 | J3 | 6pin šroubovací | +5V, GND, UP, DOWN, READY, LOCKUP |
-| J4 | 2pin | rezerva (např. tlakový solenoid) |
 | J5 | 4pin (JST-XH / šroubovací) | displej Nextion: +5V, GND, RX, TX |
-| J6 | 6pin header | D12, D13, A0–A3 + GND (rezerva) |
+| J6 | 7pin header | D12, D13, A0–A3 + GND (rezerva) |
 
 ## Schéma (PDF)
 `docs/aw4_shield.pdf` – 3 strany: přehled, napájení + vstupy + displej, výstupní stupeň a přepínací relé.
@@ -146,5 +145,12 @@ Viz `bom.csv`.
 ## Firmware
 `firmware/aw4_controller.ino` – základní logika (UP/DOWN, lockup, READY, displej Nextion přes SoftwareSerial). Tabulka solenoidů je v `GEAR_TABLE` a **musí se ověřit** na vaší převodovce.
 
+## KiCad
+`kicad/aw4_shield.kicad_sch` (formát KiCad 8, otevře se i v KiCadu 10) je vygenerované schéma se stejným zapojením jako PDF. Propojení je přes **pojmenované štítky u pinů** (ne dráty), takže se schéma čte podle názvů sítí.
+* Symboly jsou vložené do souboru (knihovna `AW4`), footprinty jsou přiřazené ze standardních knihoven KiCadu (SMD 0805 pasivní součástky, vývodové relé, TO-220, svorkovnice, `Module:Arduino_Nano`).
+* **Před výrobou ověřit** (nemohl jsem schéma otevřít v KiCadu, jen zkontrolovat sítě skriptem): čísla pinů relé G5LE-1, pinout Nana oproti footprintu `Module:Arduino_Nano`, pinout BC337 v TO-92 (C-B-E) a názvy footprintů (pojistkový držák).
+* PCB není nakreslená: v KiCadu *Tools → Update PCB from Schematic* a rozmístit. Výkonová zem (PGND) a logická (GND) mají zůstat oddělené a spojené jen přes R25 0 Ω.
+* Seznam součástek (`bom.csv`) je vygenerovaný ze schématu.
+
 ## Co dál
-Návrh je zatím popis + BOM + firmware. Dalším krokem je překreslit do KiCadu (schéma + PCB). Řekněte, jestli ho mám připravit, a upřesněte body z úvodu (polarita solenoidů, odpor cívek, typ spínačů).
+Zbývá nakreslit a vyrobit PCB v KiCadu (viz sekce KiCad) a doladit firmware.
