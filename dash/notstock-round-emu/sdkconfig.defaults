@@ -1,0 +1,55 @@
+# ---- target ----------------------------------------------------------------
+CONFIG_IDF_TARGET="esp32s3"
+
+# ---- flash / PSRAM: ESP32-S3R8 with 16 MB flash, 8 MB octal PSRAM ----------
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_FETCH_INSTRUCTIONS=y
+CONFIG_SPIRAM_RODATA=y
+
+# ---- performance -----------------------------------------------------------
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_FREERTOS_HZ=1000
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+CONFIG_ESP32S3_DATA_CACHE_64KB=y
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
+CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB=y
+CONFIG_LCD_RGB_RESTART_IN_VSYNC=y
+
+# ---- console on UART0 ------------------------------------------------------
+# GPIO19/20, the native USB's pins, carry CAN (12-pin D-/D+). Flash and
+# monitor over the "UART" USB-C; nothing may sit on USB Serial/JTAG, not
+# even the secondary console IDF adds by default.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# ---- no radio: nothing starts Wi-Fi, Bluetooth is not even built ----------
+CONFIG_BT_ENABLED=n
+
+# ---- LVGL (Kconfig, no lv_conf.h) ------------------------------------------
+CONFIG_LV_CONF_SKIP=y
+CONFIG_LV_COLOR_DEPTH_16=y
+CONFIG_LV_COLOR_16_SWAP=n
+# LVGL objects from the system heap: big blocks land in PSRAM, so rebuilding
+# every screen for a new language never runs out
+CONFIG_LV_MEM_CUSTOM=y
+CONFIG_LV_MEMCPY_MEMSET_STD=y
+CONFIG_LV_ATTRIBUTE_FAST_MEM_USE_IRAM=y
+CONFIG_LV_DISP_DEF_REFR_PERIOD=20
+CONFIG_LV_INDEV_DEF_READ_PERIOD=20
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_USE_PERF_MONITOR=n
+CONFIG_LV_USE_MEM_MONITOR=n
+CONFIG_LV_USE_METER=y
+CONFIG_LV_USE_ARC=y
+CONFIG_LV_USE_LINE=y
+CONFIG_LV_USE_IMG=y
+CONFIG_LV_USE_LABEL=y
+CONFIG_LV_USE_FLEX=y

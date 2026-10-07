@@ -14,6 +14,8 @@ which takes everything from here but `main/hw.c` (sim: `make SIZE=466`),
 and the **Waveshare ESP32-S3-Touch-LCD-1.85** (360 x 360, the 480 frame
 scaled down): [`../notstock-round-lcd185`](../notstock-round-lcd185), with
 its power and CAN board [`../notstock-can185`](../notstock-can185).
+For an ECUMaster EMU Black instead of OBD-II:
+[`../notstock-round-emu`](../notstock-round-emu).
 
 **State: first firmware for the board, not tried on it yet.** The UI is
 real LVGL 8.4 code that also runs in the PC simulator; `main/hw.c` and
