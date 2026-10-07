@@ -1,12 +1,15 @@
 /* The EMU Black's CAN stream on TWAI.
  *
- * The bit rate is whatever the EMU is set to (125 k, 250 k, 500 k or 1 M):
- * the gauge looks for it in listen-only mode, where a wrong rate costs the
- * bus nothing, one rate after the other until stream frames come
- * (base..base+7). Then it switches to normal mode at that rate, so it
- * acknowledges the frames even when it is the EMU's only partner on the
- * bus. It never sends anything. Silence for SEARCH_AGAIN_US: look again.
- * The rate found is kept in NVS and tried first next time.
+ * The bit rate is whatever the EMU is set to (125 k, 250 k, 500 k or 1 M).
+ * The gauge tries one rate after the other in normal mode until stream
+ * frames come (base..base+7): normal, not listen-only, because when the
+ * gauge is the EMU's only partner on the bus nobody else acknowledges the
+ * frames, and an unacknowledged frame is an error for every node, so a
+ * listening gauge would never see one (and the EMU reports CAN error).
+ * At a wrong rate the gauge disturbs the bus for TRY_MS with error frames;
+ * the rate found is kept in NVS and tried first, so that happens once.
+ * It never sends a frame of its own. Silence for SEARCH_AGAIN_US: look
+ * again.
  */
 #include "emu_can.h"
 #include "board_round.h"
@@ -25,7 +28,7 @@ static const char *TAG = "emu";
 #define TRY_MS          400            /* per rate while looking */
 #define SEARCH_AGAIN_US (3 * 1000000)
 
-static const int RATES[] = { 1000, 500, 250, 125 };
+static const int RATES[] = { 500, 1000, 250, 125 };
 #define N_RATES (int)(sizeof RATES / sizeof RATES[0])
 
 static emu_values_t s_v;
@@ -93,8 +96,8 @@ static void store_rate(int kbit)
     }
 }
 
-/* listen at each rate in turn (the stored one first) until stream frames
- * come; returns the rate */
+/* each rate in turn (the stored one first) until stream frames come;
+ * returns the rate */
 static int search(void)
 {
     int first = stored_rate();
@@ -102,7 +105,8 @@ static int search(void)
         for (int i = -1; i < N_RATES; i++) {
             int k = i < 0 ? first : RATES[i];
             if (k == 0 || (i >= 0 && k == first)) continue;
-            bring_up(k, TWAI_MODE_LISTEN_ONLY);
+            ESP_LOGI(TAG, "trying %d kbit", k);
+            bring_up(k, TWAI_MODE_NORMAL);
             int64_t end = esp_timer_get_time() + TRY_MS * 1000;
             twai_message_t m;
             int hits = 0;
@@ -121,8 +125,7 @@ static void can_task(void *arg)
     (void)arg;
     for (;;) {
         s_kbit = 0;
-        int k = search();
-        bring_up(k, TWAI_MODE_NORMAL);
+        int k = search();           /* and stays up at that rate */
         s_kbit = k;
         store_rate(k);
         ESP_LOGI(TAG, "EMU stream at %d kbit, base 0x%03X", k, EMU_BASE_ID);

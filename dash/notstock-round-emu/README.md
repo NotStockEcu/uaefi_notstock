@@ -50,12 +50,16 @@ frames, 11-bit IDs, little-endian, 20 Hz; `main/emu_stream.c` has the
 table.
 
 The bit rate is whatever the EMU is set to (125 k, 250 k, 500 k or 1 M):
-the gauge finds it by listening at each rate in turn (listen-only, so a
-wrong rate does nothing to the bus), then switches to normal mode at the
-right one so it acknowledges the frames even when it is the EMU's only
-partner on the bus. It never sends a frame. The rate found is stored and
-tried first at the next start; if the stream goes quiet for 3 s it looks
-again. The log says `EMU stream at N kbit`.
+the gauge tries one rate after the other (500 k first) until stream
+frames come, and stays at that one. It does so in normal mode, so it
+acknowledges the frames: with the gauge as the EMU's only partner on the
+bus nobody else would, and an unacknowledged frame is an error for every
+node (the EMU shows CAN error, and a listening gauge would never see a
+frame). At a wrong rate the gauge disturbs the bus with error frames for
+0.4 s; the rate found is stored and tried first at the next start, so
+that happens once. It never sends a frame of its own. If the stream goes
+quiet for 3 s it looks again. The log says `trying N kbit`, then `EMU
+stream at N kbit`.
 
 Wiring as on the OBD gauge: the SN65HVD230 board on GPIO20 (TX) / GPIO19
 (RX), CAN-H / CAN-L to the EMU's CAN bus. The bus needs 120 R at both
