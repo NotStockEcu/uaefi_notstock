@@ -61,8 +61,10 @@ that happens once. It never sends a frame of its own. If the stream goes
 quiet for 3 s it looks again. The log says `trying N kbit`, then `EMU
 stream at N kbit`.
 
-Wiring as on the OBD gauge: the SN65HVD230 board on GPIO20 (TX) / GPIO19
-(RX), CAN-H / CAN-L to the EMU's CAN bus. The bus needs 120 R at both
+Wiring as on the OBD gauge: the SN65HVD230 board's CTX to GPIO20 (12-pin
+D+), its CRX to GPIO19 (12-pin D-), CAN-H / CAN-L to the EMU's CAN bus.
+CTX and CRX swapped (seen on the first install) looks like a dead bus: the
+log keeps `trying N kbit` with 0 edges on the RX pin. The bus needs 120 R at both
 ends; the EMU end is in the EMU harness, a gauge at the far end needs one
 too.
 
