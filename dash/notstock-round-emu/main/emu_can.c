@@ -16,6 +16,7 @@
 
 #include <string.h>
 
+#include "driver/gpio.h"
 #include "driver/twai.h"
 #include "esp_log.h"
 #include "esp_timer.h"
@@ -96,12 +97,41 @@ static void store_rate(int kbit)
     }
 }
 
+/* what the transceiver's RX line does, with TWAI off: the EMU's stream at
+ * 20 Hz x 8 frames makes hundreds of edges in 100 ms. None and high: the
+ * bus is quiet or does not reach the transceiver; none and low: the
+ * transceiver is not powered or RX goes elsewhere. */
+static void probe_rx(void)
+{
+    if (s_up) {
+        twai_stop();
+        twai_driver_uninstall();
+        s_up = false;
+    }
+    gpio_reset_pin(PIN_TWAI_RX);
+    gpio_set_direction(PIN_TWAI_RX, GPIO_MODE_INPUT);
+    int last = gpio_get_level(PIN_TWAI_RX), edges = 0, low = 0, n = 0;
+    int64_t end = esp_timer_get_time() + 100000;
+    while (esp_timer_get_time() < end) {
+        int l = gpio_get_level(PIN_TWAI_RX);
+        if (l != last) edges++;
+        if (!l) low++;
+        last = l;
+        n++;
+    }
+    ESP_LOGI(TAG, "RX pin GPIO%d: %d edges in 100 ms, low %d %% of the time%s",
+             PIN_TWAI_RX, edges, n ? low * 100 / n : 0,
+             edges ? "" : low ? " (transceiver unpowered or RX miswired?)"
+                          : " (no bus activity reaches the transceiver)");
+}
+
 /* each rate in turn (the stored one first) until stream frames come;
  * returns the rate */
 static int search(void)
 {
     int first = stored_rate();
     for (;;) {
+        probe_rx();
         for (int i = -1; i < N_RATES; i++) {
             int k = i < 0 ? first : RATES[i];
             if (k == 0 || (i >= 0 && k == first)) continue;
@@ -110,11 +140,26 @@ static int search(void)
             int64_t end = esp_timer_get_time() + TRY_MS * 1000;
             twai_message_t m;
             int hits = 0;
+            int other = 0;
             while (esp_timer_get_time() < end) {
-                if (twai_receive(&m, pdMS_TO_TICKS(20)) == ESP_OK &&
-                    is_stream(&m) && ++hits >= 3) {
-                    return k;
+                if (twai_receive(&m, pdMS_TO_TICKS(20)) == ESP_OK) {
+                    if (is_stream(&m)) {
+                        if (++hits >= 3) return k;
+                    } else if (other++ == 0) {
+                        ESP_LOGI(TAG, "  frame 0x%03lX, not the stream (base "
+                                 "0x%03X)", (unsigned long)m.identifier,
+                                 EMU_BASE_ID);
+                    }
                 }
+            }
+            twai_status_info_t st;
+            if (twai_get_status_info(&st) == ESP_OK) {
+                ESP_LOGI(TAG, "  %d kbit: %d stream, %d other frames, bus "
+                         "errors %lu, rx errors %lu, %s", k, hits, other,
+                         (unsigned long)st.bus_error_count,
+                         (unsigned long)st.rx_error_counter,
+                         st.state == TWAI_STATE_BUS_OFF ? "bus-off" :
+                         st.state == TWAI_STATE_RUNNING ? "running" : "other");
             }
         }
     }
