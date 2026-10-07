@@ -10,7 +10,7 @@
  *   base+4  0 gear  1 ECU temp int8  2-3 battery 0.027 V  4-5 error flags
  *           6 flags1  7 ethanol %
  *   base+5  DBW, traction control
- *   base+6  analog inputs 5-6, output flags
+ *   base+6  analog inputs 5-6, output flags 1-4 (4: bit 1 coolant fan)
  *   base+7  0-1 boost target kPa  2 PWM1 %  3 DSG mode ...
  */
 #include "emu_stream.h"
@@ -70,11 +70,14 @@ bool emu_decode(emu_values_t *v, uint32_t base, uint32_t id,
         v->err = (uint16_t)u16(d, 4);
         v->flags1 = d[6];
         break;
+    case 6:
+        for (int i = 0; i < 4; i++) v->outflags[i] = d[4 + i];
+        break;
     case 7:
         v->boost_target_kpa = (float)u16(d, 0);
         break;
     default:
-        break;      /* 1, 5, 6: nothing the gauge shows (yet) */
+        break;      /* 1, 5: nothing the gauge shows (yet) */
     }
     v->frame_us[n] = now_us;
     return true;

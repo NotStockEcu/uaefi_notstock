@@ -3,32 +3,44 @@
 The 2.1" round gauge of [`../notstock-round`](../notstock-round) (Waveshare
 **ESP32-S3-Touch-LCD-2.1**, same board, same wiring, same NOT STOCK boot
 logo) reading an **ECUMaster EMU Black** over its CAN stream instead of
-OBD-II. One page so far: BOOST, AFR and CLT, drawn the way ECUMaster's own
-dashes draw channels: a panel per value, label and unit at the top, the
-value in a condensed face, a bar under it.
+OBD-II, drawn after ECUMaster's own round gauges: a dark honeycomb, a
+vertical bar with its scale on the left, channels stacked on the right with
+their maximum since power-on under them.
 
 ![sheet](preview/sheet.png)
 
-Normal, idle (cold engine: blue bar), alarm, sensor error, no data.
+Page 1, page 2, the fan running, alarm (red, the value blinking), a failed
+sensor, no data.
 
-**State: built, decoder tested on a PC, the page checked in the simulator;
+**State: built, decoder tested on a PC, the pages checked in the simulator;
 not tried on the car yet.**
 
-## The page
+## The pages
 
-| Panel | From the stream | Bar | Amber | Red, panel flashes |
-| --- | --- | --- | --- | --- |
-| BOOST, bar | MAP - BARO (base+0, base+2) | -1.0 .. 2.5, tick at 0 | from 1.8 | from 2.2 |
-| AFR | lambda x 14.7 (base+3) | 10 .. 20, tick at 14.7 | under 11.2, over 15.2 | under 10.5, over 16.0 |
-| CLT, degC | CLT (base+2) | 40 .. 120 | over 100 (blue under 60: cold) | from 108 |
+Swipe left / right. At the top: the link dot (green: stream frames coming,
+red: none) and FAN, lit blue while the EMU runs the coolant fan (OUTFLAGS4
+bit 1).
 
-- Before the EMU's barometer comes, boost is against 101.3 kPa.
-- AFR is for petrol (`EMU_STOICH` in `main/ui_emu.h`).
-- The EMU's error flags (base+4): MAP, wideband or CLT sensor failed puts
-  SENSOR ERR in that panel instead of a value.
-- A channel whose frame is older than 1 s shows `--`; no stream frame at
-  all: NO DATA at the top, red.
-- Limits, ranges and formats: the `CH[]` table in `main/ui_emu.c`.
+| Page | Bar (left) | Right |
+| --- | --- | --- |
+| 1 | BOOST, bar: MAP - BARO, -1 .. 2.5 | AFR, Throttle % |
+| 2 | CLT, degC: 20 .. 120 | IAT, degC |
+
+| Channel | Orange | Red |
+| --- | --- | --- |
+| BOOST | from 1.8 (the orange line) | from 2.2 |
+| AFR | under 11.2, over 15.2 | under 10.5, over 16.0 |
+| CLT | over 100 (the line); blue under 60: cold | from 108 |
+| IAT | over 50 | from 65 |
+
+- Boost is MAP minus the EMU's barometer (BARO, base+2); until that
+  comes, against 101.3 kPa.
+- AFR is lambda x 14.7, petrol (`EMU_STOICH` in `main/ui_emu.h`).
+- The EMU's error flags (base+4): MAP, wideband, CLT or IAT sensor failed
+  puts SENSOR ERR where the value was.
+- A channel whose frame is older than 1 s shows `--`.
+- Limits, ranges and scale lines: the `CH[]` table in `main/ui_emu.c`. The
+  background: `tools/gen_bg.py` -> `main/emu_bg.c`.
 
 ## CAN
 
@@ -67,7 +79,8 @@ boot logo and the splash are `../notstock-round/main` (`hw.c`, `boot_fb.c`,
 
 ```
 make -C tools/sim LVGL_DIR=/path/to/lvgl-8.4
-tools/sim/build/sim out.ppm boost=1.45 afr=12.1 clt=88   # link=0, err=8 ...
+tools/sim/build/sim out.ppm boost=1.45 afr=12.1 tps=64   # page=1 clt= iat=
+                                       # fan=1, err=8, link=0
 python3 tools/topng.py out.ppm out.png
 cc -Imain tools/test/test_stream.c main/emu_stream.c -lm && ./a.out
 ```
@@ -75,5 +88,5 @@ cc -Imain tools/test/test_stream.c main/emu_stream.c -lm && ./a.out
 The simulator feeds the page real stream frames through the decoder.
 
 Fonts: Barlow Condensed (SIL OFL, `../notstock-round/assets/fonts`), made
-with lv_font_conv: `emu_num_120` / `emu_num_80` the digits, `emu_txt_28` /
-`emu_txt_22` labels and units.
+with lv_font_conv: `emu_num_80` / `emu_num_64` the digits, `emu_txt_28` /
+`emu_txt_18` labels, units and scales.

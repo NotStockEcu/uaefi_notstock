@@ -23,6 +23,10 @@
 #define EMU_EGT_ALARM (1u << 6)
 #define EMU_KNOCKING  (1u << 7)
 
+/* OUTFLAGS4 bits (base+6, byte 7) */
+#define EMU_OUT4_FUEL_PUMP (1u << 0)
+#define EMU_OUT4_FAN       (1u << 1)     /* coolant fan */
+
 /* live values, NAN until their frame has come */
 typedef struct {
     float rpm;          /* base+0 */
@@ -39,6 +43,7 @@ typedef struct {
     float ecu_temp;     /* degC */
     uint16_t err;       /* ERRFLAG, EMU_ERR_* */
     uint8_t flags1;     /* gearcut, ALS, launch, idle, ... */
+    uint8_t outflags[4];     /* base+6, bytes 4-7 */
     float boost_target_kpa;  /* base+7 */
     int64_t frame_us[EMU_FRAMES];   /* when each frame last came, 0: never */
 } emu_values_t;

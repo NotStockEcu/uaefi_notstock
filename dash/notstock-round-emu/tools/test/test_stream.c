@@ -36,6 +36,11 @@ int main(void)
     NEAR(v.ecu_temp, -5); NEAR(v.batt, 13.5f);
     NEAR(v.err, EMU_ERR_WBO | EMU_ERR_MAP); NEAR(v.flags1, 8);
 
+    /* base+6: OUTFLAGS4 fuel pump and fan */
+    uint8_t f6[8] = { 0, 0, 0, 0, 1, 2, 4, 0x03 };
+    emu_decode(&v, 0x600, 0x606, f6, 8, 1);
+    NEAR(v.outflags[3] & EMU_OUT4_FAN, EMU_OUT4_FAN); NEAR(v.outflags[0], 1);
+
     /* another base: 0x600 frames ignored; old 4-byte base+7 accepted */
     NEAR(emu_decode(&v, 0x700, 0x600, f0, 8, 1), 0);
     uint8_t f7[4] = { 0x2C, 0x01, 50, 5 };

@@ -10,7 +10,7 @@ CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(256U*1024U)' \
            -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
-APP_SRC  := sim.c $(ROOT)/main/ui_emu.c $(ROOT)/main/emu_stream.c $(wildcard $(ROOT)/main/fonts/*.c)
+APP_SRC  := sim.c $(ROOT)/main/ui_emu.c $(ROOT)/main/emu_stream.c $(ROOT)/main/emu_bg.c $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')
 LVGL_OBJ := $(patsubst $(LVGL_DIR)/%.c,$(OUT)/lvgl/%.o,$(LVGL_SRC))
 
