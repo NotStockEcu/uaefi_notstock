@@ -6,6 +6,8 @@
 #include "board_round.h"
 #include "boot_fb.h"
 
+void motion_start(void) __attribute__((weak));
+
 #include <stdio.h>
 #include <string.h>
 
@@ -494,7 +496,7 @@ void hw_init(void)
     panel_init();
     touch_init();
     lvgl_init();
-    motion_start();
+    if (motion_start) motion_start();      /* not in every project */
 }
 
 /* ------------------------------------------------- I2C for the G-meter */
@@ -511,4 +513,12 @@ esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
                                                pdMS_TO_TICKS(50));
     xSemaphoreGive(s_i2c);
     return e;
+}
+
+/* a buzzer, no speaker: rnd_sound beeps instead */
+bool hw_play(const int16_t *pcm, size_t n)
+{
+    (void)pcm;
+    (void)n;
+    return false;
 }

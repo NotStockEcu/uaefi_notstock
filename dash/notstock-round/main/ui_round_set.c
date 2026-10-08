@@ -2,8 +2,9 @@
  *
  * SETTINGS (from the menu): LOOK, PAGES (which gauges and in what order),
  * NIGHT (the backlight at night, the double
- * tap's level; tap for the next step), BEEP on / off (the regeneration
- * beeps; the popup comes either way), LIMITS, and the language (tap: English
+ * tap's level; tap for the next step), SOUND (at a regeneration's start
+ * and end: off, beeps, chime, gong or a voice; tap for the next, it plays;
+ * the popup comes either way), LIMITS, and the language (tap: English
  * / Czech; every screen is built again in it). A long press goes one level
  * back and stores the settings.
  *
@@ -35,7 +36,7 @@ void rnd_settings_defaults(void)
 {
     memset(&g_rnd_set, 0, sizeof g_rnd_set);
     g_rnd_set.look = RND_LOOK_NOTSTOCK;
-    g_rnd_set.beep = true;
+    g_rnd_set.sound = RND_SND_BEEP;
     g_rnd_set.night = false;
     g_rnd_set.night_level = 30;
     for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
@@ -92,7 +93,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr, *pg_scr;
-static lv_obj_t *beep_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
+static lv_obj_t *sound_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
 
 static void show_night(void)
 {
@@ -117,16 +118,23 @@ static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
     [RND_LOOK_FUTURO]   = "FUTURO",
 };
 
-static void show_beep(void)
+static void show_sound(void)
 {
-    lv_label_set_text(beep_lbl, g_rnd_set.beep ? TR("BEEP   ON", "PÍPÁNÍ   ZAP")
-                                               : TR("BEEP   OFF", "PÍPÁNÍ   VYP"));
-    lv_obj_set_style_text_color(beep_lbl, g_rnd_set.beep ? C_W : C_DIM, 0);
+    static const char *const EN[RND_SND_COUNT] = {
+        "OFF", "BEEP", "CHIME", "GONG", "VOICE" };
+    static const char *const CS[RND_SND_COUNT] = {
+        "VYP", "PÍPNUTÍ", "CINK", "GONG", "HLAS" };
+    int s = g_rnd_set.sound < RND_SND_COUNT ? g_rnd_set.sound : 0;
+    char buf[32];
+    snprintf(buf, sizeof buf, "%s  %s", TR("SOUND", "ZVUK"),
+             g_rnd_set.lang == RND_LANG_CS ? CS[s] : EN[s]);
+    lv_label_set_text(sound_lbl, buf);
+    lv_obj_set_style_text_color(sound_lbl, s ? C_W : C_DIM, 0);
 }
 
 void rnd_set_open(void)
 {
-    show_beep();
+    show_sound();
     show_night();
     lv_scr_load(set_scr);
 }
@@ -153,12 +161,13 @@ static void sub_back(lv_event_t *e)
     rnd_set_open();
 }
 
-static void beep_toggle(lv_event_t *e)
+/* tap: the next sound, played, so you hear what you chose */
+static void sound_step(lv_event_t *e)
 {
     (void)e;
-    g_rnd_set.beep = !g_rnd_set.beep;
-    if (g_rnd_set.beep) rnd_beep(1);      /* so you hear what you chose */
-    show_beep();
+    g_rnd_set.sound = (uint8_t)((g_rnd_set.sound + 1) % RND_SND_COUNT);
+    rnd_sound(RND_EV_REGEN_START);
+    show_sound();
 }
 
 /* LOOK: the picked one has a white rim; it applies at once */
@@ -399,7 +408,7 @@ void rnd_set_create(void)
     pill(set_scr, SET_Y0 + 1 * SET_DY, go_pages, &l);
     lv_label_set_text(l, TR("PAGES", "STRÁNKY"));
     pill(set_scr, SET_Y0 + 2 * SET_DY, night_step, &night_lbl);
-    pill(set_scr, SET_Y0 + 3 * SET_DY, beep_toggle, &beep_lbl);
+    pill(set_scr, SET_Y0 + 3 * SET_DY, sound_step, &sound_lbl);
     pill(set_scr, SET_Y0 + 4 * SET_DY, go_limits, &l);
     lv_label_set_text(l, TR("LIMITS", "LIMITY"));
     pill(set_scr, SET_Y0 + 5 * SET_DY, lang_toggle, &lang_lbl);

@@ -24,6 +24,7 @@
 #endif
 #include "can_obd.h"
 #include "hw.h"
+#include "sounds.h"
 #include "ui_round.h"
 
 #include "esp_heap_caps.h"
@@ -41,7 +42,7 @@ static const char *TAG = "round";
 /* ------------------------------------------------------------ settings */
 #define NS  "round"
 #define KEY "set"
-#define VER 3        /* bump whenever rnd_settings_t or its defaults change */
+#define VER 4        /* bump whenever rnd_settings_t or its defaults change */
 
 static void settings_load(void)
 {
@@ -61,7 +62,8 @@ static void settings_load(void)
     size_t len = sizeof tmp;
     if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == VER &&
         nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK && len == sizeof tmp &&
-        tmp.look < RND_LOOK_COUNT && tmp.lang < RND_LANG_COUNT) {
+        tmp.look < RND_LOOK_COUNT && tmp.lang < RND_LANG_COUNT &&
+        tmp.sound < RND_SND_COUNT) {
         g_rnd_set = tmp;
         ESP_LOGI(TAG, "settings loaded");
     } else {
@@ -83,9 +85,16 @@ void rnd_settings_save(void)
 }
 
 /* ---------------------------------------------------------- platform */
-void rnd_beep(int n)
+/* a regeneration's start or end: the sound picked in SETTINGS; a board
+ * without a speaker (the 2.1"'s buzzer) beeps for every one of them */
+void rnd_sound(int event)
 {
-    hw_beep(n);
+    int s = g_rnd_set.sound;
+    if (s == RND_SND_OFF) return;
+    size_t n = 0;
+    const int16_t *pcm = rnd_pcm(s, event, g_rnd_set.lang, &n);
+    if (pcm && hw_play(pcm, n)) return;
+    hw_beep(event == RND_EV_REGEN_START ? 3 : 1);
 }
 
 void rnd_backlight(uint8_t percent)

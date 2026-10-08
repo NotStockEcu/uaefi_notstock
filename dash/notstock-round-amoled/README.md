@@ -65,9 +65,9 @@ board, take them off, or the GPS talks into the CAN receiver.
 - **Boot logo**: comes up out of black on the panel brightness (smooth, no
   redraw), holds while the gauges render behind it, then cross-fades into
   them frame by frame, as on the 2.1".
-- **Beep**: no buzzer. A 2.4 kHz tone through the ES8311 and the NS4150B
-  amplifier into the speaker on the board's 2-pin MX1.25 socket:
-  three beeps when a regeneration starts, one when it ends, as before.
+- **Sound**: no buzzer. The ES8311 and the NS4150B amplifier into the
+  speaker on the board's 2-pin MX1.25 socket: the beeps (a 2.4 kHz tone)
+  or the chime, gong or voice picked in SETTINGS -> SOUND, as PCM.
   Loudness: `BEEP_VOLUME` and `BEEP_AMP` in `hw_amoled.c`.
 - **Touch**: CST9217 at 0x5A. Waveshare mirrors both axes; if taps land
   mirrored, flip `TOUCH_MIRROR_X` / `TOUCH_MIRROR_Y` in `main/board_amoled.h`.

@@ -432,17 +432,53 @@ static void play(int ms, bool on)
     }
 }
 
+/* PCM from hw_play: 16 kHz mono, to both channels, scaled to the beep's
+ * loudness */
+#define PLAY_PCM 0x10000          /* notify value: play s_pcm, not beeps */
+static const int16_t *s_pcm;
+static size_t s_pcm_n;
+
+static void play_pcm(void)
+{
+    static int16_t buf[2 * 160];
+    for (size_t done = 0; done < s_pcm_n;) {
+        size_t n = s_pcm_n - done < 160 ? s_pcm_n - done : 160;
+        for (size_t i = 0; i < n; i++) {
+            int16_t v = (int16_t)((int32_t)s_pcm[done + i] * BEEP_AMP / 29000);
+            buf[2 * i] = buf[2 * i + 1] = v;
+        }
+        size_t w;
+        i2s_channel_write(s_tx, buf, n * 4, &w, pdMS_TO_TICKS(200));
+        done += n;
+    }
+}
+
 static void beep_task(void *arg)
 {
     (void)arg;
     for (;;) {
         uint32_t n = 0;
         xTaskNotifyWait(0, UINT32_MAX, &n, portMAX_DELAY);
+        if (n == PLAY_PCM) {
+            play_pcm();
+            play(100, false);                     /* the DMA runs out */
+            continue;
+        }
         for (uint32_t i = 0; i < n && i < 10; i++) {
             play(BEEP_ON_MS, true);
             play(BEEP_OFF_MS, false);
         }
     }
+}
+
+bool hw_play(const int16_t *pcm, size_t n)
+{
+    if (!pcm || !n || !s_beep_task) return false;
+    s_pcm = pcm;
+    s_pcm_n = n;
+    /* while something plays, a new request is dropped */
+    xTaskNotify(s_beep_task, PLAY_PCM, eSetValueWithoutOverwrite);
+    return true;
 }
 
 void hw_beep(int n)

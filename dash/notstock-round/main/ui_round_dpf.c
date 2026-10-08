@@ -710,6 +710,6 @@ void rnd_regen_watch(const rnd_data_t *d)
     float s = d->dpf.soot_g;
     if (regen) soot_at_start = s;
     popup_show(regen, s);
-    if (g_rnd_set.beep) rnd_beep(regen ? 3 : 1);
+    rnd_sound(regen ? RND_EV_REGEN_START : RND_EV_REGEN_END);
     lv_obj_set_style_img_recolor(menu_dpf_icon, regen ? C_REGEN : C_GREY, 0);
 }

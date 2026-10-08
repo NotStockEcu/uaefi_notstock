@@ -10,6 +10,9 @@
 void hw_init(void);                  /* I2C, expander, panel, touch, LVGL */
 void hw_backlight(uint8_t percent);  /* 0..100 */
 void hw_beep(int n);                 /* n short beeps, does not block */
+/* PCM, 16 kHz mono 16 bit, on the speaker; does not block (the samples
+ * must stay); false: no speaker, or it is busy */
+bool hw_play(const int16_t *pcm, size_t n);
 void exio_set(uint8_t mask, bool on);  /* 2.1" only: its TCA9554 outputs */
 /* the boot logo fading in and into the gauge screen already loaded */
 void hw_boot(const lv_img_dsc_t *logo);

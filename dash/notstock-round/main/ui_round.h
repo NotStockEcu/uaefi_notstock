@@ -78,6 +78,12 @@ typedef struct {
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
 enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
 enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
+/* what sounds when a regeneration starts and ends: beeps (every board),
+ * bell tones, a gong or a voice (the boards with a speaker; the buzzer of
+ * the 2.1" beeps for all of them) */
+enum { RND_SND_OFF, RND_SND_BEEP, RND_SND_CHIME, RND_SND_GONG, RND_SND_VOICE,
+       RND_SND_COUNT };
+enum { RND_EV_REGEN_START, RND_EV_REGEN_END };
 /* MULTI's slots: 0 the big one, 1..3 the small ones below. Each holds a
  * gauge (RND_WATER..RND_RPM), RND_WARN_SOOT (DPF soot) or RND_MV_NONE */
 #define RND_MULTI_SLOTS 4
@@ -85,7 +91,7 @@ enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
 
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
-    bool    beep;                     /* beep on regeneration start / end */
+    uint8_t sound;                    /* RND_SND_*: regeneration start / end */
     bool    night;                    /* backlight at night_level */
     uint8_t night_level;              /* % of full, 10..50 */
     uint8_t order[RND_PAGES];         /* the pages in swipe order */
@@ -99,7 +105,8 @@ extern rnd_settings_t g_rnd_set;
 void rnd_settings_defaults(void);
 
 /* provided by the platform */
-void rnd_beep(int n);                 /* n short beeps, must not block */
+void rnd_sound(int event);            /* RND_EV_*, in g_rnd_set.sound; must
+                                         not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
 void rnd_backlight(uint8_t percent);  /* 0..100 */
 void rnd_dtc_read(void);              /* read the trouble codes (03, 07) */

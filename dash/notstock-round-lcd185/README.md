@@ -45,9 +45,9 @@ All in `main/board_lcd185.h`:
 - I2C GPIO10/11: TCA9554 0x20, IMU, RTC. The CST816 touch (0x15, INT
   GPIO4, reset EXIO1) is on GPIO1/3 on this board; it is looked for on
   10/11 first, where later boards have it.
-- PCM5101: BCK 48, LRCK 38, DOUT 47. The beep is a 2.4 kHz tone: three when
-  a regeneration starts, one when it ends. Loudness: `BEEP_AMP` in
-  `hw_lcd185.c`.
+- PCM5101: BCK 48, LRCK 38, DOUT 47. The beeps (a 2.4 kHz tone) or the
+  chime, gong or voice picked in SETTINGS -> SOUND, as PCM. Loudness:
+  `BEEP_AMP` in `hw_lcd185.c`.
 - CAN: through the display's 4-pin 1.0 mm UART socket, on the cable that
   comes with the display, soldered to the CAN board: GPIO44 (socket pin 1, RXD) is CAN TX, GPIO43
   (pin 2, TXD) CAN RX. The console is on the USB; the boot loader is quiet.

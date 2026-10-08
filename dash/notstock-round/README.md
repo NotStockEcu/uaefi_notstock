@@ -176,7 +176,17 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   50 %). Night itself is a double tap on the gauges or the DPF screen; a
   toast says NIGHT 30 % or DAY for a second. Kept over power-off. The
   backlight is the platform's `rnd_backlight()`.
-- **BEEP ON / OFF**: the regeneration beeps. The popup comes either way.
+- **SOUND**: what sounds when a regeneration starts and ends; tap for the
+  next, it plays at once. OFF, BEEP (three beeps, one beep), CHIME (bell
+  tones rising, falling), GONG (a low gong, a lighter one), VOICE
+  ("Regenerace zahájena / ukončena", or in English "Regeneration started /
+  finished", in the language picked). CHIME, GONG and VOICE need a speaker
+  (the AMOLED 1.75 and the 1.85"); the 2.1"'s buzzer beeps for them. The
+  popup comes either way. The sounds are `tools/gen_sounds.py` ->
+  `main/sounds.c` (16 kHz PCM, 460 kB); the voice is espeak-ng with the
+  MBROLA voices cz2 and en1, which are free for non-commercial use only:
+  for a product, record or license another voice. Listen on a PC:
+  `preview/sound-*.wav`.
 - **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A
   gauge goes red over its limit and its red zone starts there; the DPF soot
