@@ -25,8 +25,7 @@
  *                                   [dtcrefuse=1] the ECU refuses
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
- *               [screen=drive]      DRIVE: compass; swipe=left: G-meter
- *               [hdg=DEG] [kmh=V] [sats=N] [fix=0|1] [gps=0|1]
+ *               [screen=g]          G-METER, in the look
  *               [glon=G] [glat=G] [imu=0|1] [zeroed=0|1]
  */
 #include <math.h>
@@ -149,7 +148,6 @@ int main(int argc, char **argv)
         .v = { 86, 92, 1.12f, 31, 412, 2350 },
         .dpf = { 12.28f, -3.32f, 5, 274.5f, 90.5f },   /* the T5.1's log */
         .link = true,
-        .gps = { true, true, 72, 247, 11, 312 },
         .g = { true, true, true, -0.62f, 0.38f },
     };
     const char *screen = NULL, *regen = NULL;
@@ -221,11 +219,6 @@ int main(int argc, char **argv)
         if (strcmp(k, "regen") == 0) { regen = v; used = true; }
         if (strcmp(k, "soot") == 0)  { d.dpf.soot_g = strtof(v, NULL); used = true; }
         if (strcmp(k, "filter") == 0) { d.dpf.temp_c = strtof(v, NULL); used = true; }
-        if (strcmp(k, "hdg") == 0)   { d.gps.course_deg = strtof(v, NULL); used = true; }
-        if (strcmp(k, "kmh") == 0)   { d.gps.speed_kmh = strtof(v, NULL); used = true; }
-        if (strcmp(k, "sats") == 0)  { d.gps.sats = atoi(v); used = true; }
-        if (strcmp(k, "fix") == 0)   { d.gps.fix = atoi(v) != 0; used = true; }
-        if (strcmp(k, "gps") == 0)   { d.gps.present = atoi(v) != 0; used = true; }
         if (strcmp(k, "glon") == 0)  { d.g.lon_g = strtof(v, NULL); used = true; }
         if (strcmp(k, "glat") == 0)  { d.g.lat_g = strtof(v, NULL); used = true; }
         if (strcmp(k, "imu") == 0)   { d.g.present = atoi(v) != 0; used = true; }
@@ -261,9 +254,9 @@ int main(int argc, char **argv)
             extern void rnd_diag_open(void);
             rnd_diag_open();
         }
-        if (strcmp(screen, "drive") == 0) {
-            extern void rnd_drive_open(void);
-            rnd_drive_open();
+        if (strcmp(screen, "g") == 0) {
+            extern void rnd_g_open(void);
+            rnd_g_open();
         }
         if (strcmp(screen, "multiedit") == 0) {
             extern void rnd_multi_edit_open(void);

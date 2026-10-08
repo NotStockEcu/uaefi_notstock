@@ -15,7 +15,7 @@ CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -DLV_USE_METER=1 -DLV_FONT_MONTSERRAT_14=1 -DRND_SIZE=$(SIZE) -DRND_SIM \
            -I$(ROOT)/main -I$(ROOT)/main/faces$(SIZE) -I$(DASH7)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
-APP_SRC  := sim.c $(ROOT)/main/ble_proto.c $(ROOT)/main/ui_round.c $(ROOT)/main/ui_round_dpf.c $(ROOT)/main/ui_round_set.c $(ROOT)/main/ui_round_diag.c $(ROOT)/main/ui_round_multi.c $(ROOT)/main/ui_round_drive.c $(DASH7)/main/dtc_text.c $(wildcard $(ROOT)/main/ui_look_*.c) $(ROOT)/main/faces$(SIZE)/faces.c $(ROOT)/main/splash.c $(wildcard $(ROOT)/main/fonts/*.c)
+APP_SRC  := sim.c $(ROOT)/main/ble_proto.c $(ROOT)/main/ui_round.c $(ROOT)/main/ui_round_dpf.c $(ROOT)/main/ui_round_set.c $(ROOT)/main/ui_round_diag.c $(ROOT)/main/ui_round_multi.c $(ROOT)/main/ui_round_g.c $(DASH7)/main/dtc_text.c $(wildcard $(ROOT)/main/ui_look_*.c) $(ROOT)/main/faces$(SIZE)/faces.c $(ROOT)/main/splash.c $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')
 LVGL_OBJ := $(patsubst $(LVGL_DIR)/%.c,$(OUT)/lvgl/%.o,$(LVGL_SRC))
 

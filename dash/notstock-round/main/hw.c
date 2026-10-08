@@ -494,18 +494,21 @@ void hw_init(void)
     panel_init();
     touch_init();
     lvgl_init();
+    motion_start();
 }
 
-/* ---------------------------------------------------------------- motion */
-/* no GPS here; the board's IMU is not read (yet) */
-void hw_motion_fill(rnd_data_t *d)
+/* ------------------------------------------------- I2C for the G-meter */
+esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n)
 {
-    d->gps.present = false;
-    d->gps.fix = false;
-    d->gps.sats = -1;
-    d->g.present = false;
+    return i2c_write(addr, d, n);
 }
 
-void hw_g_zero(void)
+esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
+                            uint8_t *r, size_t rn)
 {
+    xSemaphoreTake(s_i2c, portMAX_DELAY);
+    esp_err_t e = i2c_master_write_read_device(I2C_NUM_0, addr, w, wn, r, rn,
+                                               pdMS_TO_TICKS(50));
+    xSemaphoreGive(s_i2c);
+    return e;
 }

@@ -2,8 +2,8 @@
  * whatever way the gauge is mounted. ESP-free.
  *
  * Zero (standing still): the gravity vector gives "up". Forward is learnt
- * while driving: the horizontal acceleration that goes with the GPS speed
- * rising or falling points forward; until enough of that has been seen,
+ * while driving: the horizontal acceleration that goes with the speed
+ * (OBD) rising or falling points forward; until enough of that has been seen,
  * forward is the way the screen's back faces (the screen looks at the
  * driver). Lateral: positive to the right.
  */

@@ -2,7 +2,7 @@
  * popup. See ui_round.h.
  *
  * Menu: long press on any screen. GAUGES, DPF STATUS, DIAGNOSTICS
- * (ui_round_diag.c), DRIVE (ui_round_drive.c), SETTINGS (ui_round_set.c). A long press in the menu goes back to the gauges.
+ * (ui_round_diag.c), G-METER (ui_round_g.c), SETTINGS (ui_round_set.c). A long press in the menu goes back to the gauges.
  *
  * DPF status: the soot mass on the outer arc and as a filter drawing that
  * fills up, the measured soot, differential pressure, filter temperature and
@@ -49,10 +49,10 @@ static void go_diag(lv_event_t *e)
     rnd_diag_open();
 }
 
-static void go_drive(lv_event_t *e)
+static void go_g(lv_event_t *e)
 {
     (void)e;
-    rnd_drive_open();
+    rnd_g_open();
 }
 
 static void go_dpf(lv_event_t *e)
@@ -119,7 +119,7 @@ void rnd_menu_create(void)
                                  rnd_regen_active() ? C_REGEN : C_GREY, 0);
     lv_obj_set_style_img_recolor_opa(menu_dpf_icon, LV_OPA_COVER, 0);
     menu_item(TR("DIAGNOSTICS", "DIAGNOSTIKA"), 212, go_diag);
-    menu_item(TR("DRIVE", "JÍZDA"), 276, go_drive);
+    menu_item(TR("G-METER", "G-METR"), 276, go_g);
     menu_item(TR("SETTINGS", "NASTAVENÍ"), 340, go_settings);
 
     lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 410);

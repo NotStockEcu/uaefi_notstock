@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "lvgl.h"
 #include "ui_round.h"
+#include "esp_err.h"
+#include <stddef.h>
 
 void hw_init(void);                  /* I2C, expander, panel, touch, LVGL */
 void hw_backlight(uint8_t percent);  /* 0..100 */
@@ -11,7 +13,10 @@ void hw_beep(int n);                 /* n short beeps, does not block */
 void exio_set(uint8_t mask, bool on);  /* 2.1" only: its TCA9554 outputs */
 /* the boot logo fading in and into the gauge screen already loaded */
 void hw_boot(const lv_img_dsc_t *logo);
-/* GPS and accelerometer, where the board has them (the AMOLED 1.75-G);
- * the others say not present */
+/* the G-meter, motion.c: started by each board's hw_init, on its I2C */
+void motion_start(void);
 void hw_motion_fill(rnd_data_t *d);
 void hw_g_zero(void);
+esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n);
+esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
+                            uint8_t *r, size_t rn);

@@ -1,7 +1,7 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * diagnostics: the trouble codes, read and cleared over OBD; drive: compass
- * from the GPS and the G-meter, where the board has them; settings: look, pages, night level, beep on/off, warn limits, language
+ * diagnostics: the trouble codes, read and cleared over OBD; G-meter, where
+ * the board has an accelerometer; settings: look, pages, night level, beep on/off, warn limits, language
  * English / Czech). Double tap:
  * night
  * (backlight down to the night level) and back to day.
@@ -63,14 +63,6 @@ typedef struct {
     } dpf;
     rnd_dtc_status_t dtc;
     bool  link;
-    struct {                  /* GPS, where the board has one */
-        bool  present;        /* the module answers */
-        bool  fix;
-        float speed_kmh;      /* NAN: none */
-        float course_deg;     /* true course over ground, NAN: none */
-        int   sats;           /* satellites used, -1: not known */
-        float alt_m;          /* NAN: none */
-    } gps;
     struct {                  /* accelerometer, in the car's frame */
         bool  present;
         bool  zeroed;         /* "up" from a zero, not assumed */

@@ -1,7 +1,7 @@
 # NOT STOCK round gauge
 
 One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
-rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, DIAGNOSTICS, DRIVE, SETTINGS.
+rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, DIAGNOSTICS, G-METER, SETTINGS.
 Double tap: night (backlight down), double tap again: day. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
@@ -96,31 +96,28 @@ glows orange, and the menu's DPF icon is orange.
 The beep is `rnd_beep()`, provided by the platform: on the Waveshare 2.1"
 the buzzer sits on the TCA9554 expander (EXIO8).
 
-## Drive: compass and G-meter
+## G-meter
 
-![compass](preview/drive-compass.png) ![g](preview/drive-g.png) ![no fix](preview/drive-nofix.png)
+![notstock](preview/g.png) ![retro](preview/retro-g.png) ![futuro](preview/futuro-g.png)
 
-MENU -> DRIVE (`ui_round_drive.c`), two pages, swipe between them, long
-press back to the menu. For boards with a GPS and an accelerometer: the
-ESP32-S3-Touch-AMOLED-1.75-G (`../notstock-round-amoled`,
-`motion_amoled.c`); on the others both pages say NO GPS / NO SENSOR.
+MENU -> G-METER (`ui_round_g.c`), in the look picked in SETTINGS: grey
+rings and a white dot (NOTSTOCK), printed rings and scale on the VDO dial
+with a red ball (VDO STYLE), cyan rings on the hex grid and a neon dot
+(FUTURO). Every board here has a QMI8658 accelerometer (0x6B on its I2C),
+read at 50 Hz by `motion.c`; without one the screen says NO SENSOR.
 
-- **COMPASS**: the GPS course over ground on a rose that turns with it,
-  heading up under the orange index, the course in degrees and as a
-  direction (N, NE ... / S, SV ...), speed and satellites. The GPS knows a
-  course only while the car moves (from 5 km/h); standing, the last one
-  stays, dimmed. NO FIX while it looks for satellites.
-- **G-METER**: the force the driver feels as a dot in rings of 0.5 and 1 g:
-  braking moves it up, speeding up down, a right bend to the left. The
-  highest of each direction at the edges, the total under the dot's rings.
-  Tap: the highest back to zero. Double tap with the car standing: zero
-  (which way is up, for any mounting angle); until then a hint says so.
-  Forward is learnt from the GPS speed while driving (`gmeter.c`): the
+- The dot is the force the driver feels: braking moves it up, speeding up
+  down, a right bend to the left. Over 1 g it turns red (FUTURO: magenta).
+- The highest of each direction (BRAKE, ACCEL, LEFT, RIGHT) at the edges,
+  the total under the dot. Tap: the highest back to zero.
+- Double tap with the car standing: zero, which way is up, so the gauge may
+  sit at any angle. Until then a hint says so.
+- Forward is learnt while driving from the OBD speed (`gmeter.c`): the
   horizontal acceleration that goes with speeding up and braking points
-  forward, so the mount can face any way. Kept over power-off.
+  forward, so the mount may also face any way. Kept over power-off.
+- Long press: the menu.
 
-`nmea.c` reads the GPS (RMC, GGA), `gmeter.c` turns the accelerometer into
-the car's frame; both ESP-free, tested by `tools/test/test_motion.c`.
+`gmeter.c` is ESP-free, tested by `tools/test/test_motion.c`.
 
 ## Looks
 

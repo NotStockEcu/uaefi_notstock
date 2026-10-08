@@ -35,8 +35,7 @@ static const char *TAG = "hw";
 #define LVGL_TICK_MS   2
 #define PUSH_LINES     40         /* boot frames go out in strips this high */
 
-static SemaphoreHandle_t s_i2c;   /* touch, codec, GPS and IMU share it */
-void motion_start(void);          /* motion_amoled.c */
+static SemaphoreHandle_t s_i2c;   /* touch, codec and IMU share the bus */
 
 /* ------------------------------------------------------------------ I2C */
 static void i2c_init(void)
@@ -83,15 +82,6 @@ esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
                             uint8_t *r, size_t rn)
 {
     return i2c_write_read(addr, w, wn, r, rn);
-}
-
-esp_err_t hw_i2c_read(uint8_t addr, uint8_t *r, size_t rn)
-{
-    xSemaphoreTake(s_i2c, portMAX_DELAY);
-    esp_err_t e = i2c_master_read_from_device(I2C_NUM_0, addr, r, rn,
-                                              pdMS_TO_TICKS(200));
-    xSemaphoreGive(s_i2c);
-    return e;
 }
 
 /* Logs what answers: tells a wiring problem from a driver problem. On this

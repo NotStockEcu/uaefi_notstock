@@ -316,17 +316,20 @@ void rnd_look_apply(void)
     look->build(scr);
     rnd_multi_build(scr);              /* on top, shown on its own page */
     ui_round_page(page);
-    /* DPF and DIAGNOSTICS wear the look too. The look is picked on the LOOK
+    /* DPF, DIAGNOSTICS and the G-METER wear the look too. The look is picked on the LOOK
      * screen, but should either be up, it is not deleted while shown. */
     if (rnd_dpf_screen()) {
         lv_obj_t *act = lv_scr_act();
         bool on_dpf = act == rnd_dpf_screen();
         bool on_diag = act == rnd_diag_screen();
-        if (on_dpf || on_diag) lv_scr_load(scr);
+        bool on_g = act == rnd_g_screen();
+        if (on_dpf || on_diag || on_g) lv_scr_load(scr);
         rnd_dpf_create();
         rnd_diag_create();
+        rnd_g_create();
         if (on_dpf)  lv_scr_load(rnd_dpf_screen());
         if (on_diag) lv_scr_load(rnd_diag_screen());
+        if (on_g)    lv_scr_load(rnd_g_screen());
     }
 }
 
@@ -391,7 +394,7 @@ static void lang_rebuild(void *arg)
     rnd_dpf_create();
     rnd_set_create();
     rnd_diag_create();
-    rnd_drive_create();
+    rnd_g_create();
     look = NULL;
     rnd_look_apply();
     rnd_set_open();
@@ -474,7 +477,7 @@ void ui_round_create(bool boot_logo_on)
     rnd_dpf_create();
     rnd_set_create();
     rnd_diag_create();
-    rnd_drive_create();
+    rnd_g_create();
     if (boot_logo_on) boot();
     else              lv_scr_load(scr);
 }
@@ -551,5 +554,5 @@ void ui_round_update(const rnd_data_t *d)
     gauge_update(d);
     rnd_dpf_update(d);
     rnd_diag_update(d);
-    rnd_drive_update(d);
+    rnd_g_update(d);
 }

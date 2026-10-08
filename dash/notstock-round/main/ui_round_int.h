@@ -127,9 +127,10 @@ void rnd_diag_open(void);
 lv_obj_t *rnd_diag_screen(void);
 void rnd_diag_update(const rnd_data_t *d);
 void rnd_set_open(void);
-void rnd_drive_create(void);            /* DRIVE: compass, G-meter */
-void rnd_drive_open(void);
-void rnd_drive_update(const rnd_data_t *d);
+void rnd_g_create(void);                /* G-METER, in the look */
+void rnd_g_open(void);
+lv_obj_t *rnd_g_screen(void);
+void rnd_g_update(const rnd_data_t *d);
 void rnd_pages_open(void);              /* SETTINGS -> PAGES */
 void rnd_limits_changed(void);        /* redraw the zones */
 
