@@ -523,12 +523,14 @@ static void lvgl_init(void)
  * shadow buffer, and cross-fades into them frame by frame (boot_fb.c). */
 static uint16_t *s_strip[2];
 
+static int s_push_lines = PUSH_LINES;
+
 static void push_frame(const uint16_t *fb)
 {
     while (xSemaphoreTake(s_push_done, 0) == pdTRUE) {}
     int sent = 0;
-    for (int y = 0, k = 0; y < LCD_V_RES; y += PUSH_LINES, k ^= 1) {
-        int h = LCD_V_RES - y < PUSH_LINES ? LCD_V_RES - y : PUSH_LINES;
+    for (int y = 0, k = 0; y < LCD_V_RES; y += s_push_lines, k ^= 1) {
+        int h = LCD_V_RES - y < s_push_lines ? LCD_V_RES - y : s_push_lines;
         /* the strip in this buffer two steps ago is out: the window
          * commands of the last step waited for it */
         swap_copy(s_strip[k], fb + y * LCD_H_RES, (size_t)LCD_H_RES * h);
@@ -550,12 +552,24 @@ void hw_boot(const lv_img_dsc_t *logo)
     size_t frame = (size_t)LCD_H_RES * LCD_V_RES * 2;
     uint16_t *fb = heap_caps_calloc(1, frame, MALLOC_CAP_SPIRAM);
     uint16_t *shadow = heap_caps_malloc(frame, MALLOC_CAP_SPIRAM);
-    for (int i = 0; i < 2; i++) {
-        s_strip[i] = heap_caps_malloc(LCD_H_RES * PUSH_LINES * 2,
-                                      MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    /* the strips need internal DMA memory, which LVGL, the audio and the
+     * tasks share: as high as there is room for, down to 5 lines */
+    for (s_push_lines = PUSH_LINES; s_push_lines >= 5; s_push_lines /= 2) {
+        for (int i = 0; i < 2; i++) {
+            s_strip[i] = heap_caps_malloc(LCD_H_RES * s_push_lines * 2,
+                                          MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+        }
+        if (s_strip[0] && s_strip[1]) break;
+        for (int i = 0; i < 2; i++) {
+            heap_caps_free(s_strip[i]);
+            s_strip[i] = NULL;
+        }
     }
+    ESP_LOGI(TAG, "boot logo: strips of %d lines, internal DMA %u B free",
+             s_strip[0] ? s_push_lines : 0,
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA));
     if (!fb || !shadow || !s_strip[0] || !s_strip[1]) {
-        ESP_LOGW(TAG, "no memory, no boot logo");
+        ESP_LOGW(TAG, "no memory, no boot logo (fb %p shadow %p)", fb, shadow);
         lv_obj_invalidate(lv_scr_act());
         lv_refr_now(NULL);
         boot_end();
