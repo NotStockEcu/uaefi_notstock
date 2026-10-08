@@ -10,8 +10,8 @@ the same honeycomb, NOT STOCK yellow.
 
 Page 1, page 2 (fan running), alarm, vacuum, failed sensors, no data.
 
-**State: the pages, in the simulator. The board layer (display, touch,
-CAN) is not written yet: it waits for the board's internal pin table.**
+**State: built; the pages checked in the simulator. Not tried on the
+board yet.**
 
 ## The pages
 
@@ -52,3 +52,64 @@ tools/sim/build/sim out.ppm boost=1.45 lambda=0.82 page=0
 ```
 
 Inputs: see `tools/sim/sim.c`.
+
+## Board
+
+Pins from Waveshare's schematic and demo code (`main/hw_l2.h`):
+
+| What | GPIO |
+| --- | --- |
+| LCD SPI0: SCK, MOSI, CS, DC, RST | 18, 19, 17, 16, 20 |
+| Backlight (PWM) | 15 |
+| I2C0 SDA, SCL: touch CST816D 0x15, IMU QMI8658 0x6B | 12, 13 |
+| Touch INT, IMU INT1 | 29, 14 |
+| Battery ADC | 28 |
+| SD card (SPI) | 24 .. 27 |
+| Camera | 0 .. 11, 22, 23 |
+
+The panel runs landscape as Waveshare's demo (`HORIZONTAL`); the other
+way round: build with `-DL2_FLIP=1`. 16 MB flash, no PSRAM: LVGL draws
+into two 40-line buffers (512 kB SRAM, 123 kB used).
+
+## CAN
+
+The RP2350 has no CAN controller: [can2040](https://github.com/KevinOConnor/can2040)
+(`third_party/can2040`, GNU GPLv3) is one in software on PIO0. It
+acknowledges the frames it receives, as the EMU needs (see
+[`../notstock-round-emu`](../notstock-round-emu/README.md#can)), and
+never sends one of its own. Its interrupt code, the callback and the
+stream decoder are linked into RAM (`CMakeLists.txt`), so flash reads
+from the drawing never hold the interrupt up.
+
+The bit rate is the EMU's: tried 500 k, 1 M, 250 k, 125 k, 0.4 s each,
+until stream frames come; gone for 3 s: again. The log (USB serial) says
+`can: trying N kbit`, then `can: EMU stream at N kbit`.
+
+Wiring, SN65HVD230 board to the board's header (the camera connector
+stays empty: its pins are these):
+
+| SN65HVD230 | Header pin | GPIO |
+| --- | --- | --- |
+| 3V3 | 1 (3V3) | |
+| GND | 2 (GND) | |
+| CTX | 7 | GPIO2 |
+| CRX | 9 | GPIO3 |
+
+CAN-H / CAN-L to the EMU's CAN bus, 120 R at both ends as on the round
+gauge. Power: 5 V into the USB-C or header pin 15 (5V) from a 12 V -> 5 V
+converter, never 12 V straight.
+
+## Build and flash
+
+```
+cmake -S . -B build -G Ninja -DPICO_SDK_PATH=/path/to/pico-sdk-2.1.1 \
+      -DLVGL_DIR=/path/to/lvgl-8.4
+cmake --build build
+```
+
+`build/notstock_lcd2_emu.uf2`: hold BOOT, plug the USB-C in (or press
+RST while holding BOOT), a drive RP2350 shows up, copy the .uf2 onto it;
+the board restarts into the gauge.
+
+Licence note: with can2040 linked in, the firmware as a whole falls under
+the GPLv3 when given to anyone (source along with it).
