@@ -2,7 +2,7 @@
  * popup. See ui_round.h.
  *
  * Menu: long press on any screen. GAUGES, DPF STATUS, DIAGNOSTICS
- * (ui_round_diag.c), SETTINGS (ui_round_set.c). A long press in the menu goes back to the gauges.
+ * (ui_round_diag.c), DRIVE (ui_round_drive.c), SETTINGS (ui_round_set.c). A long press in the menu goes back to the gauges.
  *
  * DPF status: the soot mass on the outer arc and as a filter drawing that
  * fills up, the measured soot, differential pressure, filter temperature and
@@ -49,6 +49,12 @@ static void go_diag(lv_event_t *e)
     rnd_diag_open();
 }
 
+static void go_drive(lv_event_t *e)
+{
+    (void)e;
+    rnd_drive_open();
+}
+
 static void go_dpf(lv_event_t *e)
 {
     (void)e;
@@ -70,7 +76,7 @@ static lv_obj_t *menu_item(const char *text, lv_coord_t y, lv_event_cb_t cb)
 {
     lv_obj_t *b = lv_obj_create(menu);
     lv_obj_remove_style_all(b);
-    lv_obj_set_size(b, 300, 62);
+    lv_obj_set_size(b, 300, 58);
     lv_obj_align(b, LV_ALIGN_TOP_MID, 0, y);
     lv_obj_set_style_radius(b, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(b, C_PANEL, 0);
@@ -99,12 +105,12 @@ void rnd_menu_create(void)
     lv_obj_clear_flag(menu, LV_OBJ_FLAG_SCROLLABLE);
     rnd_on_long(menu, go_gauges);
 
-    lv_obj_t *t = rnd_label(menu, &rnd_18, C_GREY, 64);
+    lv_obj_t *t = rnd_label(menu, &rnd_18, C_GREY, 52);
     lv_obj_set_style_text_letter_space(t, 4, 0);
     lv_label_set_text(t, "MENU");
 
-    menu_item(TR("GAUGES", "BUDÍKY"), 94, go_gauges);
-    lv_obj_t *d = menu_item(TR("DPF STATUS", "STAV DPF"), 168, go_dpf);
+    menu_item(TR("GAUGES", "BUDÍKY"), 84, go_gauges);
+    lv_obj_t *d = menu_item(TR("DPF STATUS", "STAV DPF"), 148, go_dpf);
     lv_obj_align(lv_obj_get_child(d, 0), LV_ALIGN_CENTER, 26, 0);
     menu_dpf_icon = lv_img_create(d);
     lv_img_set_src(menu_dpf_icon, &icon_dpf_40);
@@ -112,10 +118,11 @@ void rnd_menu_create(void)
     lv_obj_set_style_img_recolor(menu_dpf_icon,
                                  rnd_regen_active() ? C_REGEN : C_GREY, 0);
     lv_obj_set_style_img_recolor_opa(menu_dpf_icon, LV_OPA_COVER, 0);
-    menu_item(TR("DIAGNOSTICS", "DIAGNOSTIKA"), 242, go_diag);
-    menu_item(TR("SETTINGS", "NASTAVENÍ"), 316, go_settings);
+    menu_item(TR("DIAGNOSTICS", "DIAGNOSTIKA"), 212, go_diag);
+    menu_item(TR("DRIVE", "JÍZDA"), 276, go_drive);
+    menu_item(TR("SETTINGS", "NASTAVENÍ"), 340, go_settings);
 
-    lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 400);
+    lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 410);
     lv_label_set_text(h, TR("LONG PRESS: BACK", "PODRŽ: ZPĚT"));
 }
 

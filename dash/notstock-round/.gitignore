@@ -6,3 +6,4 @@ dependencies.lock
 tools/sim/build/
 tools/sim/build-asan/
 preview/faces466/
+tools/sim/build466/

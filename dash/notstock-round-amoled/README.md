@@ -46,7 +46,21 @@ silkscreen labels are what counts.)
 VBUS is the USB 5 V rail: flash with the power box unplugged. 3V3 is an
 output, never feed it.
 
-## What differs from the 2.1"
+## GPS and G-meter (the -G board)
+
+The **ESP32-S3-Touch-AMOLED-1.75-G** has an LC76G GNSS module on the board
+(antenna on its IPEX socket) and every 1.75 a QMI8658 accelerometer: MENU
+-> DRIVE shows a compass and a G-meter (see `../notstock-round`, "Drive").
+
+- The LC76G is read over the board's I2C (0x50 / 0x54), every 250 ms, its
+  NMEA parsed by `nmea.c`. Its UART reaches IO17/IO18 only through R15 /
+  R16, which are not fitted (Waveshare's schematic: NC/0R); the CAN stays
+  on IO17/IO18. If they are fitted on a board, take them off, or the GPS
+  talks into the CAN receiver. Reset: TCA9554 EXIO7, held high.
+- QMI8658: +-4 g at 125 Hz, read at 50 Hz (`motion_amoled.c`).
+- The log at start: `QMI8658 ready, LC76G answers`; then `GPS answers`.
+  The first fix outdoors takes up to a minute or two (cold start).
+
 
 - **Display**: no frame buffer on the ESP32 side. LVGL renders 40-line
   strips that go out over QSPI (40 MHz), two buffers in flight, byte-swapped

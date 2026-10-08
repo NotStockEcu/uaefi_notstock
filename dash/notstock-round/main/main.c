@@ -93,12 +93,18 @@ void rnd_backlight(uint8_t percent)
     hw_backlight(percent);
 }
 
+void rnd_g_zero(void)
+{
+    hw_g_zero();
+}
+
 /* ------------------------------------------------------------- feeding */
 static void update_cb(lv_timer_t *t)
 {
     (void)t;
     static rnd_data_t d;          /* the trouble code list is kept between */
     can_obd_fill(&d);
+    hw_motion_fill(&d);
     ui_round_update(&d);
 }
 

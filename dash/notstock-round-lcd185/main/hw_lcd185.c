@@ -629,3 +629,17 @@ void hw_init(void)
     audio_init();
     lvgl_init();
 }
+
+/* ---------------------------------------------------------------- motion */
+/* no GPS here; the board's IMU is not read (yet) */
+void hw_motion_fill(rnd_data_t *d)
+{
+    d->gps.present = false;
+    d->gps.fix = false;
+    d->gps.sats = -1;
+    d->g.present = false;
+}
+
+void hw_g_zero(void)
+{
+}

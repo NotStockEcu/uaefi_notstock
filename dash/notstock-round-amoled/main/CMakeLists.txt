@@ -7,7 +7,7 @@ set(ROUND "${CMAKE_CURRENT_LIST_DIR}/../../notstock-round/main")
 set(DASH7 "${CMAKE_CURRENT_LIST_DIR}/../../notstock-dash-7inch/main")
 file(GLOB SRCS "${ROUND}/*.c" "${ROUND}/fonts/*.c" "${ROUND}/faces466/*.c")
 list(REMOVE_ITEM SRCS "${ROUND}/hw.c")
-list(APPEND SRCS "hw_amoled.c" "${DASH7}/obd2.c" "${DASH7}/dtc_text.c")
+list(APPEND SRCS "hw_amoled.c" "motion_amoled.c" "${DASH7}/obd2.c" "${DASH7}/dtc_text.c")
 
 idf_component_register(
     SRCS ${SRCS}

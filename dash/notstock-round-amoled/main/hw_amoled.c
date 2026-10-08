@@ -35,7 +35,8 @@ static const char *TAG = "hw";
 #define LVGL_TICK_MS   2
 #define PUSH_LINES     40         /* boot frames go out in strips this high */
 
-static SemaphoreHandle_t s_i2c;   /* touch and codec share the bus */
+static SemaphoreHandle_t s_i2c;   /* touch, codec, GPS and IMU share it */
+void motion_start(void);          /* motion_amoled.c */
 
 /* ------------------------------------------------------------------ I2C */
 static void i2c_init(void)
@@ -68,6 +69,27 @@ static esp_err_t i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
     xSemaphoreTake(s_i2c, portMAX_DELAY);
     esp_err_t e = i2c_master_write_read_device(I2C_NUM_0, addr, w, wn, r, rn,
                                                pdMS_TO_TICKS(50));
+    xSemaphoreGive(s_i2c);
+    return e;
+}
+
+/* for motion_amoled.c: the same bus, the same lock */
+esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n)
+{
+    return i2c_write(addr, d, n);
+}
+
+esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
+                            uint8_t *r, size_t rn)
+{
+    return i2c_write_read(addr, w, wn, r, rn);
+}
+
+esp_err_t hw_i2c_read(uint8_t addr, uint8_t *r, size_t rn)
+{
+    xSemaphoreTake(s_i2c, portMAX_DELAY);
+    esp_err_t e = i2c_master_read_from_device(I2C_NUM_0, addr, r, rn,
+                                              pdMS_TO_TICKS(200));
     xSemaphoreGive(s_i2c);
     return e;
 }
@@ -611,4 +633,5 @@ void hw_init(void)
     touch_init();
     audio_init();
     lvgl_init();
+    motion_start();
 }

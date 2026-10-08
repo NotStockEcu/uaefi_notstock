@@ -1,6 +1,7 @@
 /* Round gauge UI: one value at a time on a round panel, swipe left / right
  * for the next one. Long press anywhere: the menu (gauges, DPF status,
- * diagnostics: the trouble codes, read and cleared over OBD; settings: look, pages, night level, beep on/off, warn limits, language
+ * diagnostics: the trouble codes, read and cleared over OBD; drive: compass
+ * from the GPS and the G-meter, where the board has them; settings: look, pages, night level, beep on/off, warn limits, language
  * English / Czech). Double tap:
  * night
  * (backlight down to the night level) and back to day.
@@ -62,6 +63,21 @@ typedef struct {
     } dpf;
     rnd_dtc_status_t dtc;
     bool  link;
+    struct {                  /* GPS, where the board has one */
+        bool  present;        /* the module answers */
+        bool  fix;
+        float speed_kmh;      /* NAN: none */
+        float course_deg;     /* true course over ground, NAN: none */
+        int   sats;           /* satellites used, -1: not known */
+        float alt_m;          /* NAN: none */
+    } gps;
+    struct {                  /* accelerometer, in the car's frame */
+        bool  present;
+        bool  zeroed;         /* "up" from a zero, not assumed */
+        bool  learnt;         /* "forward" learnt while driving */
+        float lon_g;          /* + speeding up, - braking */
+        float lat_g;          /* + to the right */
+    } g;
 } rnd_data_t;
 
 /* Settings. The UI edits g_rnd_set in place; the platform loads it before
@@ -96,6 +112,7 @@ void rnd_settings_save(void);         /* store g_rnd_set */
 void rnd_backlight(uint8_t percent);  /* 0..100 */
 void rnd_dtc_read(void);              /* read the trouble codes (03, 07) */
 void rnd_dtc_clear(void);             /* clear them (04), then read again */
+void rnd_g_zero(void);                /* G-meter: the car stands, zero it */
 
 /* builds every screen; boot: the NOT STOCK logo first, fading in from black
  * and then into the gauges (RND_BOOT_MS in all), else the gauges at once */

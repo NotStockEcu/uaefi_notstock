@@ -391,6 +391,7 @@ static void lang_rebuild(void *arg)
     rnd_dpf_create();
     rnd_set_create();
     rnd_diag_create();
+    rnd_drive_create();
     look = NULL;
     rnd_look_apply();
     rnd_set_open();
@@ -473,6 +474,7 @@ void ui_round_create(bool boot_logo_on)
     rnd_dpf_create();
     rnd_set_create();
     rnd_diag_create();
+    rnd_drive_create();
     if (boot_logo_on) boot();
     else              lv_scr_load(scr);
 }
@@ -549,4 +551,5 @@ void ui_round_update(const rnd_data_t *d)
     gauge_update(d);
     rnd_dpf_update(d);
     rnd_diag_update(d);
+    rnd_drive_update(d);
 }
