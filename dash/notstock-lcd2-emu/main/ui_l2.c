@@ -205,11 +205,15 @@ static void title(lv_obj_t *par, int ch, lv_coord_t x, lv_coord_t y,
     }
 }
 
+/* the two big cards on the left of page 1; 4 px between cards */
+#define CARD_W 196
+#define CARD_H 100
+
 /* ---------------------------------------------------- BOOST: LED bar */
 #define SEG_N   35              /* -1.0 .. 2.5 bar, 0.1 a segment */
-#define SEG_W   5
+#define SEG_W   4
 #define SEG_GAP 1
-#define SEG_X   15
+#define SEG_X   12
 #define SEG_ZERO 10             /* the segment that starts at 0 bar */
 
 static struct {
@@ -230,29 +234,28 @@ static lv_color_t seg_color(int i)
 
 static void boost_create(lv_obj_t *p)
 {
-    const lv_coord_t Y = 26, H = 118;
-    s_boost.c = card(p, 6, Y, 228, H);
+    s_boost.c = card(p, 6, 26, CARD_W, CARD_H);
     lv_obj_t *c = s_boost.c.card;
     title(c, L2_BOOST, 12, 6, &l2_txt_20);
     s_boost.max = text(c, &l2_txt_15, C_SMALL, "");
     lv_obj_set_pos(s_boost.max, 12, 30);
-    s_boost.val = text_r(c, &l2_num_64, C_TEXT, 220, 0, 150);
+    s_boost.val = text_r(c, &l2_num_64, C_TEXT, CARD_W - 8, 0, 130);
     for (int i = 0; i < SEG_N; i++) {
-        lv_coord_t x = SEG_X - 6 + i * (SEG_W + SEG_GAP);
+        lv_coord_t x = SEG_X + i * (SEG_W + SEG_GAP);
         s_boost.seg_col[i] = seg_color(i);
-        s_boost.seg[i] = rect(c, x, 72, SEG_W, 18, C_SEG_OFF);
+        s_boost.seg[i] = rect(c, x, 64, SEG_W, 14, C_SEG_OFF);
         lv_obj_set_style_radius(s_boost.seg[i], 1, 0);
     }
     /* the peak: a white segment cap */
-    s_boost.peak = rect(c, 0, 69, SEG_W, 24, C_TEXT);
+    s_boost.peak = rect(c, 0, 61, SEG_W, 20, C_TEXT);
     lv_obj_set_style_bg_opa(s_boost.peak, LV_OPA_80, 0);
     lv_obj_add_flag(s_boost.peak, LV_OBJ_FLAG_HIDDEN);
     static const char *const LBL[] = { "-1", "0", "1", "2" };
     for (int k = 0; k < 4; k++) {
-        lv_coord_t x = SEG_X - 6 + (k * 10) * (SEG_W + SEG_GAP);
-        rect(c, x, 92, 1, 4, C_SMALL);
+        lv_coord_t x = SEG_X + (k * 10) * (SEG_W + SEG_GAP);
+        rect(c, x, 79, 1, 3, C_SMALL);
         lv_obj_t *l = text(c, &l2_txt_15, C_SMALL, LBL[k]);
-        lv_obj_set_pos(l, x, 96);
+        lv_obj_set_pos(l, x, 81);
     }
     s_boost.max_v = NAN;
     s_boost.lit = -99;
@@ -271,6 +274,10 @@ static void boost_update(const l2_view_t *v, bool blink_on)
         lv_label_set_text(s_boost.val, "--");
     } else {
         fmt(buf, sizeof buf, CH[L2_BOOST].fmt, x);
+        /* "-0.55" in the big digits would run into the title */
+        bool long_ = buf[0] == '-';
+        lv_obj_set_style_text_font(s_boost.val, long_ ? &l2_num_46 : &l2_num_64, 0);
+        lv_obj_set_y(s_boost.val, long_ ? 12 : 0);
         lv_label_set_text(s_boost.val, buf);
     }
     level_t lv = isnan(x) ? L_OK : level(&CH[L2_BOOST], x);
@@ -307,7 +314,7 @@ static void boost_update(const l2_view_t *v, bool blink_on)
     if (!isnan(s_boost.max_v) && s_boost.max_v >= 0.1f) {
         int pi = SEG_ZERO + (int)floorf(s_boost.max_v * 10.0f + 1e-3f) - 1;
         if (pi > SEG_N - 1) pi = SEG_N - 1;
-        lv_obj_set_x(s_boost.peak, SEG_X - 6 + pi * (SEG_W + SEG_GAP));
+        lv_obj_set_x(s_boost.peak, SEG_X + pi * (SEG_W + SEG_GAP));
         lv_obj_clear_flag(s_boost.peak, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(s_boost.peak, LV_OBJ_FLAG_HIDDEN);
@@ -316,8 +323,8 @@ static void boost_update(const l2_view_t *v, bool blink_on)
 
 /* -------------------------------------------- LAMBDA: needle on a scale */
 #define LAM_X 12
-#define LAM_W 204               /* 0.70 .. 1.30 */
-#define LAM_Y 68
+#define LAM_W 172               /* 0.70 .. 1.30 */
+#define LAM_Y 62
 
 static struct {
     card_t c;
@@ -337,13 +344,12 @@ static void lam_zone(lv_obj_t *c, float a, float b, lv_color_t col)
 
 static void lambda_create(lv_obj_t *p)
 {
-    const lv_coord_t Y = 148, H = 102;
-    s_lam.c = card(p, 6, Y, 228, H);
+    s_lam.c = card(p, 6, 130, CARD_W, CARD_H);
     lv_obj_t *c = s_lam.c.card;
     title(c, L2_LAMBDA, 12, 6, &l2_txt_20);
     s_lam.afr = text(c, &l2_txt_15, C_SMALL, "");
     lv_obj_set_pos(s_lam.afr, 12, 30);
-    s_lam.val = text_r(c, &l2_num_64, C_TEXT, 220, 0, 150);
+    s_lam.val = text_r(c, &l2_num_64, C_TEXT, CARD_W - 8, 0, 130);
     const chan_t *L = &CH[L2_LAMBDA];
     lam_zone(c, L->lo, L->lo_alarm, C_RED);
     lam_zone(c, L->lo_alarm, L->lo_warn, C_WARN);
@@ -493,7 +499,7 @@ void ui_l2_create(void)
         s_dots[i] = rect(scr, L2_W / 2 - 7 + i * 10, 19, 4, 4, C_DOT);
         lv_obj_set_style_radius(s_dots[i], LV_RADIUS_CIRCLE, 0);
     }
-    s_fan = rect(scr, 196, 3, 38, 17, C_DOT);
+    s_fan = rect(scr, L2_W - 44, 3, 38, 17, C_DOT);
     lv_obj_set_style_bg_opa(s_fan, LV_OPA_TRANSP, 0);
     lv_obj_set_style_radius(s_fan, 8, 0);
     lv_obj_set_style_border_width(s_fan, 1, 0);
@@ -505,15 +511,15 @@ void ui_l2_create(void)
     s_page[0] = page_obj(scr);
     boost_create(s_page[0]);
     lambda_create(s_page[0]);
-    tile_create(s_page[0], L2_IAT, 6, 254, 111, 56, &l2_num_36);
-    tile_create(s_page[0], L2_CLT, 123, 254, 111, 56, &l2_num_36);
+    tile_create(s_page[0], L2_IAT, 206, 26, 108, CARD_H, &l2_num_46);
+    tile_create(s_page[0], L2_CLT, 206, 130, 108, CARD_H, &l2_num_46);
 
     /* page 2: six tiles */
     s_page[1] = page_obj(scr);
     static const int P2[] = { L2_TPS, L2_RPM, L2_OILT, L2_OILP, L2_BATT, L2_EGT };
     for (int i = 0; i < 6; i++) {
-        tile_create(s_page[1], P2[i], i % 2 ? 123 : 6, 26 + (i / 2) * 96,
-                    111, 92, &l2_num_46);
+        tile_create(s_page[1], P2[i], 6 + (i % 3) * 104, 26 + (i / 3) * 104,
+                    100, CARD_H, &l2_num_46);
     }
 
     lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);

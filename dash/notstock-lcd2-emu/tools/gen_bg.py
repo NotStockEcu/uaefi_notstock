@@ -1,12 +1,12 @@
 """The page background of the 2" EMU gauge: the dark honeycomb of the round
 EMU gauge, darker to the edges, and a NOT STOCK hazard stripe (yellow and
-black) along the bottom. Writes main/l2_bg.c (240 x 320 RGB565, LVGL 8
+black) along the bottom. Writes main/l2_bg.c (320 x 240 RGB565, LVGL 8
 image) and preview/bg.png."""
 import math
 import os
 from PIL import Image, ImageDraw
 
-W, H = 240, 320
+W, H = 320, 240
 STRIPE = 6                               # hazard stripe at the bottom, px
 YEL = (255, 213, 0)
 ROOT = os.path.join(os.path.dirname(__file__), "..")

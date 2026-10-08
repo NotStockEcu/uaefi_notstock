@@ -1,6 +1,6 @@
 # NOT STOCK 2" gauge, ECUMaster EMU Black
 
-Waveshare **RP2350-Touch-LCD-2** (RP2350, 2" IPS 240 x 320 ST7789T3 on
+Waveshare **RP2350-Touch-LCD-2** (RP2350, 2" IPS 320 x 240 landscape, ST7789T3 on
 SPI, CST816D touch, QMI8658) reading an **ECUMaster EMU Black** over its
 CAN stream, as [`../notstock-round-emu`](../notstock-round-emu) does on the
 2.1" round board: the same decoder (`../notstock-round-emu/main/emu_stream.c`),

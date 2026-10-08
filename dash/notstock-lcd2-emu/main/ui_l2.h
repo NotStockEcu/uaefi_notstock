@@ -1,7 +1,7 @@
-/* The EMU pages of the 2" NOT STOCK gauge (240 x 320, portrait): the
+/* The EMU pages of the 2" NOT STOCK gauge (320 x 240, landscape): the
  * honeycomb of the round EMU gauge, NOT STOCK yellow.
- * Page 1: BOOST (an LED bar, 0.1 bar a segment), LAMBDA (a needle on a
- * 0.70 .. 1.30 scale, AFR under it), IAT and CLT.
+ * Page 1: BOOST (an LED bar, 0.1 bar a segment) and LAMBDA (a needle on a
+ * 0.70 .. 1.30 scale, AFR under it) on the left, IAT and CLT on the right.
  * Page 2: Throttle, RPM, oil temperature, oil pressure, battery, EGT.
  * Swipe left / right. At the top: the link dot (green: stream frames
  * coming, red: none), NOT STOCK and the page dots, FAN lit blue while the
@@ -14,8 +14,8 @@
 #include "emu_stream.h"
 #include "lvgl.h"
 
-#define L2_W 240
-#define L2_H 320
+#define L2_W 320
+#define L2_H 240
 
 #define L2_STOICH   14.7f      /* AFR = lambda x this (petrol) */
 #define L2_STALE_US 1000000    /* a frame older than this: no value */
