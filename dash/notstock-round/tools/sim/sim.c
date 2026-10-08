@@ -5,7 +5,7 @@
  *               [screen=menu|dpf] [soot=G] [filter=C]
  *               [regen=start|end]   filter temperature crosses the
  *                                   regeneration threshold half way through
- *               [screen=settings|look|limits] [limit=N] [sound=0..4]
+ *               [screen=settings|look|limits] [limit=N] [sound=0..4] [volume=10..100]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
  *               [look=N]            RND_LOOK_*: 0 NOTSTOCK, 1 RETRO, 2 FUTURO
@@ -211,6 +211,7 @@ int main(int argc, char **argv)
         if (strcmp(k, "dtcrefuse") == 0) { s_dtc_refuse = atoi(v); used = true; }
         if (strcmp(k, "lang") == 0)  { g_rnd_set.lang = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "sound") == 0) { g_rnd_set.sound = (uint8_t)atoi(v); used = true; }
+        if (strcmp(k, "volume") == 0) { g_rnd_set.volume = (uint8_t)atoi(v); used = true; }
         if (strncmp(k, "warn", 4) == 0 && k[4] >= '0' && k[4] <= '9') {
             int n = atoi(k + 4);
             if (n < RND_WARN_COUNT) g_rnd_set.warn[n] = strtof(v, NULL);

@@ -42,7 +42,7 @@ static const char *TAG = "round";
 /* ------------------------------------------------------------ settings */
 #define NS  "round"
 #define KEY "set"
-#define VER 4        /* bump whenever rnd_settings_t or its defaults change */
+#define VER 5        /* bump whenever rnd_settings_t or its defaults change */
 
 static void settings_load(void)
 {
@@ -63,7 +63,7 @@ static void settings_load(void)
     if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == VER &&
         nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK && len == sizeof tmp &&
         tmp.look < RND_LOOK_COUNT && tmp.lang < RND_LANG_COUNT &&
-        tmp.sound < RND_SND_COUNT) {
+        tmp.sound < RND_SND_COUNT && tmp.volume >= 10 && tmp.volume <= 100) {
         g_rnd_set = tmp;
         ESP_LOGI(TAG, "settings loaded");
     } else {
@@ -92,6 +92,7 @@ void rnd_sound(int event)
     int s = g_rnd_set.sound;
     if (s == RND_SND_OFF) return;
     size_t n = 0;
+    hw_volume(g_rnd_set.volume);
     const int16_t *pcm = rnd_pcm(s, event, g_rnd_set.lang, &n);
     if (pcm && hw_play(pcm, n)) return;
     hw_beep(event == RND_EV_REGEN_START ? 3 : 1);

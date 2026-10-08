@@ -4,7 +4,7 @@
  * NIGHT (the backlight at night, the double
  * tap's level; tap for the next step), SOUND (at a regeneration's start
  * and end: off, beeps, chime, gong or a voice; tap for the next, it plays;
- * the popup comes either way), LIMITS, and the language (tap: English
+ * the popup comes either way), VOLUME (10 % a tap, it plays), LIMITS, and the language (tap: English
  * / Czech; every screen is built again in it). A long press goes one level
  * back and stores the settings.
  *
@@ -37,6 +37,7 @@ void rnd_settings_defaults(void)
     memset(&g_rnd_set, 0, sizeof g_rnd_set);
     g_rnd_set.look = RND_LOOK_NOTSTOCK;
     g_rnd_set.sound = RND_SND_BEEP;
+    g_rnd_set.volume = 70;
     g_rnd_set.night = false;
     g_rnd_set.night_level = 30;
     for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
@@ -93,7 +94,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr, *pg_scr;
-static lv_obj_t *sound_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
+static lv_obj_t *sound_lbl, *vol_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
 
 static void show_night(void)
 {
@@ -132,9 +133,20 @@ static void show_sound(void)
     lv_obj_set_style_text_color(sound_lbl, s ? C_W : C_DIM, 0);
 }
 
+static void show_volume(void)
+{
+    char buf[32];
+    snprintf(buf, sizeof buf, "%s  %d%%", TR("VOLUME", "HLASITOST"),
+             g_rnd_set.volume);
+    lv_label_set_text(vol_lbl, buf);
+    lv_obj_set_style_text_color(vol_lbl,
+        g_rnd_set.sound == RND_SND_OFF ? C_DIM : C_W, 0);
+}
+
 void rnd_set_open(void)
 {
     show_sound();
+    show_volume();
     show_night();
     lv_scr_load(set_scr);
 }
@@ -168,6 +180,17 @@ static void sound_step(lv_event_t *e)
     g_rnd_set.sound = (uint8_t)((g_rnd_set.sound + 1) % RND_SND_COUNT);
     rnd_sound(RND_EV_REGEN_START);
     show_sound();
+    show_volume();
+}
+
+/* tap: 10 % louder, from 100 back to 10; plays the sound at it */
+static void volume_step(lv_event_t *e)
+{
+    (void)e;
+    int v = g_rnd_set.volume + 10;
+    g_rnd_set.volume = (uint8_t)(v > 100 ? 10 : v);
+    rnd_sound(RND_EV_REGEN_START);
+    show_volume();
 }
 
 /* LOOK: the picked one has a white rim; it applies at once */
@@ -387,9 +410,9 @@ static void text_button(lv_obj_t *par, lv_coord_t x, const char *t,
     lv_obj_center(l);
 }
 
-#define SET_Y0   94          /* the settings pills: first one, spacing */
-#define SET_DY   54
-#define SET_H    48
+#define SET_Y0   90          /* the settings pills: first one, spacing */
+#define SET_DY   46
+#define SET_H    42
 
 void rnd_set_create(void)
 {
@@ -409,15 +432,17 @@ void rnd_set_create(void)
     lv_label_set_text(l, TR("PAGES", "STRÁNKY"));
     pill(set_scr, SET_Y0 + 2 * SET_DY, night_step, &night_lbl);
     pill(set_scr, SET_Y0 + 3 * SET_DY, sound_step, &sound_lbl);
-    pill(set_scr, SET_Y0 + 4 * SET_DY, go_limits, &l);
+    pill(set_scr, SET_Y0 + 4 * SET_DY, volume_step, &vol_lbl);
+    lv_obj_set_style_text_letter_space(vol_lbl, 0, 0);     /* a long word */
+    pill(set_scr, SET_Y0 + 5 * SET_DY, go_limits, &l);
     lv_label_set_text(l, TR("LIMITS", "LIMITY"));
-    pill(set_scr, SET_Y0 + 5 * SET_DY, lang_toggle, &lang_lbl);
+    pill(set_scr, SET_Y0 + 6 * SET_DY, lang_toggle, &lang_lbl);
     lv_label_set_text(lang_lbl, TR("ENGLISH", "ČEŠTINA"));
-    /* six pills: a little lower than the others (the title is child 0) */
+    /* seven pills: a little lower than the others (the title is child 0) */
     for (uint32_t i = 1; i < lv_obj_get_child_cnt(set_scr); i++) {
         lv_obj_set_height(lv_obj_get_child(set_scr, i), SET_H);
     }
-    l = rnd_label(set_scr, &rnd_18, C_DIM, SET_Y0 + 6 * SET_DY + 4);
+    l = rnd_label(set_scr, &rnd_18, C_DIM, SET_Y0 + 7 * SET_DY + 2);
     lv_label_set_text(l, back);
 
     look_scr = screen(sub_back, TR("LOOK", "VZHLED"));

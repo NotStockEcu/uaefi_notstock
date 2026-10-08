@@ -407,6 +407,13 @@ static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 static i2s_chan_handle_t s_tx;
 static TaskHandle_t s_beep_task;
 
+static volatile int s_vol = 70;   /* % of BEEP_AMP, SETTINGS -> VOLUME */
+
+void hw_volume(uint8_t percent)
+{
+    s_vol = percent < 10 ? 10 : percent > 100 ? 100 : percent;
+}
+
 static void play(int ms, bool on)
 {
     static int16_t buf[2 * 160];                  /* 10 ms */
@@ -418,7 +425,9 @@ static void play(int ms, bool on)
         for (int i = 0; i < n; i++) {
             int16_t v = 0;
             if (on) {
-                int k = done + i, env = BEEP_AMP;
+                /* the tone at the PCM sounds' loudness: a sine at full
+                 * BEEP_AMP is some 12 dB above them */
+                int k = done + i, env = BEEP_AMP * 30 / 100 * s_vol / 100;
                 if (k < BEEP_RAMP) env = env * k / BEEP_RAMP;
                 if (total - k < BEEP_RAMP) env = env * (total - k) / BEEP_RAMP;
                 v = (int16_t)(env * sinf(phase * (2.0f * (float)M_PI / 65536)));
@@ -444,7 +453,8 @@ static void play_pcm(void)
     for (size_t done = 0; done < s_pcm_n;) {
         size_t n = s_pcm_n - done < 160 ? s_pcm_n - done : 160;
         for (size_t i = 0; i < n; i++) {
-            int16_t v = (int16_t)((int32_t)s_pcm[done + i] * BEEP_AMP / 29000);
+            int16_t v = (int16_t)((int32_t)s_pcm[done + i] * BEEP_AMP / 29000
+                                  * s_vol / 100);
             buf[2 * i] = buf[2 * i + 1] = v;
         }
         size_t w;

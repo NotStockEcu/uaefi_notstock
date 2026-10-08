@@ -92,6 +92,7 @@ enum { RND_EV_REGEN_START, RND_EV_REGEN_END };
 typedef struct {
     uint8_t look;                     /* RND_LOOK_* */
     uint8_t sound;                    /* RND_SND_*: regeneration start / end */
+    uint8_t volume;                   /* % of full, 10..100 (speaker boards) */
     bool    night;                    /* backlight at night_level */
     uint8_t night_level;              /* % of full, 10..50 */
     uint8_t order[RND_PAGES];         /* the pages in swipe order */

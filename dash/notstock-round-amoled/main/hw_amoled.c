@@ -355,6 +355,13 @@ static bool es8311_init(void)
     return true;
 }
 
+static volatile int s_vol = 70;   /* % of BEEP_AMP, SETTINGS -> VOLUME */
+
+void hw_volume(uint8_t percent)
+{
+    s_vol = percent < 10 ? 10 : percent > 100 ? 100 : percent;
+}
+
 /* ms of tone (on) or silence, as stereo frames */
 static void play(int ms, bool on)
 {
@@ -367,7 +374,9 @@ static void play(int ms, bool on)
         for (int i = 0; i < n; i++) {
             int16_t v = 0;
             if (on) {
-                int k = done + i, env = BEEP_AMP;
+                /* the tone at the PCM sounds' loudness: a sine at full
+                 * BEEP_AMP is some 12 dB above them */
+                int k = done + i, env = BEEP_AMP * 30 / 100 * s_vol / 100;
                 if (k < BEEP_RAMP) env = env * k / BEEP_RAMP;
                 if (total - k < BEEP_RAMP) env = env * (total - k) / BEEP_RAMP;
                 v = (int16_t)(env * sinf(phase * (2.0f * (float)M_PI / 65536)));
@@ -393,7 +402,8 @@ static void play_pcm(void)
     for (size_t done = 0; done < s_pcm_n;) {
         size_t n = s_pcm_n - done < 160 ? s_pcm_n - done : 160;
         for (size_t i = 0; i < n; i++) {
-            int16_t v = (int16_t)((int32_t)s_pcm[done + i] * BEEP_AMP / 29000);
+            int16_t v = (int16_t)((int32_t)s_pcm[done + i] * BEEP_AMP / 29000
+                                  * s_vol / 100);
             buf[2 * i] = buf[2 * i + 1] = v;
         }
         size_t w;

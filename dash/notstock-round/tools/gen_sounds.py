@@ -60,17 +60,29 @@ def voice(text, v):
         with wave.open(w) as f:
             rate = f.getframerate()
             x = np.frombuffer(f.readframes(f.getnframes()), dtype=np.int16)
-    x = x.astype(float)
+    x = x.astype(float) / 32768.0
     if rate != RATE:                            # linear resample
         n = int(len(x) * RATE / rate)
         x = np.interp(np.linspace(0, len(x) - 1, n), np.arange(len(x)), x)
-    nz = np.nonzero(np.abs(x) > 200)[0]         # trim the silence
+    nz = np.nonzero(np.abs(x) > 0.006)[0]       # trim the silence
     x = x[max(0, nz[0] - 400):nz[-1] + 1600]
     return x
 
 
-def norm(x, peak=0.89):
-    return np.round(x / np.max(np.abs(x)) * peak * 32767).astype(np.int16)
+LOUD = 0.16          # RMS of the loudest 0.4 s, of full scale: all the same
+PEAK = 0.95
+
+
+def norm(x):
+    """the same loudness for every sound, not the same peak: a gong or a
+    bell is a short spike and a long tail, a voice is dense; matched on the
+    loudest 0.4 s, and never over PEAK"""
+    w = int(0.4 * RATE)
+    sq = np.convolve(x * x, np.ones(w) / w, mode="valid") if len(x) > w else [np.mean(x * x)]
+    rms = np.sqrt(np.max(sq))
+    g = LOUD / rms
+    g = min(g, PEAK / np.max(np.abs(x)))
+    return np.round(np.clip(x * g, -1, 1) * 32767).astype(np.int16)
 
 
 C6, E6, G6, C7 = 1046.5, 1318.5, 1568.0, 2093.0

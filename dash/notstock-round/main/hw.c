@@ -522,3 +522,8 @@ bool hw_play(const int16_t *pcm, size_t n)
     (void)n;
     return false;
 }
+
+void hw_volume(uint8_t percent)
+{
+    (void)percent;                     /* the buzzer is on or off */
+}

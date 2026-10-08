@@ -187,6 +187,10 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   MBROLA voices cz2 and en1, which are free for non-commercial use only:
   for a product, record or license another voice. Listen on a PC:
   `preview/sound-*.wav`.
+- **VOLUME 70 %**: loudness of the sounds, tap for +10 % (100 wraps to
+  10 %), it plays at once. All sounds are matched in loudness by
+  `gen_sounds.py` (same RMS), the beeps are leveled to them. Speaker
+  boards only; the 2.1"'s buzzer has no volume.
 - **LIMITS**: one warn limit at a time, - and + (hold to repeat), swipe for
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A
   gauge goes red over its limit and its red zone starts there; the DPF soot
