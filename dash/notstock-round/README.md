@@ -180,10 +180,14 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   next, it plays at once. OFF, BEEP (three beeps, one beep), CHIME (bell
   tones rising, falling), GONG (a low gong, a lighter one), VOICE
   ("Regenerace zahájena / ukončena", or in English "Regeneration started /
-  finished", in the language picked). CHIME, GONG and VOICE need a speaker
+  finished", in the language picked), FUN / VTIP (the same voice, a joke:
+  "Hlavně teď nezastavuj, ten krám začal vypalovat!" / "Tak jsme se zas
+  projeli, a máme hotovo. Můžeš domů."; English: "Whatever you do, don't
+  stop now. The old heap just started burning!" / "Well, that was a nice
+  ride. All done, you can go home."). CHIME, GONG and the voices need a speaker
   (the AMOLED 1.75 and the 1.85"); the 2.1"'s buzzer beeps for them. The
   popup comes either way. The sounds are `tools/gen_sounds.py` ->
-  `main/sounds.c` (16 kHz PCM, 460 kB); the voice is espeak-ng with the
+  `main/sounds.c` (16 kHz PCM, 905 kB); the voice is espeak-ng with the
   MBROLA voices cz2 and en1, which are free for non-commercial use only:
   for a product, record or license another voice. Listen on a PC:
   `preview/sound-*.wav`.

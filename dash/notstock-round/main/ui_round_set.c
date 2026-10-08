@@ -122,9 +122,9 @@ static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
 static void show_sound(void)
 {
     static const char *const EN[RND_SND_COUNT] = {
-        "OFF", "BEEP", "CHIME", "GONG", "VOICE" };
+        "OFF", "BEEP", "CHIME", "GONG", "VOICE", "FUN" };
     static const char *const CS[RND_SND_COUNT] = {
-        "VYP", "PÍPNUTÍ", "CINK", "GONG", "HLAS" };
+        "VYP", "PÍPNUTÍ", "CINK", "GONG", "HLAS", "VTIP" };
     int s = g_rnd_set.sound < RND_SND_COUNT ? g_rnd_set.sound : 0;
     char buf[32];
     snprintf(buf, sizeof buf, "%s  %s", TR("SOUND", "ZVUK"),

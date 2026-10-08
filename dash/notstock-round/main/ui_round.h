@@ -82,7 +82,7 @@ enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
  * bell tones, a gong or a voice (the boards with a speaker; the buzzer of
  * the 2.1" beeps for all of them) */
 enum { RND_SND_OFF, RND_SND_BEEP, RND_SND_CHIME, RND_SND_GONG, RND_SND_VOICE,
-       RND_SND_COUNT };
+       RND_SND_FUN, RND_SND_COUNT };
 enum { RND_EV_REGEN_START, RND_EV_REGEN_END };
 /* MULTI's slots: 0 the big one, 1..3 the small ones below. Each holds a
  * gauge (RND_WATER..RND_RPM), RND_WARN_SOOT (DPF soot) or RND_MV_NONE */

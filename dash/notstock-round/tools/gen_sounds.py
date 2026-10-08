@@ -6,6 +6,8 @@
   VOICE  "Regenerace zahájena / ukončena", "Regeneration started / finished",
          espeak-ng with the MBROLA voices cz2 and en1 (MBROLA voices: free
          for non-commercial use)
+  FUN    the same voices, a joke: "Hlavně teď nezastavuj, ten krám začal
+         vypalovat." / "Tak jsme se zas projeli a máme hotovo, můžeš domů."
 Needs numpy, espeak-ng, mbrola, mbrola-cz2, mbrola-en1. Run from the
 project root: python3 tools/gen_sounds.py
 """
@@ -52,10 +54,10 @@ def gong(f0, dur, amp=1.0):
     return amp * s
 
 
-def voice(text, v):
+def voice(text, v, speed=135):
     with tempfile.TemporaryDirectory() as d:
         w = os.path.join(d, "v.wav")
-        subprocess.run(["espeak-ng", "-v", v, "-s", "135", "-w", w, text],
+        subprocess.run(["espeak-ng", "-v", v, "-s", str(speed), "-a", "70", "-w", w, text],
                        check=True)
         with wave.open(w) as f:
             rate = f.getframerate()
@@ -97,6 +99,10 @@ SOUNDS = {
     "voice_cs_end": voice("Regenerace ukončena.", "mb-cz2"),
     "voice_en_start": voice("Regeneration started.", "mb-en1"),
     "voice_en_end": voice("Regeneration finished.", "mb-en1"),
+    "fun_cs_start": voice("Hlavně teď nezastavuj, ten krám začal vypalovat!", "mb-cz2", 150),
+    "fun_cs_end": voice("Tak jsme se zas projeli, a máme hotovo. Můžeš domů.", "mb-cz2", 150),
+    "fun_en_start": voice("Whatever you do, don't stop now. The old heap just started burning!", "mb-en1", 150),
+    "fun_en_end": voice("Well, that was a nice ride. All done, you can go home.", "mb-en1", 150),
 }
 
 lines = ["/* made by tools/gen_sounds.py: 16 kHz mono 16 bit */",
@@ -133,6 +139,13 @@ const int16_t *rnd_pcm(int sound, int event, int lang, size_t *n)
             if (start) PICK(voice_cs_start); else PICK(voice_cs_end);
         } else {
             if (start) PICK(voice_en_start); else PICK(voice_en_end);
+        }
+        break;
+    case RND_SND_FUN:
+        if (lang == RND_LANG_CS) {
+            if (start) PICK(fun_cs_start); else PICK(fun_cs_end);
+        } else {
+            if (start) PICK(fun_en_start); else PICK(fun_en_end);
         }
         break;
     default:
