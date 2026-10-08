@@ -12,7 +12,10 @@ CONFIG_SPIRAM=y
 CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_SPEED_80M=y
 CONFIG_SPIRAM_FETCH_INSTRUCTIONS=y
-CONFIG_SPIRAM_RODATA=y
+# the faces, fonts and logo (about 7 MB) stay in flash, read through the
+# cache: copied to the 8 MB PSRAM they would leave no room for the frame
+# buffers (the boot logo needs two of 425-450 kB)
+CONFIG_SPIRAM_RODATA=n
 
 # ---- performance -----------------------------------------------------------
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
