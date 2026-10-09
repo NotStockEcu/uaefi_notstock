@@ -21,6 +21,7 @@
 #include "rusefi_can.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "driver/gpio.h"
@@ -73,6 +74,27 @@ static void diag_log(void)
              (unsigned long)st.bus_error_count, gpio_get_level(PIN_TWAI_RX));
 }
 
+/* Sniffing: another tester on the bus (VCDS, OBDeleven) asking the engine
+ * on 0x7E0. Its requests, and the engine's answers on 0x7E8 while it asks,
+ * go to the log ("sniff"), and the gauge holds its own requests back so
+ * the two do not talk over each other. Read a value in the tester, find
+ * its request (22 xx xx: the DID) and the answer (62 xx xx ...) here. */
+#define SNIFF_HOLD_US 2000000
+static int64_t s_foreign_until;
+
+static void sniff(const twai_message_t *m, int64_t now)
+{
+    bool req = m->identifier == 0x7E0;
+    if (req) s_foreign_until = now + SNIFF_HOLD_US;
+    else if (!(m->identifier == 0x7E8 && now < s_foreign_until)) return;
+    char hex[3 * 8 + 1];
+    int n = m->data_length_code > 8 ? 8 : m->data_length_code;
+    for (int i = 0; i < n; i++) snprintf(hex + 3 * i, 4, "%02X ", m->data[i]);
+    hex[n ? 3 * n - 1 : 0] = 0;
+    ESP_LOGI(TAG, "sniff %03lX %s %s", (unsigned long)m->identifier,
+             req ? ">" : "<", hex);
+}
+
 static void can_task(void *arg)
 {
     (void)arg;
@@ -80,13 +102,16 @@ static void can_task(void *arg)
     obd_reset();
     while (1) {
         /* short wait: the loop also paces the OBD requests */
+        int64_t now = esp_timer_get_time();
         if (twai_receive(&msg, pdMS_TO_TICKS(5)) == ESP_OK && !msg.rtr) {
             s_rx++;
             if (msg.identifier >= 0x7E8 && msg.identifier <= 0x7EF) s_rx_ecu++;
-            obd_frame(msg.identifier, msg.data, msg.data_length_code,
-                      esp_timer_get_time());
+            now = esp_timer_get_time();
+            sniff(&msg, now);
+            obd_frame(msg.identifier, msg.data, msg.data_length_code, now);
         }
-        obd_tick(esp_timer_get_time());
+        /* quiet while another tester talks to the engine */
+        if (now >= s_foreign_until) obd_tick(esp_timer_get_time());
         diag_log();
 
         /* a stuck bus latches the controller into bus-off: recover, so the

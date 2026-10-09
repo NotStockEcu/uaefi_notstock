@@ -44,6 +44,7 @@ static const uint16_t WANT[] = {
     0x0D,   /* speed */
     0x33,   /* barometric pressure (only every BARO_EVERY) */
     UDS(OBD_UDS_DPF_SOOT),      /* the DPF ones only every DPF_EVERY */
+    0x7A,   /* DPF differential pressure, standard (where the ECU has it) */
     UDS(OBD_UDS_DPF_DP),
     UDS(OBD_UDS_DPF_SOOT_MEAS),
     UDS(OBD_UDS_DPF_DIST),
@@ -63,6 +64,7 @@ const uint16_t obd_uds_did[OBD_UDS_N] = {
 static const uint8_t UDS_PID[OBD_UDS_N] = {
     [OBD_UDS_OIL] = 0x5C,
     [OBD_UDS_EGT] = 0x78,
+    [OBD_UDS_DPF_DP] = 0x7A,
 };
 #define N_WANT (sizeof WANT / sizeof WANT[0])
 
@@ -175,13 +177,15 @@ static bool want_now(uint16_t w)
 {
     if (w & 0x100) {
         int i = w & 0xFF;
-        if (UDS_PID[i] == 0 && s_polls % DPF_EVERY) return false;
+        bool dpf = UDS_PID[i] == 0 || i == OBD_UDS_DPF_DP;   /* not the oil, EGT */
+        if (dpf && s_polls % DPF_EVERY) return false;
         return obd_uds_used(i);
     }
     uint8_t pid = (uint8_t)w;
     if (!obd_supported(pid)) return false;
     if (pid == 0x0B && obd_supported(0x87)) return false;
     if (pid == 0x33 && g_obd.baro_kpa > 0 && s_polls % BARO_EVERY) return false;
+    if (pid == 0x7A && s_polls % DPF_EVERY) return false;
     return true;
 }
 
@@ -265,6 +269,13 @@ static void answer(const uint8_t *d, int n, int64_t now)
             break;
         case 0x33:
             if (na >= 1) { g_obd.baro_kpa = a[0]; update_boost(); }
+            break;
+        case 0x7A:
+            /* DPF bank 1. A: which values; B,C: the differential pressure,
+             * signed, 0.01 kPa (= 0.1 hPa) */
+            if (na >= 3 && (a[0] & 0x01)) {
+                g_obd.dpf.dp_hpa = (int16_t)((a[1] << 8) | a[2]) / 10.0f;
+            }
             break;
         case 0x78: {
             /* A: which of 4 sensors; then 2 bytes each, 0.1 degC - 40 */

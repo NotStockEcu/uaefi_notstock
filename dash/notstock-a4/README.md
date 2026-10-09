@@ -82,7 +82,15 @@ CAN-L), the round gauge's client (`../notstock-round/main/can_obd.c`,
   0x114E), differential pressure, filter temperature. These were
   checked on the T5.1's EDC17; the B8's 2.0 TDI (CR, EDC17) should know
   them too, but that is untested: if one stays at `--`, the log shows
-  what the engine answered.
+  what the engine answered. The DPF differential pressure is read as the
+  standard PID 0x7A where the ECU has it, else as UDS 0x14F5 (the T5.1's).
+
+Finding a value the gauge does not read yet (sniffing): plug VCDS or
+OBDeleven in beside the gauge and read the value there (engine, measuring
+values). The gauge logs that tester's requests to the engine (0x7E0) and
+the answers (0x7E8), `sniff 7E0 > 03 22 xx xx ...` and `sniff 7E8 < ...
+62 xx xx ...`: xx xx is the DID, what follows the raw value. While the
+tester talks, the gauge holds its own requests back.
 
 Wiring: an SN65HVD230 board on the 12-pin header J1:
 
