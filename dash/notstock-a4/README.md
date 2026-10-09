@@ -51,6 +51,7 @@ on 0x7E0, the scale checked against VCDS):
 | DPF soot, measured (IDE00435) | 0x114E | 0.01 g | yes (not shown) |
 | DPF distance since regeneration (IDE00436) | 0x1156 | 1 m, 32 bit | yes |
 | DPF surface temperature | 0x1044 | 0.1 K | yes |
+| Exhaust gas at the turbo (ENG106429) | 0x10FB | 0.1 K | yes, where PID 0x78 is missing |
 | Exhaust gas after the DPF (ENG106430) | 0x10F9 | 0.1 K | not yet |
 | Fuel temperature (IDE00348) | 0x111C | 0.1 K | not yet |
 | Injection deviation, cylinder 1 | 0x10FF | 0.01 mg/stroke, signed | not yet |
