@@ -182,6 +182,23 @@ static inline void swap_copy_rev(uint16_t *d, const uint16_t *s, size_t n)
     if (n & 1) d[n / 2] = __builtin_bswap16(s[n / 2]);
 }
 
+#ifndef LCD_ROT90
+#define LCD_ROT90 0
+#endif
+/* the picture turned a quarter (LCD_ROT90: the panel mounted with its top,
+ * the USB-C, to the right): screen (X, Y) is panel (Y, W-1-X). A w x h
+ * rectangle of the screen (rows stride apart) becomes w panel rows of h,
+ * the first row its right column. Read along the source rows, which may
+ * be in PSRAM. */
+static void rot90_copy(uint16_t *d, const uint16_t *s, int w, int h, int stride)
+{
+    for (int c = 0; c < h; c++) {
+        const uint16_t *row = s + (size_t)c * stride + w - 1;
+        uint16_t *col = d + c;
+        for (int r = 0; r < w; r++, col += h) *col = __builtin_bswap16(row[-r]);
+    }
+}
+
 /* Waveshare's set-up for this panel (their BSP); brightness starts at 0,
  * the boot logo brings it up */
 static void panel_init(void)
@@ -560,6 +577,10 @@ static void rounder_cb(lv_disp_drv_t *drv, lv_area_t *a)
     a->y2 |= 1;
 }
 
+#if LCD_ROT90
+static uint16_t *s_rot;                   /* a flush turned, going out */
+#endif
+
 static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
 {
     int w = a->x2 - a->x1 + 1, h = a->y2 - a->y1 + 1;
@@ -572,7 +593,11 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
         return;
     }
     uint16_t *p = (uint16_t *)px;
-#if LCD_ROT180
+#if LCD_ROT90
+    rot90_copy(s_rot, p, w, h, w);            /* free: the last flush is out */
+    p = s_rot;
+    lcd_window(a->y1, LCD_H_RES - 1 - a->x2, a->y2, LCD_H_RES - 1 - a->x1);
+#elif LCD_ROT180
     swap_copy_rev(p, p, (size_t)w * h);       /* in place: it is ours now */
     lcd_window(LCD_H_RES - 1 - a->x2, LCD_V_RES - 1 - a->y2,
                LCD_H_RES - 1 - a->x1, LCD_V_RES - 1 - a->y1);
@@ -601,6 +626,10 @@ static void lvgl_init(void)
     lv_color_t *b2 = heap_caps_malloc(px * sizeof(lv_color_t),
                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
     assert(b1 && b2);
+#if LCD_ROT90
+    s_rot = heap_caps_malloc(px * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    assert(s_rot);
+#endif
     lv_disp_draw_buf_init(&buf, b1, b2, px);
     lv_disp_drv_init(&drv);
     drv.hor_res = LCD_H_RES;
@@ -640,7 +669,10 @@ static void push_frame(const uint16_t *fb)
         int h = LCD_V_RES - y < s_push_lines ? LCD_V_RES - y : s_push_lines;
         /* the strip in this buffer two steps ago is out: the window
          * commands of the last step waited for it */
-#if LCD_ROT180
+#if LCD_ROT90
+        /* panel rows y.. are the frame's columns W-1-y.. leftwards */
+        rot90_copy(s_strip[k], fb + (LCD_H_RES - y - h), h, LCD_V_RES, LCD_H_RES);
+#elif LCD_ROT180
         /* panel rows y.. are the frame's last rows, backwards */
         swap_copy_rev(s_strip[k], fb + (LCD_V_RES - y - h) * LCD_H_RES,
                       (size_t)LCD_H_RES * h);

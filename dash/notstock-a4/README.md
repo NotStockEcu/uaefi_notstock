@@ -56,9 +56,22 @@ A page or screen change is drawn whole into PSRAM first and goes to the
 panel in one go (`hw_flip_begin/end` in `hw_amoled.c`), not strip by
 strip down the panel.
 
-The board is mounted with its USB-C at the bottom: the picture is turned
-half round in software, touch with it (`LCD_ROT180` in `main/board_a132.h`,
-0 for the USB-C at the top).
+The board sits in the left centre vent with its USB-C to the right: the
+picture is turned a quarter in software, touch with it (`LCD_ROT90` in
+`main/board_a132.h`; `LCD_ROT180` instead for the USB-C at the bottom,
+neither for it at the top).
+
+### The vent pod
+
+`cad/pod_a132.py` turns a B8/B8.5 vent gauge pod (52 mm ring, an STL) into
+a holder for this board: the ring replaced by a slim tube round the display
+(its lowest edge, on the driver's side, level with the louvers' fronts, so
+only the slanted face stands out), the louvers carried on into it, a slot
+in the tube wall for the USB-C plug (a 90 degree one, cable to the rear),
+and a rear spider with three M2 x 6 screws into the display's standoffs.
+The display goes in from the front. Inputs: the pod STL and Waveshare's
+STEP of the board as STL (`python3 cad/pod_a132.py <dir>` with `pod.stl`
+and `disp.stl` in it); needs trimesh and manifold3d. Print in ASA or PETG.
 
 ## The menu
 
