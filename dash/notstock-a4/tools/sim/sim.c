@@ -50,7 +50,8 @@ int main(int argc, char **argv)
     d.dpf.soot_g = 14.6f;
     d.dpf.dp_hpa = 18;
     d.dpf.temp_c = 260;
-    d.dpf.soot_meas_g = d.dpf.dist_km = NAN;
+    d.dpf.soot_meas_g = NAN;
+    d.dpf.dist_km = 439.8f;
     int page = 0, sweep = 0;
     float warn = NAN;
     const char *scr = "";

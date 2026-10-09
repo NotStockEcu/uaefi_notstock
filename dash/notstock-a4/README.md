@@ -38,7 +38,24 @@ the needle sweeps to full scale and back, as the cluster does.
 Past the limit the value turns red and blinks. The DPF page: the filter
 icon (white; amber while it regenerates, red and blinking when full), the
 soot in grams, the differential pressure in mbar, the filter's surface
-temperature (modelled by the ECU), REGENERACE / PLNY.
+temperature (modelled by the ECU), the distance since the last
+regeneration, REGENERACE / PLNY.
+
+Measuring values of the B8 2.0 TDI found by sniffing VCDS (all UDS 0x22
+on 0x7E0, the scale checked against VCDS):
+
+| Value | DID | Scale | Read by the gauge |
+| --- | --- | --- | --- |
+| DPF differential pressure (IDE00427) | 0x10F3 | 1 hPa | yes |
+| DPF soot, calculated (IDE00434) | 0x114F | 0.01 g | yes |
+| DPF soot, measured (IDE00435) | 0x114E | 0.01 g | yes (not shown) |
+| DPF distance since regeneration (IDE00436) | 0x1156 | 1 m, 32 bit | yes |
+| DPF surface temperature | 0x1044 | 0.1 K | yes |
+| Exhaust gas after the DPF (ENG106430) | 0x10F9 | 0.1 K | not yet |
+| Injection deviation, cylinder 1 | 0x10FF | 0.01 mg/stroke, signed | not yet |
+| Injection deviation, cylinder 2 | 0x1105 | to be checked | not yet |
+| Injection deviation, cylinder 3 | 0x1100 | 0.01 mg/stroke, signed? | not yet |
+| Injection deviation, cylinder 4 | 0x1104 | 0.01 mg/stroke, signed? | not yet |
 
 A regeneration (the filter hotter than 400 degC, over below 350, as on
 the round gauge) beeps three times on the speaker and brings up the DPF

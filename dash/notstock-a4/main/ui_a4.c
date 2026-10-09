@@ -15,6 +15,7 @@ LV_FONT_DECLARE(a4_fis_54);
 LV_FONT_DECLARE(a4_txt_22);
 LV_FONT_DECLARE(a4_big_96);
 LV_FONT_DECLARE(a4_num_52);
+LV_FONT_DECLARE(a4_num_40);
 LV_IMG_DECLARE(a4_face_oil);
 LV_IMG_DECLARE(a4_face_iat);
 LV_IMG_DECLARE(a4_face_clt);
@@ -101,7 +102,7 @@ static lv_point_t s_tick_pt[MAX_TICKS][2];
 static lv_obj_t *s_band[MAX_BAND], *s_band_end;
 static lv_point_t s_band_pt[MAX_BAND][2];
 /* the DPF page */
-static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_temp, *s_dpf_state;
+static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_temp, *s_dpf_km, *s_dpf_state;
 
 static int s_page;
 static int s_before_regen = -1;    /* the dial the regeneration covered */
@@ -242,7 +243,7 @@ static void dots_show(void)
         n++;
     }
     bool dpf = s_page == A4_DPF;
-    lv_coord_t cx = dpf ? C : TX, y = dpf ? C + 200 : C + 168;
+    lv_coord_t cx = dpf ? C : TX, y = dpf ? C + 196 : C + 168;
     for (int i = 0; i < A4_PAGES; i++) {
         if (i >= n) {
             lv_obj_add_flag(s_dots[i], LV_OBJ_FLAG_HIDDEN);
@@ -312,34 +313,34 @@ static void dpf_create(void)
     lv_img_set_src(s_dpf_icon, &a4_dpf_icon);
     lv_obj_set_style_img_recolor_opa(s_dpf_icon, LV_OPA_COVER, 0);
     lv_obj_set_style_img_recolor(s_dpf_icon, C_ICON, 0);
-    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -138);
+    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -150);
     lv_obj_t *t = label(s_dpf, &a4_txt_22, C_SMALL);
     lv_label_set_text(t, "SAZE g");
-    lv_obj_align(t, LV_ALIGN_CENTER, 0, -76);
+    lv_obj_align(t, LV_ALIGN_CENTER, 0, -92);
     s_dpf_soot = label(s_dpf, &a4_big_96, C_VAL);
     lv_obj_set_width(s_dpf_soot, 300);
     lv_obj_set_style_text_align(s_dpf_soot, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, -18);
-    /* two rows: the number right-aligned up to the middle, what it is
-     * after it: the differential pressure, the filter's surface */
-    s_dpf_dp = label(s_dpf, &a4_fis_54, C_VAL);
-    lv_obj_set_width(s_dpf_dp, 130);
-    lv_obj_set_style_text_align(s_dpf_dp, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_pos(s_dpf_dp, C + 14 - 130, C + 32);
-    t = label(s_dpf, &a4_txt_22, C_SMALL);
-    lv_label_set_text(t, "mbar dp");
-    lv_obj_set_pos(t, C + 22, C + 62);
-    s_dpf_temp = label(s_dpf, &a4_fis_54, C_VAL);
-    lv_obj_set_width(s_dpf_temp, 130);
-    lv_obj_set_style_text_align(s_dpf_temp, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_pos(s_dpf_temp, C + 14 - 130, C + 88);
-    t = label(s_dpf, &a4_txt_22, C_SMALL);
-    lv_label_set_text(t, "\xC2\xB0" "C povrch");
-    lv_obj_set_pos(t, C + 22, C + 118);
+    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, -40);
+    /* three rows: the number right-aligned up to the middle, what it is
+     * after it: differential pressure, the filter's surface, the distance
+     * since the last regeneration */
+    static const char *const ROW[3] = { "mbar dp", "\xC2\xB0" "C povrch", "km od reg." };
+    lv_obj_t **row_val[3] = { &s_dpf_dp, &s_dpf_temp, &s_dpf_km };
+    for (int i = 0; i < 3; i++) {
+        lv_coord_t y = C + 16 + i * 46;
+        lv_obj_t *v = label(s_dpf, &a4_num_40, C_VAL);
+        lv_obj_set_width(v, 130);
+        lv_obj_set_style_text_align(v, LV_TEXT_ALIGN_RIGHT, 0);
+        lv_obj_set_pos(v, C + 14 - 130, y);
+        *row_val[i] = v;
+        t = label(s_dpf, &a4_txt_22, C_SMALL);
+        lv_label_set_text_static(t, ROW[i]);
+        lv_obj_set_pos(t, C + 22, y + 15);
+    }
     s_dpf_state = label(s_dpf, &a4_txt_22, C_AMBER);
     lv_obj_set_width(s_dpf_state, 220);
     lv_obj_set_style_text_align(s_dpf_state, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 172);
+    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 168);
 }
 
 void ui_a4_create(void)
@@ -494,6 +495,13 @@ static void dpf_update(const rnd_data_t *d, bool blink_on)
         lv_label_set_text(s_dpf_temp, buf);
     }
     lv_obj_set_style_text_color(s_dpf_temp, s_regen ? C_AMBER : C_VAL, 0);
+    float km = d->link ? d->dpf.dist_km : NAN;
+    if (isnan(km)) {
+        lv_label_set_text(s_dpf_km, "--");
+    } else {
+        fmt(buf, sizeof buf, "%.0f", km);
+        lv_label_set_text(s_dpf_km, buf);
+    }
     bool full = !isnan(soot) && soot >= g_a4_set.warn[A4_DPF];
     if (isnan(soot)) {
         lv_label_set_text(s_dpf_soot, d->link ? "--" : "- - -");
