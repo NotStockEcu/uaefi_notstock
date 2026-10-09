@@ -23,6 +23,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "driver/gpio.h"
 #include "driver/twai.h"
 #include "esp_log.h"
 #include "esp_timer.h"
@@ -38,12 +39,38 @@ volatile dash_data_t g_dash = {
     .clt = NAN, .iat = NAN, .oilt = NAN, .egt = NAN,
 };
 
+static uint32_t s_rx, s_rx_ecu, s_tx_ok, s_tx_fail;   /* for the log */
+
 /* obd2.c sends through here */
 bool obd_send(uint32_t id, const uint8_t d[8])
 {
     twai_message_t m = { .identifier = id, .data_length_code = 8 };
     memcpy(m.data, d, 8);
-    return twai_transmit(&m, 0) == ESP_OK;
+    bool ok = twai_transmit(&m, 0) == ESP_OK;
+    if (ok) s_tx_ok++;
+    else s_tx_fail++;
+    return ok;
+}
+
+/* every few seconds: what the bus does. RX pin at 0 all the time, or
+ * nothing received and the TX error count climbing to 128 (error passive):
+ * the transceiver's wiring (CTX / CRX swapped, no 3V3) or CAN-H / CAN-L. */
+static void diag_log(void)
+{
+    static int64_t next;
+    int64_t now = esp_timer_get_time();
+    if (now < next) return;
+    next = now + 3000000;
+    twai_status_info_t st = { 0 };
+    twai_get_status_info(&st);
+    static const char *const STATE[] = { "stopped", "running", "bus-off", "recovering" };
+    ESP_LOGI(TAG, "rx %lu (ECU answers %lu), tx ok %lu fail %lu, %s, "
+             "tx err %lu rx err %lu, bus errors %lu, rx pin %d",
+             (unsigned long)s_rx, (unsigned long)s_rx_ecu,
+             (unsigned long)s_tx_ok, (unsigned long)s_tx_fail,
+             st.state <= TWAI_STATE_RECOVERING ? STATE[st.state] : "?",
+             (unsigned long)st.tx_error_counter, (unsigned long)st.rx_error_counter,
+             (unsigned long)st.bus_error_count, gpio_get_level(PIN_TWAI_RX));
 }
 
 static void can_task(void *arg)
@@ -54,10 +81,13 @@ static void can_task(void *arg)
     while (1) {
         /* short wait: the loop also paces the OBD requests */
         if (twai_receive(&msg, pdMS_TO_TICKS(5)) == ESP_OK && !msg.rtr) {
+            s_rx++;
+            if (msg.identifier >= 0x7E8 && msg.identifier <= 0x7EF) s_rx_ecu++;
             obd_frame(msg.identifier, msg.data, msg.data_length_code,
                       esp_timer_get_time());
         }
         obd_tick(esp_timer_get_time());
+        diag_log();
 
         /* a stuck bus latches the controller into bus-off: recover, so the
          * gauge comes back by itself after a wiring glitch */
