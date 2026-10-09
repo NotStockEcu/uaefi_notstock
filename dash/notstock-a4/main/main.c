@@ -47,9 +47,17 @@ void a4_flip(void)
     hw_flip_begin();
 }
 
-/* a4_settings_t changed: back to defaults. 2: the DPF limit's default went
- * from 24 to 22.29 g; a version 1 store is kept but takes that. */
-#define SET_VER 2
+/* a4_settings_t changed: back to defaults, or carried over:
+ *   1: the DPF limit's default went from 24 to 22.29 g
+ *   2: six pages (no fuel dial)
+ *   3: seven, the fuel dial before DPF, hidden at first */
+#define SET_VER 3
+
+typedef struct {                /* versions 1 and 2 */
+    uint8_t order[6];
+    uint8_t hidden;
+    float   warn[6];
+} a4_settings_v2_t;
 
 static void settings_load(void)
 {
@@ -57,21 +65,40 @@ static void settings_load(void)
     nvs_handle_t h;
     if (nvs_open(NS, NVS_READONLY, &h) != ESP_OK) return;
     uint8_t ver = 0;
-    a4_settings_t tmp;
-    size_t len = sizeof tmp;
-    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && (ver == SET_VER || ver == 1) &&
-        nvs_get_blob(h, "set", &tmp, &len) == ESP_OK && len == sizeof tmp) {
+    a4_settings_t tmp = g_a4_set;
+    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && (ver == 1 || ver == 2)) {
+        a4_settings_v2_t old;
+        size_t len = sizeof old;
+        if (nvs_get_blob(h, "set", &old, &len) == ESP_OK && len == sizeof old) {
+            /* old page 5 was DPF, now 6; the fuel dial goes in before it */
+            int k = 0;
+            for (int i = 0; i < 6; i++) {
+                uint8_t p = old.order[i] == 5 ? A4_DPF : old.order[i];
+                if (p == A4_DPF) continue;
+                tmp.order[k++] = p;
+            }
+            tmp.order[k++] = A4_FUEL;
+            tmp.order[k++] = A4_DPF;
+            tmp.hidden = (uint8_t)((old.hidden & 0x1F) | (1u << A4_FUEL));
+            for (int i = 0; i < 5; i++) tmp.warn[i] = old.warn[i];
+            tmp.warn[A4_DPF] = ver == 1 ? A4_LIMIT[A4_DPF].def : old.warn[5];
+            ver = SET_VER;
+        }
+    } else if (ver == SET_VER) {
+        size_t len = sizeof tmp;
+        if (nvs_get_blob(h, "set", &tmp, &len) != ESP_OK || len != sizeof tmp) ver = 0;
+    }
+    if (ver == SET_VER) {
         bool ok = true, seen[A4_PAGES] = { false };
         for (int i = 0; i < A4_PAGES; i++) {
             if (tmp.order[i] >= A4_PAGES || seen[tmp.order[i]]) ok = false;
             else seen[tmp.order[i]] = true;
             if (!(tmp.warn[i] >= A4_LIMIT[i].lo && tmp.warn[i] <= A4_LIMIT[i].hi)) ok = false;
         }
-        if ((tmp.hidden & 0x3F) == 0x3F) ok = false;
-        if (ok && ver == 1) tmp.warn[A4_DPF] = A4_LIMIT[A4_DPF].def;
         if (ok) g_a4_set = tmp;
     }
     nvs_close(h);
+    a4_settings_normalize();
 }
 
 void a4_settings_save(void)
@@ -141,7 +168,7 @@ void app_main(void)
     settings_load();
     ui_a4_create();
     int p = page_load();             /* the dial last looked at, if shown */
-    if (p < A4_PAGES && !(g_a4_set.hidden >> p & 1)) ui_a4_page(p);
+    if (p < A4_SWIPE && !(g_a4_set.hidden >> p & 1)) ui_a4_page(p);
     lv_timer_create(update_cb, UPDATE_MS, NULL);
     extern const lv_img_dsc_t *const boot_logo[];
     hw_boot(boot_logo[0]);

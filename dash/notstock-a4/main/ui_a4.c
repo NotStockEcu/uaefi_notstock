@@ -21,6 +21,7 @@ LV_IMG_DECLARE(a4_face_iat);
 LV_IMG_DECLARE(a4_face_clt);
 LV_IMG_DECLARE(a4_face_egt);
 LV_IMG_DECLARE(a4_face_boost);
+LV_IMG_DECLARE(a4_face_fuel);
 LV_IMG_DECLARE(a4_face_dpf);
 LV_IMG_DECLARE(a4_needle);
 LV_IMG_DECLARE(a4_cap);
@@ -58,6 +59,7 @@ const a4_limit_t A4_LIMIT[A4_PAGES] = {
     [A4_CLT]   = { "VODA",  "\xC2\xB0" "C", 90,   130,  1,    105,  0 },
     [A4_EGT]   = { "V\xC3\x9D" "FUK", "\xC2\xB0" "C", 400, 1000, 10, 750, 0 },
     [A4_BOOST] = { "TURBO", "bar",  0.5f, 2.5f, 0.05f, 2.2f, 2 },
+    [A4_FUEL]  = { "PALIVO", "\xC2\xB0" "C", 40,  100,  1,    80,   0 },
     [A4_DPF]   = { "DPF",   "g",    5,    40,   0.1f, 22.29f, 2 },
 };
 
@@ -67,16 +69,32 @@ void a4_settings_defaults(void)
         g_a4_set.order[i] = (uint8_t)i;
         g_a4_set.warn[i] = A4_LIMIT[i].def;
     }
-    g_a4_set.hidden = 0;
+    g_a4_set.hidden = 1u << A4_FUEL;   /* fuel: there to be chosen */
+}
+
+void a4_settings_normalize(void)
+{
+    int k = 0;
+    uint8_t o[A4_PAGES];
+    for (int i = 0; i < A4_PAGES; i++) {
+        if (g_a4_set.order[i] != A4_DPF) o[k++] = g_a4_set.order[i];
+    }
+    o[k] = A4_DPF;
+    for (int i = 0; i < A4_PAGES; i++) g_a4_set.order[i] = o[i];
+    g_a4_set.hidden &= (uint8_t)~(1u << A4_DPF);
+    if ((g_a4_set.hidden & ((1u << A4_SWIPE) - 1)) == (1u << A4_SWIPE) - 1) {
+        g_a4_set.hidden = 0;          /* every dial left out: all back */
+    }
 }
 
 /* --------------------------------------------------------------- dials */
 static const a4_scale_t SC_OIL = A4_SCALE_OIL, SC_IAT = A4_SCALE_IAT,
-    SC_CLT = A4_SCALE_CLT, SC_EGT = A4_SCALE_EGT, SC_BOOST = A4_SCALE_BOOST;
+    SC_CLT = A4_SCALE_CLT, SC_EGT = A4_SCALE_EGT, SC_BOOST = A4_SCALE_BOOST,
+    SC_FUEL = A4_SCALE_FUEL;
 
 typedef struct {
     const lv_img_dsc_t *face;
-    int   src;                  /* RND_* in rnd_data_t.v, -1: the DPF soot */
+    int   src;                  /* RND_* in rnd_data_t.v, -1: DPF soot, -2: fuel */
     const a4_scale_t *sc;       /* NULL: no scale (DPF) */
     const char *fmt;
 } dial_t;
@@ -87,6 +105,7 @@ static const dial_t DIAL[A4_PAGES] = {
     [A4_CLT]   = { &a4_face_clt,   RND_WATER,   &SC_CLT,   "%.0f" },
     [A4_EGT]   = { &a4_face_egt,   RND_EXHAUST, &SC_EGT,   "%.0f" },
     [A4_BOOST] = { &a4_face_boost, RND_BOOST,   &SC_BOOST, "%.2f" },
+    [A4_FUEL]  = { &a4_face_fuel,  -2,          &SC_FUEL,  "%.0f" },
     [A4_DPF]   = { &a4_face_dpf,   -1,          NULL,      "%.1f" },
 };
 
@@ -102,7 +121,7 @@ static lv_point_t s_tick_pt[MAX_TICKS][2];
 static lv_obj_t *s_band[MAX_BAND], *s_band_end;
 static lv_point_t s_band_pt[MAX_BAND][2];
 /* the DPF page */
-static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_temp, *s_dpf_km, *s_dpf_state;
+static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_temp, *s_dpf_after, *s_dpf_km, *s_dpf_state;
 
 static int s_page;
 static int s_before_regen = -1;    /* the dial the regeneration covered */
@@ -114,7 +133,7 @@ static float value_of(const rnd_data_t *d, int page)
 {
     if (!d->link) return NAN;
     int src = DIAL[page].src;
-    return src < 0 ? d->dpf.soot_g : d->v[src];
+    return src == -1 ? d->dpf.soot_g : src == -2 ? d->diag.fuel_c : d->v[src];
 }
 
 static void fmt(char *buf, size_t n, const char *f, float x)
@@ -216,9 +235,10 @@ static void draw_scale(void)
 }
 
 /* ------------------------------------------------------------- paging */
+/* in the swipe: a dial, not left out */
 static bool shown(int p)
 {
-    return !(g_a4_set.hidden >> p & 1);
+    return p < A4_SWIPE && !(g_a4_set.hidden >> p & 1);
 }
 
 /* the next shown dial in the order, dir +1 / -1 */
@@ -242,10 +262,10 @@ static void dots_show(void)
         if (p == s_page) at = n;
         n++;
     }
-    bool dpf = s_page == A4_DPF;
-    lv_coord_t cx = dpf ? C : TX, y = dpf ? C + 196 : C + 168;
+    bool dpf = s_page == A4_DPF;            /* not in the swipe: no dots */
+    lv_coord_t cx = TX, y = C + 168;
     for (int i = 0; i < A4_PAGES; i++) {
-        if (i >= n) {
+        if (i >= n || dpf) {
             lv_obj_add_flag(s_dots[i], LV_OBJ_FLAG_HIDDEN);
             continue;
         }
@@ -313,21 +333,22 @@ static void dpf_create(void)
     lv_img_set_src(s_dpf_icon, &a4_dpf_icon);
     lv_obj_set_style_img_recolor_opa(s_dpf_icon, LV_OPA_COVER, 0);
     lv_obj_set_style_img_recolor(s_dpf_icon, C_ICON, 0);
-    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -150);
+    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -156);
     lv_obj_t *t = label(s_dpf, &a4_txt_22, C_SMALL);
     lv_label_set_text(t, "SAZE g");
-    lv_obj_align(t, LV_ALIGN_CENTER, 0, -92);
+    lv_obj_align(t, LV_ALIGN_CENTER, 0, -100);
     s_dpf_soot = label(s_dpf, &a4_big_96, C_VAL);
     lv_obj_set_width(s_dpf_soot, 300);
     lv_obj_set_style_text_align(s_dpf_soot, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, -40);
+    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, -48);
     /* three rows: the number right-aligned up to the middle, what it is
-     * after it: differential pressure, the filter's surface, the distance
-     * since the last regeneration */
-    static const char *const ROW[3] = { "mbar dp", "\xC2\xB0" "C povrch", "km od reg." };
-    lv_obj_t **row_val[3] = { &s_dpf_dp, &s_dpf_temp, &s_dpf_km };
-    for (int i = 0; i < 3; i++) {
-        lv_coord_t y = C + 16 + i * 46;
+     * after it: differential pressure, the filter's surface, the exhaust
+     * after it, the distance since the last regeneration */
+    static const char *const ROW[4] = { "mbar dp", "\xC2\xB0" "C povrch",
+                                        "\xC2\xB0" "C za DPF", "km od reg." };
+    lv_obj_t **row_val[4] = { &s_dpf_dp, &s_dpf_temp, &s_dpf_after, &s_dpf_km };
+    for (int i = 0; i < 4; i++) {
+        lv_coord_t y = C + 6 + i * 40;
         lv_obj_t *v = label(s_dpf, &a4_num_40, C_VAL);
         lv_obj_set_width(v, 130);
         lv_obj_set_style_text_align(v, LV_TEXT_ALIGN_RIGHT, 0);
@@ -340,7 +361,7 @@ static void dpf_create(void)
     s_dpf_state = label(s_dpf, &a4_txt_22, C_AMBER);
     lv_obj_set_width(s_dpf_state, 220);
     lv_obj_set_style_text_align(s_dpf_state, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 168);
+    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 176);
 }
 
 void ui_a4_create(void)
@@ -495,6 +516,13 @@ static void dpf_update(const rnd_data_t *d, bool blink_on)
         lv_label_set_text(s_dpf_temp, buf);
     }
     lv_obj_set_style_text_color(s_dpf_temp, s_regen ? C_AMBER : C_VAL, 0);
+    float after = d->link ? d->diag.egt_dpf_c : NAN;
+    if (isnan(after)) {
+        lv_label_set_text(s_dpf_after, "--");
+    } else {
+        fmt(buf, sizeof buf, "%.0f", after);
+        lv_label_set_text(s_dpf_after, buf);
+    }
     float km = d->link ? d->dpf.dist_km : NAN;
     if (isnan(km)) {
         lv_label_set_text(s_dpf_km, "--");
@@ -539,7 +567,11 @@ void ui_a4_update(const rnd_data_t *d)
 {
     bool blink_on = (s_frames++ / 8) % 2;
     regen_watch(d);
-    if (lv_scr_act() != s_scr) return;     /* in the menu */
+    if (lv_scr_act() != s_scr) {           /* in the menu */
+        a4_menu_update(d);
+        return;
+    }
+    a4_menu_update(d);                      /* keeps its trouble codes current */
     if (s_page == A4_DPF) {
         lv_obj_add_flag(s_lamp, LV_OBJ_FLAG_HIDDEN);   /* the icon says it */
         dpf_update(d, blink_on);

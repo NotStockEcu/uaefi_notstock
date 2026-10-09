@@ -1,7 +1,9 @@
 /* PC render of the A4 dials (main/ui_a4.c) into a PPM, masked round.
  *   sim out.ppm [page=0..5] [oil=C] [iat=C] [clt=C] [egt=C] [boost=BAR]
  *               [soot=G] [dp=MBAR] [dpft=C] [link=0|1] [t=S] [sweep=1]
- *               [warn=X] (the shown dial's limit) [screen=menu|limits|order]
+ *               [warn=X] (the shown dial's limit)
+ *               [screen=menu|limits|order|diag|inj|dtc] [inj1..inj4=MG]
+ *               [fuelt=C] [egtdpf=C] [dtc=0..3] (trouble codes in the list)
  * dpft: the filter temperature, over 400 the regeneration is on
  */
 #include <math.h>
@@ -31,6 +33,9 @@ void a4_backlight(uint8_t p) { fprintf(stderr, "backlight %u\n", p); }
 void a4_regen_sound(bool start) { fprintf(stderr, "regen %s\n", start ? "start" : "end"); }
 void a4_settings_save(void) { fprintf(stderr, "settings saved\n"); }
 void a4_flip(void) {}
+static rnd_data_t *s_d;
+void rnd_dtc_read(void) { fprintf(stderr, "dtc read\n"); }
+void rnd_dtc_clear(void) { fprintf(stderr, "dtc clear\n"); }
 
 int main(int argc, char **argv)
 {
@@ -52,6 +57,10 @@ int main(int argc, char **argv)
     d.dpf.temp_c = 260;
     d.dpf.soot_meas_g = NAN;
     d.dpf.dist_km = 439.8f;
+    float inj[4] = { 0.32f, -0.06f, -0.12f, -0.13f };
+    d.diag.fuel_c = 26.7f;
+    d.diag.egt_dpf_c = 89.7f;
+    int ndtc = 0;
     int page = 0, sweep = 0;
     float warn = NAN;
     const char *scr = "";
@@ -76,6 +85,13 @@ int main(int argc, char **argv)
         else if (K("sweep")) sweep = atoi(v);
         else if (K("warn")) warn = strtof(v, NULL);
         else if (K("screen")) scr = v;
+        else if (K("inj1")) inj[0] = strtof(v, NULL);
+        else if (K("inj2")) inj[1] = strtof(v, NULL);
+        else if (K("inj3")) inj[2] = strtof(v, NULL);
+        else if (K("inj4")) inj[3] = strtof(v, NULL);
+        else if (K("fuelt")) d.diag.fuel_c = strtof(v, NULL);
+        else if (K("egtdpf")) d.diag.egt_dpf_c = strtof(v, NULL);
+        else if (K("dtc")) ndtc = atoi(v);
         else fprintf(stderr, "unknown input '%s'\n", a);
 #undef K
     }
@@ -92,17 +108,34 @@ int main(int argc, char **argv)
     dd.draw_buf = &db;
     lv_disp_drv_register(&dd);
 
+    for (int i = 0; i < 4; i++) d.diag.inj_mg[i] = inj[i];
+    d.dtc.result = ndtc >= 0 ? RND_DTC_READ : RND_DTC_NOT_READ;
+    d.dtc.n = (uint8_t)ndtc;
+    static const uint16_t CODES[3] = { 0x2463, 0x0401, 0x0299 };
+    for (int i = 0; i < ndtc && i < 3; i++) {
+        d.dtc.list[i].code = CODES[i];
+        d.dtc.list[i].kind = i ? RND_DTC_PENDING : RND_DTC_STORED;
+    }
+    d.dtc.seq = 1;
+    s_d = &d;
     a4_settings_defaults();
+    a4_settings_normalize();
     if (!isnan(warn)) g_a4_set.warn[page] = warn;
     ui_a4_create();
     ui_a4_page(page);
     if (!strcmp(scr, "menu")) a4_menu_open();
-    if (!strcmp(scr, "limits") || !strcmp(scr, "order")) {
-        /* the menu's buttons: the 2nd / 3rd child of its screen, clicked */
+    if (!strcmp(scr, "limits") || !strcmp(scr, "order") || !strcmp(scr, "diag") ||
+        !strcmp(scr, "inj") || !strcmp(scr, "dtc")) {
+        /* the menu's buttons: children 2.. of its screen, clicked */
         a4_menu_open();
         lv_obj_t *m = lv_scr_act();
-        lv_event_send(lv_obj_get_child(m, !strcmp(scr, "limits") ? 2 : 3),
-                      LV_EVENT_CLICKED, NULL);
+        int k = !strcmp(scr, "limits") ? 2 : !strcmp(scr, "order") ? 3 : 5;
+        lv_event_send(lv_obj_get_child(m, k), LV_EVENT_CLICKED, NULL);
+        if (!strcmp(scr, "inj") || !strcmp(scr, "dtc")) {
+            m = lv_scr_act();       /* DIAGNOSTIKA: ODCHYLKY 2, CHYBY 3 */
+            lv_event_send(lv_obj_get_child(m, !strcmp(scr, "inj") ? 2 : 3),
+                          LV_EVENT_CLICKED, NULL);
+        }
     }
     if (sweep) ui_a4_sweep();
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {

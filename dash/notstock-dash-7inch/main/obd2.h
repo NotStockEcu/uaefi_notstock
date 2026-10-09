@@ -54,6 +54,9 @@ enum { OBD_UDS_OIL, OBD_UDS_EGT,
        OBD_UDS_DPF_DP, OBD_UDS_DPF_SOOT, OBD_UDS_DPF_SOOT_MEAS,
        OBD_UDS_DPF_DIST, OBD_UDS_DPF_TEMP,
        OBD_UDS_DPF_DP_B8,       /* the same pressure where an Audi B8 has it */
+       /* diagnosis values found on the Audi A4 B8 2.0 TDI (sniffed VCDS) */
+       OBD_UDS_FUEL_T, OBD_UDS_EGT_DPF,
+       OBD_UDS_INJ1, OBD_UDS_INJ2, OBD_UDS_INJ3, OBD_UDS_INJ4,
        OBD_UDS_N };
 enum { UDS_UNKNOWN, UDS_OK, UDS_REFUSED };
 extern const uint16_t obd_uds_did[OBD_UDS_N];
@@ -91,6 +94,11 @@ typedef struct {
         float dist_km;            /* since the last regeneration */
         float temp_c;             /* simulated surface temperature */
     } dpf;
+    struct {                      /* NAN until read */
+        float fuel_c;             /* fuel temperature */
+        float egt_dpf_c;          /* exhaust gas after the DPF */
+        float inj_mg[4];          /* injection quantity deviation, cyl. 1..4 */
+    } diag;
     struct {                      /* kept over obd_reset */
         uint8_t  busy;            /* obd_dtc_busy_t */
         uint8_t  result;          /* obd_dtc_result_t */

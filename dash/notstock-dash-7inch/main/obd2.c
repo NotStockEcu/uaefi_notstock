@@ -47,6 +47,12 @@ static const uint16_t WANT[] = {
     0x7A,   /* DPF differential pressure, standard (where the ECU has it) */
     UDS(OBD_UDS_DPF_DP),
     UDS(OBD_UDS_DPF_DP_B8),
+    UDS(OBD_UDS_FUEL_T),        /* the diagnosis ones: as rarely as the DPF */
+    UDS(OBD_UDS_EGT_DPF),
+    UDS(OBD_UDS_INJ1),
+    UDS(OBD_UDS_INJ2),
+    UDS(OBD_UDS_INJ3),
+    UDS(OBD_UDS_INJ4),
     UDS(OBD_UDS_DPF_SOOT_MEAS),
     UDS(OBD_UDS_DPF_DIST),
     UDS(OBD_UDS_DPF_TEMP),
@@ -63,6 +69,13 @@ const uint16_t obd_uds_did[OBD_UDS_N] = {
     /* Audi A4 B8 2.0 TDI (2010): its differential pressure is here, hPa,
      * found by sniffing VCDS (IDE00427); 0x14F5 is refused there */
     [OBD_UDS_DPF_DP_B8] = 0x10F3,
+    /* the B8 too, all checked against VCDS: 0.1 K, 0.1 K, 0.01 mg signed */
+    [OBD_UDS_FUEL_T] = 0x111C,
+    [OBD_UDS_EGT_DPF] = 0x10F9,
+    [OBD_UDS_INJ1] = 0x10FF,
+    [OBD_UDS_INJ2] = 0x1105,
+    [OBD_UDS_INJ3] = 0x1100,
+    [OBD_UDS_INJ4] = 0x1104,
 };
 /* the mode 01 PID a value stands in for, 0: none, always read over UDS */
 static const uint8_t UDS_PID[OBD_UDS_N] = {
@@ -131,6 +144,8 @@ void obd_reset(void)
     for (int i = 0; i < 4; i++) z.egt[i] = NAN;
     z.dpf.dp_hpa = z.dpf.soot_g = z.dpf.soot_meas_g = NAN;
     z.dpf.dist_km = z.dpf.temp_c = NAN;
+    z.diag.fuel_c = z.diag.egt_dpf_c = NAN;
+    for (int i = 0; i < 4; i++) z.diag.inj_mg[i] = NAN;
     memcpy((void *)&g_obd, &z, sizeof z);
     s_deadline = 0;
     s_next = 0;
@@ -225,6 +240,11 @@ static void answer_uds(const uint8_t *d, int n, int64_t now)
         case OBD_UDS_DPF_TEMP:  g_obd.dpf.temp_c = kelvin; break;
         case OBD_UDS_DPF_DP:
         case OBD_UDS_DPF_DP_B8: g_obd.dpf.dp_hpa = (int16_t)u; break;
+        case OBD_UDS_FUEL_T:    g_obd.diag.fuel_c = kelvin; break;
+        case OBD_UDS_EGT_DPF:   g_obd.diag.egt_dpf_c = kelvin; break;
+        case OBD_UDS_INJ1: case OBD_UDS_INJ2: case OBD_UDS_INJ3: case OBD_UDS_INJ4:
+            g_obd.diag.inj_mg[i - OBD_UDS_INJ1] = (int16_t)u / 100.0f;
+            break;
         case OBD_UDS_DPF_SOOT:  g_obd.dpf.soot_g = (int16_t)u / 100.0f; break;
         case OBD_UDS_DPF_SOOT_MEAS:
             g_obd.dpf.soot_meas_g = (int16_t)u / 100.0f;

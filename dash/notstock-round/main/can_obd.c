@@ -160,6 +160,9 @@ void can_obd_fill(rnd_data_t *d)
     d->dpf.dp_hpa = g_obd.dpf.dp_hpa;
     d->dpf.dist_km = g_obd.dpf.dist_km;
     d->dpf.temp_c = g_obd.dpf.temp_c;
+    d->diag.fuel_c = g_obd.diag.fuel_c;
+    d->diag.egt_dpf_c = g_obd.diag.egt_dpf_c;
+    for (int i = 0; i < 4; i++) d->diag.inj_mg[i] = g_obd.diag.inj_mg[i];
 
     /* the codes: the list only when obd2.c is not writing it */
     rnd_dtc_status_t *s = &d->dtc;

@@ -14,8 +14,9 @@ QSPI, CST820 touch, ES8311 + speaker, ESP32-S3-PICO-1-N8R8: 8 MB flash,
 
 ![sheet](preview/sheet.png)
 
-Oil, intake, coolant, exhaust, boost, DPF (plain, regenerating, full),
-the menu, LIMITY, PORADI.
+Oil, intake, coolant, exhaust, boost, fuel; DPF (plain, regenerating,
+full); the menu, LIMITY, PORADI, DIAGNOSTIKA, the injection deviations,
+the trouble codes.
 
 **State: built; the dials checked in the simulator. Not tried on the board
 or the car yet.**
@@ -31,39 +32,25 @@ the needle sweeps to full scale and back, as the cluster does.
 | OLEJ (oil) | 50 .. 150 degC | 130 (90 .. 150) |
 | SANI (intake air) | -20 .. 80 degC | 60 (20 .. 80) |
 | VODA (coolant) | 50 .. 130 degC | 105 (90 .. 130) |
-| VYFUK (exhaust gas) | 0 .. 1000 degC (x100) | 750 (400 .. 1000) |
+| VYFUK (exhaust gas, at the turbo) | 0 .. 1000 degC (x100) | 750 (400 .. 1000) |
 | TURBO (boost) | 0 .. 2.5 bar | 2.2 (0.5 .. 2.5) |
-| DPF | no scale: icon and digits | 22.29 g soot (5 .. 40, by 0.1) |
+| PALIVO (fuel), hidden until shown in PORADI | 0 .. 100 degC | 80 (40 .. 100) |
 
-Past the limit the value turns red and blinks. The DPF page: the filter
-icon (white; amber while it regenerates, red and blinking when full), the
-soot in grams, the differential pressure in mbar, the filter's surface
-temperature (modelled by the ECU), the distance since the last
-regeneration, REGENERACE / PLNY.
+Past the limit the value turns red and blinks.
 
-Measuring values of the B8 2.0 TDI found by sniffing VCDS (all UDS 0x22
-on 0x7E0, the scale checked against VCDS):
-
-| Value | DID | Scale | Read by the gauge |
-| --- | --- | --- | --- |
-| DPF differential pressure (IDE00427) | 0x10F3 | 1 hPa | yes |
-| DPF soot, calculated (IDE00434) | 0x114F | 0.01 g | yes |
-| DPF soot, measured (IDE00435) | 0x114E | 0.01 g | yes (not shown) |
-| DPF distance since regeneration (IDE00436) | 0x1156 | 1 m, 32 bit | yes |
-| DPF surface temperature | 0x1044 | 0.1 K | yes |
-| Exhaust gas at the turbo (ENG106429) | 0x10FB | 0.1 K | yes, where PID 0x78 is missing |
-| Exhaust gas after the DPF (ENG106430) | 0x10F9 | 0.1 K | not yet |
-| Fuel temperature (IDE00348) | 0x111C | 0.1 K | not yet |
-| Injection deviation, cylinder 1 | 0x10FF | 0.01 mg/stroke, signed | not yet |
-| Injection deviation, cylinder 2 | 0x1105 | to be checked | not yet |
-| Injection deviation, cylinder 3 | 0x1100 | 0.01 mg/stroke, signed? | not yet |
-| Injection deviation, cylinder 4 | 0x1104 | 0.01 mg/stroke, signed? | not yet |
+**DPF** is not in the swipe: the menu's DPF opens it, and a regeneration
+brings it up by itself. The filter icon (white; amber while it
+regenerates, red and blinking when full), the soot in grams (calculated),
+the differential pressure in mbar, the filter's surface temperature
+(modelled by the ECU), the exhaust after the filter, the distance since
+the last regeneration, REGENERACE / PLNY. Its limit: 22.29 g soot
+(5 .. 40, by 0.1). A swipe on it goes back to the dials.
 
 A regeneration (the filter hotter than 400 degC, over below 350, as on
 the round gauge) beeps three times on the speaker and brings up the DPF
 page; at its end one beep, and the dial it covered comes back (unless you
-swiped elsewhere meanwhile). On the other dials the amber DPF lamp left of
-the hub and REGENERACE over the value show it.
+swiped elsewhere meanwhile). On the dials the amber DPF lamp left of the
+hub and REGENERACE over the value show it.
 
 A page or screen change is drawn whole into PSRAM first and goes to the
 panel in one go (`hw_flip_begin/end` in `hw_amoled.c`), not strip by
@@ -77,12 +64,23 @@ half round in software, touch with it (`LCD_ROT180` in `main/board_a132.h`,
 
 Long press on a dial: NASTAVENI.
 
-- **LIMITY**: one dial at a time, swipe for the next; - and + (hold to
-  repeat). The dial goes red from there.
+- **LIMITY**: one dial at a time (DPF too), swipe for the next; - and +
+  (hold to repeat). The dial goes red from there.
 - **PORADI**: one dial at a time, swipe for the next: its place in the
   swipe (< earlier, > later) and ZOBRAZENO / SKRYTO (left out; one stays).
-- **ZPET**, or a long press: back to the dial. A long press in LIMITY or
-  PORADI goes back to the menu and stores the settings (NVS).
+- **DPF**: the DPF page.
+- **DIAGNOSTIKA**:
+  - **ODCHYLKY**: the injection quantity deviation of cylinders 1..4, each
+    a bore that fills with it (half full is 0, the top +4, empty -4
+    mg/stroke; the red lines at +-2.8, a rough VW idle limit), green /
+    amber from 1.4 / red from 2.8, the number under it. Live.
+  - **CHYBY**: the trouble codes (mode 03 stored, 07 pending, every ECU),
+    read when first opened: the count, one code at a time (swipe), stored
+    (red) or pending (amber), its ECU and what it means. CIST reads again,
+    SMAZAT clears (tap twice within 3 s; mode 04). With the engine running
+    the ECU refuses.
+- **ZPET**, or a long press: back to the dial. A long press in a screen
+  goes back one step and stores the settings (NVS).
 
 The scales are pre-rendered (`tools/gen_faces.py`: faces with white ticks,
 and `main/faces/a4_scales.h` with where the ticks and numerals are);

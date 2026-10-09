@@ -61,6 +61,11 @@ typedef struct {
         float dist_km;        /* since the last regeneration */
         float temp_c;         /* simulated filter surface temperature */
     } dpf;
+    struct {                  /* diagnosis (VW UDS, the A4 B8's), NAN unknown */
+        float fuel_c;         /* fuel temperature */
+        float egt_dpf_c;      /* exhaust gas after the DPF */
+        float inj_mg[4];      /* injection quantity deviation, cyl. 1..4 */
+    } diag;
     rnd_dtc_status_t dtc;
     bool  link;
     struct {                  /* accelerometer, in the car's frame */

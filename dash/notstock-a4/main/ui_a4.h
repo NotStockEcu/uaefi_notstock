@@ -1,9 +1,11 @@
 /* The A4 gauge: one dial at a time after the Audi A4 B8 cluster at night
  * (red lit rim, white scale, red needle, the value in the lower
  * right where the cluster has its "1/min x1000"), swipe left / right for
- * the next: oil, intake air, coolant, exhaust gas, boost, DPF (no scale:
- * the filter icon, soot and differential pressure in digits; the icon
- * amber while it regenerates, red when full).
+ * the next: oil, intake air, coolant, exhaust gas, boost, fuel (hidden
+ * until chosen). The DPF page
+ * (no scale: the filter icon, soot, differential pressure, temperatures,
+ * distance in digits; the icon amber while it regenerates, red when full)
+ * is not in the swipe: the menu opens it, and a regeneration.
  * Past each dial's limit (a setting) its ticks and numerals are red, with
  * a red band inside the ticks: finely broken at the limit, the pieces
  * growing to a solid band at the end of the scale.
@@ -12,8 +14,9 @@
  * REGENERACE over the value on the other dials; it beeps once at its end.
  * The DPF page also has the filter's (modelled) surface temperature.
  * Double tap: night (dimmer) and back. Long press: the menu, LIMITY
- * (each dial's limit) and PORADI (the dials' order in the swipe, shown or
- * hidden), ui_a4_menu.c.
+ * (each dial's limit), PORADI (the dials' order in the swipe, shown or
+ * hidden) and DIAGNOSTIKA (injection deviations and temperatures; the
+ * trouble codes, read and cleared), ui_a4_menu.c.
  * Platform-free (tools/sim); the data is the round gauge's rnd_data_t,
  * filled by its can_obd.c.
  */
@@ -25,7 +28,11 @@
 
 #define A4_SIZE 466
 
-enum { A4_OIL, A4_IAT, A4_CLT, A4_EGT, A4_BOOST, A4_DPF, A4_PAGES };
+enum { A4_OIL, A4_IAT, A4_CLT, A4_EGT, A4_BOOST, A4_FUEL, A4_DPF, A4_PAGES };
+/* the swipe has the dials A4_OIL .. A4_FUEL (fuel temperature: left out
+ * until shown in PORADI); DPF is not in it, it comes from the menu and by
+ * itself when the filter regenerates */
+#define A4_SWIPE A4_DPF
 
 /* settings, edited in place by the menu; the platform loads them before
  * ui_a4_create() (or keeps a4_settings_defaults()) and stores them when
@@ -37,6 +44,8 @@ typedef struct {
 } a4_settings_t;
 extern a4_settings_t g_a4_set;
 void a4_settings_defaults(void);
+/* after loading: DPF last in the order and not hidden (not in the swipe) */
+void a4_settings_normalize(void);
 
 /* limits: what the menu allows */
 typedef struct {
@@ -65,3 +74,4 @@ lv_obj_t *a4_gauge_screen(void);
 void a4_settings_changed(void);          /* limits or order: redraw the dial */
 void a4_menu_create(void);
 void a4_menu_open(void);
+void a4_menu_update(const rnd_data_t *d);   /* live data on its screens */
