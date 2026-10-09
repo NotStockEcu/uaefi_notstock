@@ -9,7 +9,6 @@
 #include "board_a132.h"
 #include "can_obd.h"
 #include "hw.h"
-#include "sounds.h"
 #include "ui_a4.h"
 
 #include "esp_log.h"
@@ -38,12 +37,14 @@ void a4_backlight(uint8_t percent)
 
 void a4_regen_sound(bool start)
 {
-    int ev = start ? RND_EV_REGEN_START : RND_EV_REGEN_END;
-    size_t n = 0;
+    /* beeps on the speaker: three at the start, one at the end */
     hw_volume(VOLUME);
-    const int16_t *pcm = rnd_pcm(RND_SND_CHIME, ev, RND_LANG_CS, &n);
-    if (pcm && hw_play(pcm, n)) return;
     hw_beep(start ? 3 : 1);
+}
+
+void a4_flip(void)
+{
+    hw_flip_begin();
 }
 
 #define SET_VER 1               /* a4_settings_t changed: back to defaults */
@@ -146,6 +147,7 @@ void app_main(void)
 
     while (1) {
         uint32_t next = lv_timer_handler();
+        hw_flip_end();               /* a changed screen: out in one go */
         if (next == LV_NO_TIMER_READY || next > 20) next = 20;
         if (next < 2) next = 2;
         vTaskDelay(pdMS_TO_TICKS(next));

@@ -101,9 +101,10 @@ static lv_point_t s_tick_pt[MAX_TICKS][2];
 static lv_obj_t *s_band[MAX_BAND], *s_band_end;
 static lv_point_t s_band_pt[MAX_BAND][2];
 /* the DPF page */
-static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_state;
+static lv_obj_t *s_dpf, *s_dpf_icon, *s_dpf_soot, *s_dpf_dp, *s_dpf_temp, *s_dpf_state;
 
 static int s_page;
+static int s_before_regen = -1;    /* the dial the regeneration covered */
 static float s_angle = NAN;        /* shown, degrees */
 static bool s_regen, s_night, s_sweeping;
 static uint32_t s_frames, s_sweep_t0, s_last_click;
@@ -241,7 +242,7 @@ static void dots_show(void)
         n++;
     }
     bool dpf = s_page == A4_DPF;
-    lv_coord_t cx = dpf ? C : TX, y = dpf ? C + 190 : C + 168;
+    lv_coord_t cx = dpf ? C : TX, y = dpf ? C + 200 : C + 168;
     for (int i = 0; i < A4_PAGES; i++) {
         if (i >= n) {
             lv_obj_add_flag(s_dots[i], LV_OBJ_FLAG_HIDDEN);
@@ -311,26 +312,34 @@ static void dpf_create(void)
     lv_img_set_src(s_dpf_icon, &a4_dpf_icon);
     lv_obj_set_style_img_recolor_opa(s_dpf_icon, LV_OPA_COVER, 0);
     lv_obj_set_style_img_recolor(s_dpf_icon, C_ICON, 0);
-    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -112);
+    lv_obj_align(s_dpf_icon, LV_ALIGN_CENTER, 0, -138);
     lv_obj_t *t = label(s_dpf, &a4_txt_22, C_SMALL);
     lv_label_set_text(t, "SAZE g");
-    lv_obj_align(t, LV_ALIGN_CENTER, 0, -36);
+    lv_obj_align(t, LV_ALIGN_CENTER, 0, -76);
     s_dpf_soot = label(s_dpf, &a4_big_96, C_VAL);
     lv_obj_set_width(s_dpf_soot, 300);
     lv_obj_set_style_text_align(s_dpf_soot, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, 22);
-    /* the pressure right-aligned up to the middle, "mbar dp" after it */
+    lv_obj_align(s_dpf_soot, LV_ALIGN_CENTER, 0, -18);
+    /* two rows: the number right-aligned up to the middle, what it is
+     * after it: the differential pressure, the filter's surface */
     s_dpf_dp = label(s_dpf, &a4_fis_54, C_VAL);
-    lv_obj_set_width(s_dpf_dp, 120);
+    lv_obj_set_width(s_dpf_dp, 130);
     lv_obj_set_style_text_align(s_dpf_dp, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_pos(s_dpf_dp, C + 14 - 120, C + 76);
+    lv_obj_set_pos(s_dpf_dp, C + 14 - 130, C + 32);
     t = label(s_dpf, &a4_txt_22, C_SMALL);
     lv_label_set_text(t, "mbar dp");
-    lv_obj_set_pos(t, C + 22, C + 106);
+    lv_obj_set_pos(t, C + 22, C + 62);
+    s_dpf_temp = label(s_dpf, &a4_fis_54, C_VAL);
+    lv_obj_set_width(s_dpf_temp, 130);
+    lv_obj_set_style_text_align(s_dpf_temp, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_obj_set_pos(s_dpf_temp, C + 14 - 130, C + 88);
+    t = label(s_dpf, &a4_txt_22, C_SMALL);
+    lv_label_set_text(t, "\xC2\xB0" "C povrch");
+    lv_obj_set_pos(t, C + 22, C + 118);
     s_dpf_state = label(s_dpf, &a4_txt_22, C_AMBER);
     lv_obj_set_width(s_dpf_state, 220);
     lv_obj_set_style_text_align(s_dpf_state, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 158);
+    lv_obj_align(s_dpf_state, LV_ALIGN_CENTER, 0, 172);
 }
 
 void ui_a4_create(void)
@@ -418,6 +427,8 @@ lv_obj_t *a4_gauge_screen(void)
 void ui_a4_page(int page)
 {
     if (page < 0 || page >= A4_PAGES) page = 0;
+    a4_flip();                      /* the new dial goes out whole */
+    if (page != A4_DPF) s_before_regen = -1;
     s_page = page;
     lv_img_set_src(s_face, DIAL[page].face);
     bool dpf = page == A4_DPF;
@@ -458,6 +469,16 @@ static void regen_watch(const rnd_data_t *d)
     if (now == s_regen) return;
     s_regen = now;
     a4_regen_sound(now);
+    /* on the dials: the DPF page comes up for the regeneration, and the
+     * dial it covered comes back after it (unless swiped away meanwhile) */
+    if (lv_scr_act() != s_scr) return;
+    if (now) {
+        s_before_regen = s_page;
+        if (s_page != A4_DPF) ui_a4_page(A4_DPF);
+    } else if (s_page == A4_DPF && s_before_regen >= 0 && s_before_regen != A4_DPF) {
+        ui_a4_page(s_before_regen);
+        s_before_regen = -1;
+    }
 }
 
 static void dpf_update(const rnd_data_t *d, bool blink_on)
@@ -465,6 +486,14 @@ static void dpf_update(const rnd_data_t *d, bool blink_on)
     char buf[24];
     float soot = d->link ? d->dpf.soot_g : NAN;
     float dp = d->link ? d->dpf.dp_hpa : NAN;
+    float tc = d->link ? d->dpf.temp_c : NAN;
+    if (isnan(tc)) {
+        lv_label_set_text(s_dpf_temp, "--");
+    } else {
+        fmt(buf, sizeof buf, "%.0f", tc);
+        lv_label_set_text(s_dpf_temp, buf);
+    }
+    lv_obj_set_style_text_color(s_dpf_temp, s_regen ? C_AMBER : C_VAL, 0);
     bool full = !isnan(soot) && soot >= g_a4_set.warn[A4_DPF];
     if (isnan(soot)) {
         lv_label_set_text(s_dpf_soot, d->link ? "--" : "- - -");

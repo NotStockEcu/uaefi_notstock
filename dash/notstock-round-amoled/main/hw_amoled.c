@@ -166,6 +166,22 @@ static inline void swap_copy(uint16_t *d, const uint16_t *s, size_t n)
     for (size_t i = 0; i < n; i++) d[i] = __builtin_bswap16(s[i]);
 }
 
+#ifndef LCD_ROT180
+#define LCD_ROT180 0
+#endif
+/* the picture turned half round (LCD_ROT180): in software, so the panel's
+ * own mirroring and its column gap stay as they are. A rectangle turned
+ * half round is the same pixels in reverse order. */
+static inline void swap_copy_rev(uint16_t *d, const uint16_t *s, size_t n)
+{
+    for (size_t i = 0, j = n - 1; i < j; i++, j--) {
+        uint16_t t = s[i];
+        d[i] = __builtin_bswap16(s[j]);
+        d[j] = __builtin_bswap16(t);
+    }
+    if (n & 1) d[n / 2] = __builtin_bswap16(s[n / 2]);
+}
+
 /* Waveshare's set-up for this panel (their BSP); brightness starts at 0,
  * the boot logo brings it up */
 static void panel_init(void)
@@ -556,8 +572,14 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
         return;
     }
     uint16_t *p = (uint16_t *)px;
+#if LCD_ROT180
+    swap_copy_rev(p, p, (size_t)w * h);       /* in place: it is ours now */
+    lcd_window(LCD_H_RES - 1 - a->x2, LCD_V_RES - 1 - a->y2,
+               LCD_H_RES - 1 - a->x1, LCD_V_RES - 1 - a->y1);
+#else
     swap_copy(p, p, (size_t)w * h);           /* in place: it is ours now */
     lcd_window(a->x1, a->y1, a->x2, a->y2);
+#endif
     s_flushing = drv;
     lcd_pixels(p, (size_t)w * h * 2);
 }
@@ -618,7 +640,13 @@ static void push_frame(const uint16_t *fb)
         int h = LCD_V_RES - y < s_push_lines ? LCD_V_RES - y : s_push_lines;
         /* the strip in this buffer two steps ago is out: the window
          * commands of the last step waited for it */
+#if LCD_ROT180
+        /* panel rows y.. are the frame's last rows, backwards */
+        swap_copy_rev(s_strip[k], fb + (LCD_V_RES - y - h) * LCD_H_RES,
+                      (size_t)LCD_H_RES * h);
+#else
         swap_copy(s_strip[k], fb + y * LCD_H_RES, (size_t)LCD_H_RES * h);
+#endif
         lcd_window(0, y, LCD_H_RES - 1, y + h - 1);
         lcd_pixels(s_strip[k], (size_t)LCD_H_RES * h * 2);
         sent++;
@@ -711,6 +739,48 @@ out:
         heap_caps_free(s_strip[i]);
         s_strip[i] = NULL;
     }
+}
+
+/* ------------------------------------------------------------- flip */
+/* A whole new screen (another page) drawn strip by strip shows as a wipe
+ * down the panel. Between hw_flip_begin() and hw_flip_end() LVGL renders
+ * into a frame in PSRAM instead, which then goes out in one go. */
+static uint16_t *s_flip_fb;
+static bool s_flip;
+
+void hw_flip_begin(void)
+{
+    if (s_booting || s_flip || s_shadow) return;   /* the boot has the shadow */
+    if (!s_flip_fb) {
+        s_flip_fb = heap_caps_malloc((size_t)LCD_H_RES * LCD_V_RES * 2, MALLOC_CAP_SPIRAM);
+        for (s_push_lines = PUSH_LINES / 2; s_push_lines >= 5 && !s_strip[1]; s_push_lines /= 2) {
+            for (int i = 0; i < 2; i++) {
+                s_strip[i] = heap_caps_malloc(LCD_H_RES * s_push_lines * 2,
+                                              MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+            }
+            if (!s_strip[0] || !s_strip[1]) {
+                for (int i = 0; i < 2; i++) {
+                    heap_caps_free(s_strip[i]);
+                    s_strip[i] = NULL;
+                }
+            }
+        }
+        ESP_LOGI(TAG, "page flip: frame %p, strips of %d lines", s_flip_fb,
+                 s_strip[1] ? s_push_lines : 0);
+    }
+    if (!s_flip_fb || !s_strip[0] || !s_strip[1]) return;   /* strips then */
+    s_shadow = s_flip_fb;
+    s_flip = true;
+}
+
+void hw_flip_end(void)
+{
+    if (!s_flip) return;
+    lv_obj_invalidate(lv_scr_act());       /* all of it into the frame */
+    lv_refr_now(NULL);
+    push_frame(s_flip_fb);
+    s_shadow = NULL;
+    s_flip = false;
 }
 
 /* ------------------------------------------------------------------ init */

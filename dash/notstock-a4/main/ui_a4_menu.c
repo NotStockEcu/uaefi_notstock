@@ -26,6 +26,13 @@ LV_FONT_DECLARE(a4_big_96);
 
 static lv_obj_t *menu_scr, *lim_scr, *ord_scr;
 
+/* a screen change goes out whole, as a page change */
+static void load(lv_obj_t *scr)
+{
+    a4_flip();
+    lv_scr_load(scr);
+}
+
 /* ------------------------------------------------------------- widgets */
 static lv_obj_t *screen(void)
 {
@@ -116,7 +123,7 @@ static int swipe_dir(void)
 static void go_gauge(lv_event_t *e)
 {
     (void)e;
-    lv_scr_load(a4_gauge_screen());
+    load(a4_gauge_screen());
 }
 
 static void back_to_menu(lv_event_t *e)
@@ -124,7 +131,7 @@ static void back_to_menu(lv_event_t *e)
     (void)e;
     a4_settings_save();
     a4_settings_changed();
-    lv_scr_load(menu_scr);
+    load(menu_scr);
 }
 
 /* --------------------------------------------------------------- limits */
@@ -167,7 +174,7 @@ static void go_limits(lv_event_t *e)
     (void)e;
     lim_at = ui_a4_current();
     lim_show();
-    lv_scr_load(lim_scr);
+    load(lim_scr);
 }
 
 static void lim_create(void)
@@ -262,7 +269,7 @@ static void go_order(lv_event_t *e)
         if (g_a4_set.order[i] == ui_a4_current()) ord_at = i;
     }
     ord_show();
-    lv_scr_load(ord_scr);
+    load(ord_scr);
 }
 
 static void ord_create(void)
@@ -302,5 +309,5 @@ void a4_menu_create(void)
 
 void a4_menu_open(void)
 {
-    lv_scr_load(menu_scr);
+    load(menu_scr);
 }

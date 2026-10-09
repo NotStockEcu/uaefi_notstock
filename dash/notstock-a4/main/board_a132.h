@@ -49,7 +49,11 @@
 #define PIN_TWAI_TX 1         /* J1 pin 5 */
 #define PIN_TWAI_RX 2         /* J1 pin 6 */
 
+/* mounted with the USB-C at the bottom: the picture turned half round (in
+ * hw_amoled.c's flush), the touch with it. 0 for the USB-C at the top. */
+#define LCD_ROT180 1
+
 /* touch to screen; flip these if a tap lands mirrored */
 #define TOUCH_SWAP_XY  0
-#define TOUCH_MIRROR_X 0
-#define TOUCH_MIRROR_Y 0
+#define TOUCH_MIRROR_X LCD_ROT180
+#define TOUCH_MIRROR_Y LCD_ROT180

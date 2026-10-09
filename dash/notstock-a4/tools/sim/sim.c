@@ -30,6 +30,7 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
 void a4_backlight(uint8_t p) { fprintf(stderr, "backlight %u\n", p); }
 void a4_regen_sound(bool start) { fprintf(stderr, "regen %s\n", start ? "start" : "end"); }
 void a4_settings_save(void) { fprintf(stderr, "settings saved\n"); }
+void a4_flip(void) {}
 
 int main(int argc, char **argv)
 {

@@ -15,6 +15,10 @@ void hw_beep(int n);                 /* n short beeps, does not block */
 bool hw_play(const int16_t *pcm, size_t n);
 void hw_volume(uint8_t percent);     /* the speaker's, 10..100; no buzzer */
 void exio_set(uint8_t mask, bool on);  /* 2.1" only: its TCA9554 outputs */
+/* a whole new screen at once, not drawn down the panel strip by strip:
+ * begin before it changes, end after lv_timer_handler (AMOLED boards) */
+void hw_flip_begin(void);
+void hw_flip_end(void);
 /* the boot logo fading in and into the gauge screen already loaded */
 void hw_boot(const lv_img_dsc_t *logo);
 /* the G-meter, motion.c: started by each board's hw_init, on its I2C */

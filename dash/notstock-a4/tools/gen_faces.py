@@ -4,7 +4,7 @@ numerals (orange from the warn limit on, with an amber band inside the
 ticks there), the scale from just right of the bottom over the left and
 the top round to 3 o'clock as the rev counter's, the page's name and unit
 in the free lower right where the cluster has its "1/min x1000". One per
-page, plus the needle (orange-red, lit), its black hub and the amber DPF
+page, plus the needle (red, lit), its black hub and the amber DPF
 lamp, drawn live by LVGL.
 
 Writes main/faces/a4_*.c (LVGL 8 images, RGB565; the live parts with
@@ -133,7 +133,7 @@ def face(page):
 
 
 def needle():
-    """orange-red and lit, pointing right (+x): from inside the hub out to
+    """red and lit, pointing right (+x): from inside the hub out to
     the ticks, thin at the tip; the pivot is the image's left edge,
     middle. Size and pivot also in ui_a4.c."""
     L, W = 206, 30
@@ -142,12 +142,12 @@ def needle():
     body = [(P(30), cy - P(4)), (w - P(3), cy - P(1.5)), (w, cy),
             (w - P(3), cy + P(1.5)), (P(30), cy + P(4))]
     glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).polygon(body, fill=(255, 70, 10, 190))
+    ImageDraw.Draw(glow).polygon(body, fill=(255, 20, 16, 190))
     glow = glow.filter(ImageFilter.GaussianBlur(P(4)))
     im = Image.alpha_composite(Image.new("RGBA", (w, h), (0, 0, 0, 0)), glow)
     d = ImageDraw.Draw(im)
-    d.polygon(body, fill=(255, 84, 24, 255))
-    d.line([(P(32), cy), (w - P(8), cy)], fill=(255, 190, 120, 255), width=P(1))
+    d.polygon(body, fill=(240, 30, 28, 255))
+    d.line([(P(32), cy), (w - P(8), cy)], fill=(255, 140, 130, 255), width=P(1))
     im = im.resize((L, W), Image.LANCZOS)
     return im, 0, W // 2
 

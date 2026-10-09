@@ -4,7 +4,7 @@ A small round gauge for an **Audi A4 B8 2.0 TDI** (2010), drawn after the
 car's own cluster at night: red lit rim, white dashes and numerals, past
 the limit red ticks and numerals with a red band inside the ticks (finely
 broken at the limit, the pieces growing until the band is solid at the
-end of the scale), an orange-red needle on a black hub, the value and name
+end of the scale), a red needle on a black hub, the value and name
 in the lower right where the cluster has its "1/min x1000". No maker's
 logo.
 
@@ -37,12 +37,22 @@ the needle sweeps to full scale and back, as the cluster does.
 
 Past the limit the value turns red and blinks. The DPF page: the filter
 icon (white; amber while it regenerates, red and blinking when full), the
-soot in grams, the differential pressure in mbar, REGENERACE / PLNY.
+soot in grams, the differential pressure in mbar, the filter's surface
+temperature (modelled by the ECU), REGENERACE / PLNY.
 
 A regeneration (the filter hotter than 400 degC, over below 350, as on
-the round gauge) lights the amber DPF lamp left of the hub and says
-REGENERACE over the value on every dial, with a chime on the speaker at
-its start and its end.
+the round gauge) beeps three times on the speaker and brings up the DPF
+page; at its end one beep, and the dial it covered comes back (unless you
+swiped elsewhere meanwhile). On the other dials the amber DPF lamp left of
+the hub and REGENERACE over the value show it.
+
+A page or screen change is drawn whole into PSRAM first and goes to the
+panel in one go (`hw_flip_begin/end` in `hw_amoled.c`), not strip by
+strip down the panel.
+
+The board is mounted with its USB-C at the bottom: the picture is turned
+half round in software, touch with it (`LCD_ROT180` in `main/board_a132.h`,
+0 for the USB-C at the top).
 
 ## The menu
 
