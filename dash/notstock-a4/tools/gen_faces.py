@@ -26,11 +26,9 @@ SWEEP = 265.0
 R_RIM = 225            # the red lit rim
 R_TICK = 214           # outer end of the ticks
 R_NUM = 172            # centre of the numerals, at most
-R_BAND = (190, 197)    # the amber band inside the ticks, from the warn limit
+R_BAND = (190, 197)    # the red band inside the ticks (ui_a4.c draws it)
 WHITE = (238, 238, 236)
 GREY = (160, 160, 160)
-ORANGE = (255, 118, 24)
-AMBER = (255, 178, 0)
 
 # id, name, unit, lo, hi, labels (value, text), minor ticks per gap, warn
 PAGES = [
@@ -59,6 +57,9 @@ def font(w, px):
 
 def P(x):
     return int(round(x * SS))
+
+
+SCALES = {}            # per dial: lo, hi, ticks, numerals -> a4_scales.h
 
 
 def face(page):
@@ -94,43 +95,35 @@ def face(page):
             for k in range(1, minor + 1):
                 ticks.append((v + (vals[i + 1] - v) * k / (minor + 1), False))
 
-    # the amber band from the warn limit to the end of the scale, broken
-    # as the cluster's: a piece between each two ticks, a gap at each tick
-    b0, b1 = R_BAND
-    edges = sorted({warn} | {v for v, _ in ticks if v > warn + 1e-6})
-    gap = 1.6                           # degrees each side of a tick
-    for e0, e1 in zip(edges, edges[1:]):
-        s0 = math.degrees(ang(lo, hi, e0)) + gap
-        s1 = math.degrees(ang(lo, hi, e1)) - gap
-        if s1 > s0:
-            d.arc([P(C - b1), P(C - b1), P(C + b1), P(C + b1)], s0, s1,
-                  fill=AMBER, width=P(b1 - b0))
+    # white dashes for the whole scale; past the warn limit (a setting)
+    # ui_a4.c draws them over in red, with the numerals and the band
     marks = Image.new("RGB", im.size, (0, 0, 0))
     md = ImageDraw.Draw(marks)
+    sc_ticks = []
     for v, major in ticks:
         a = ang(lo, hi, v)
         ln, w = (20, 7) if major else (12, 4.5)
-        col = ORANGE if v >= warn - 1e-6 else WHITE
         p0 = (C + (R_TICK - ln) * math.cos(a), C + (R_TICK - ln) * math.sin(a))
         p1 = (C + R_TICK * math.cos(a), C + R_TICK * math.sin(a))
-        md.line([(P(p0[0]), P(p0[1])), (P(p1[0]), P(p1[1]))], fill=col, width=P(w))
-
-    # numerals, upright, bold as the cluster's
-    fnum = font(700, 52)
-    for v, t in labels:
-        a = ang(lo, hi, v)
-        # as close to the ticks as the text's own size allows
-        l, t_, r_, b_ = md.textbbox((0, 0), t, font=fnum, anchor="mm")
-        ext = (abs(math.cos(a)) * (r_ - l) / 2 + abs(math.sin(a)) * (b_ - t_) / 2) / SS
-        rr = min(R_NUM, R_TICK - 26 - ext)
-        x, y = C + rr * math.cos(a), C + rr * math.sin(a)
-        col = ORANGE if v >= warn - 1e-6 else WHITE
-        md.text((P(x), P(y)), t, font=fnum, fill=col, anchor="mm")
+        md.line([(P(p0[0]), P(p0[1])), (P(p1[0]), P(p1[1]))], fill=WHITE, width=P(w))
+        sc_ticks.append((v, p0, p1, w))
     # lit print: a soft halo under the sharp marks
     halo = marks.filter(ImageFilter.GaussianBlur(P(3)))
     halo = Image.eval(halo, lambda c: int(c * 0.45))
     im = ImageChops.add(ImageChops.add(im, halo), marks)
     d = ImageDraw.Draw(im)
+
+    # where the numerals go (drawn live, white or red): as close to the
+    # ticks as each text's own size allows
+    fnum = font(700, 52)
+    sc_nums = []
+    for v, t in labels:
+        a = ang(lo, hi, v)
+        l, t_, r_, b_ = md.textbbox((0, 0), t, font=fnum, anchor="mm")
+        ext = (abs(math.cos(a)) * (r_ - l) / 2 + abs(math.sin(a)) * (b_ - t_) / 2) / SS
+        rr = min(R_NUM, R_TICK - 26 - ext)
+        sc_nums.append((v, t, C + rr * math.cos(a), C + rr * math.sin(a)))
+    SCALES[pid] = (lo, hi, sc_ticks, sc_nums)
 
     # name and unit, lower right (the value goes above them, live)
     tx, ty = C + 104, C + 122
@@ -256,6 +249,36 @@ for p in PAGES:
     im = face(p)
     im.save(os.path.join(ROOT, "preview", "face-%s.png" % p[0]))
     write("a4_face_%s.c" % p[0], c_rgb565("a4_face_%s" % p[0], im))
+def lit(x):
+    t = "%.6g" % x
+    return t + ("f" if ("." in t or "e" in t) else ".0f")
+
+
+h = ["/* made by tools/gen_faces.py: the dials' scales, for ui_a4.c */",
+     "#pragma once", "",
+     "typedef struct { float v; float x0, y0, x1, y1, w; } a4_tick_t;",
+     "typedef struct { float v; const char *t; float x, y; } a4_num_t;",
+     "typedef struct { float lo, hi; int n_ticks, n_nums;",
+     "                 const a4_tick_t *ticks; const a4_num_t *nums; } a4_scale_t;",
+     "",
+     "#define A4_START_DEG %.1ff" % START, "#define A4_SWEEP_DEG %.1ff" % SWEEP,
+     "#define A4_R_TICK %d" % R_TICK,
+     "#define A4_R_BAND0 %d" % R_BAND[0], "#define A4_R_BAND1 %d" % R_BAND[1], ""]
+for pid, (lo, hi, tk, nm) in SCALES.items():
+    h.append("static const a4_tick_t A4_TICKS_%s[] = {" % pid.upper())
+    for v, p0, p1, w in tk:
+        h.append("    { %s, %.1ff, %.1ff, %.1ff, %.1ff, %.1ff }," % (lit(v), p0[0], p0[1], p1[0], p1[1], w))
+    h.append("};")
+    h.append("static const a4_num_t A4_NUMS_%s[] = {" % pid.upper())
+    for v, t, x, y in nm:
+        h.append('    { %s, "%s", %.1ff, %.1ff },' % (lit(v), t, x, y))
+    h.append("};")
+    h.append("#define A4_SCALE_%s { %s, %s, %d, %d, A4_TICKS_%s, A4_NUMS_%s }"
+             % (pid.upper(), lit(lo), lit(hi), len(tk), len(nm), pid.upper(), pid.upper()))
+    h.append("")
+with open(os.path.join(ROOT, "main", "faces", "a4_scales.h"), "w") as f:
+    f.write("\n".join(h))
+
 nd, piv_x, piv_y = needle()
 cp = cap()
 lamp = regen_lamp()

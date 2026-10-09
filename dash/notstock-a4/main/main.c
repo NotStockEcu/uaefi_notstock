@@ -46,15 +46,49 @@ void a4_regen_sound(bool start)
     hw_beep(start ? 3 : 1);
 }
 
+#define SET_VER 1               /* a4_settings_t changed: back to defaults */
+
+static void settings_load(void)
+{
+    a4_settings_defaults();
+    nvs_handle_t h;
+    if (nvs_open(NS, NVS_READONLY, &h) != ESP_OK) return;
+    uint8_t ver = 0;
+    a4_settings_t tmp;
+    size_t len = sizeof tmp;
+    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == SET_VER &&
+        nvs_get_blob(h, "set", &tmp, &len) == ESP_OK && len == sizeof tmp) {
+        bool ok = true, seen[A4_PAGES] = { false };
+        for (int i = 0; i < A4_PAGES; i++) {
+            if (tmp.order[i] >= A4_PAGES || seen[tmp.order[i]]) ok = false;
+            else seen[tmp.order[i]] = true;
+            if (!(tmp.warn[i] >= A4_LIMIT[i].lo && tmp.warn[i] <= A4_LIMIT[i].hi)) ok = false;
+        }
+        if ((tmp.hidden & 0x3F) == 0x3F) ok = false;
+        if (ok) g_a4_set = tmp;
+    }
+    nvs_close(h);
+}
+
+void a4_settings_save(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) return;
+    nvs_set_u8(h, "ver", SET_VER);
+    nvs_set_blob(h, "set", &g_a4_set, sizeof g_a4_set);
+    nvs_commit(h);
+    nvs_close(h);
+}
+
 static int page_load(void)
 {
     nvs_handle_t h;
-    uint8_t p = 0;
+    uint8_t p = 0xFF;
     if (nvs_open(NS, NVS_READONLY, &h) == ESP_OK) {
         nvs_get_u8(h, "page", &p);
         nvs_close(h);
     }
-    return p < A4_PAGES ? p : 0;
+    return p;
 }
 
 static void page_save(int p)
@@ -100,7 +134,10 @@ void app_main(void)
     /* the dial first, then the NOT STOCK logo in front of it, out of black
      * and into it (hw_boot, straight into the frame buffer); then the
      * needle sweeps to full scale and back, as the cluster does */
-    ui_a4_create(page_load());
+    settings_load();
+    ui_a4_create();
+    int p = page_load();             /* the dial last looked at, if shown */
+    if (p < A4_PAGES && !(g_a4_set.hidden >> p & 1)) ui_a4_page(p);
     lv_timer_create(update_cb, UPDATE_MS, NULL);
     extern const lv_img_dsc_t *const boot_logo[];
     hw_boot(boot_logo[0]);

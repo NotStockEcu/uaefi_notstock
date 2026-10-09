@@ -1,10 +1,12 @@
 # NOT STOCK A4 gauge
 
 A small round gauge for an **Audi A4 B8 2.0 TDI** (2010), drawn after the
-car's own cluster at night: red lit rim, white dashes and numerals, the
-warning range orange with a broken amber band inside the ticks, an
-orange-red needle on a black hub, the value and name in the lower right
-where the cluster has its "1/min x1000". No maker's logo.
+car's own cluster at night: red lit rim, white dashes and numerals, past
+the limit red ticks and numerals with a red band inside the ticks (finely
+broken at the limit, the pieces growing until the band is solid at the
+end of the scale), an orange-red needle on a black hub, the value and name
+in the lower right where the cluster has its "1/min x1000". No maker's
+logo.
 
 Board: **Waveshare ESP32-S3-Touch-AMOLED-1.32** (466 x 466 CO5300 on
 QSPI, CST820 touch, ES8311 + speaker, ESP32-S3-PICO-1-N8R8: 8 MB flash,
@@ -12,27 +14,28 @@ QSPI, CST820 touch, ES8311 + speaker, ESP32-S3-PICO-1-N8R8: 8 MB flash,
 
 ![sheet](preview/sheet.png)
 
-Oil, intake, coolant, exhaust, boost, DPF (plain, regenerating, full).
+Oil, intake, coolant, exhaust, boost, DPF (plain, regenerating, full),
+the menu, LIMITY, PORADI.
 
 **State: built; the dials checked in the simulator. Not tried on the board
 or the car yet.**
 
 ## The dials
 
-Swipe left / right; the page is remembered. Double tap: night (30 %) and
-back. At power on the NOT STOCK logo, then the needle sweeps to full scale
-and back, as the cluster does.
+Swipe left / right; the dial looked at last comes back at power on.
+Double tap: night (30 %) and back. At power on the NOT STOCK logo, then
+the needle sweeps to full scale and back, as the cluster does.
 
-| Dial | Scale | Orange from |
+| Dial | Scale | Limit (default, settable) |
 | --- | --- | --- |
-| OLEJ (oil) | 50 .. 150 degC | 130 |
-| SANI (intake air) | -20 .. 80 degC | 60 |
-| VODA (coolant) | 50 .. 130 degC | 105 |
-| VYFUK (exhaust gas) | 0 .. 1000 degC (x100) | 750 |
-| TURBO (boost) | 0 .. 2.5 bar | 2.2 |
-| DPF | no scale: icon and digits | 24 g soot |
+| OLEJ (oil) | 50 .. 150 degC | 130 (90 .. 150) |
+| SANI (intake air) | -20 .. 80 degC | 60 (20 .. 80) |
+| VODA (coolant) | 50 .. 130 degC | 105 (90 .. 130) |
+| VYFUK (exhaust gas) | 0 .. 1000 degC (x100) | 750 (400 .. 1000) |
+| TURBO (boost) | 0 .. 2.5 bar | 2.2 (0.5 .. 2.5) |
+| DPF | no scale: icon and digits | 24 g soot (5 .. 40) |
 
-Past the limit the value turns orange and blinks. The DPF page: the filter
+Past the limit the value turns red and blinks. The DPF page: the filter
 icon (white; amber while it regenerates, red and blinking when full), the
 soot in grams, the differential pressure in mbar, REGENERACE / PLNY.
 
@@ -41,9 +44,21 @@ the round gauge) lights the amber DPF lamp left of the hub and says
 REGENERACE over the value on every dial, with a chime on the speaker at
 its start and its end.
 
-Scales and limits: `DIAL[]` in `main/ui_a4.c` and `PAGES` in
-`tools/gen_faces.py` (the dials are pre-rendered images: change both, then
-`python3 tools/gen_faces.py`).
+## The menu
+
+Long press on a dial: NASTAVENI.
+
+- **LIMITY**: one dial at a time, swipe for the next; - and + (hold to
+  repeat). The dial goes red from there.
+- **PORADI**: one dial at a time, swipe for the next: its place in the
+  swipe (< earlier, > later) and ZOBRAZENO / SKRYTO (left out; one stays).
+- **ZPET**, or a long press: back to the dial. A long press in LIMITY or
+  PORADI goes back to the menu and stores the settings (NVS).
+
+The scales are pre-rendered (`tools/gen_faces.py`: faces with white ticks,
+and `main/faces/a4_scales.h` with where the ticks and numerals are);
+`ui_a4.c` draws the numerals, the red ticks and the band from the limit.
+Ranges and defaults of the limits: `A4_LIMIT[]` in `main/ui_a4.c`.
 
 ## The car
 
@@ -92,6 +107,8 @@ New source files are picked up at configure time: `idf.py reconfigure`.
 ```
 make -C tools/sim LVGL_DIR=/path/to/lvgl-8.4
 tools/sim/build/sim out.ppm page=5 soot=21.3 dp=42 dpft=520
+tools/sim/build/sim out.ppm page=4 warn=1.8
+tools/sim/build/sim out.ppm screen=limits page=2
 ```
 
 Fonts: Barlow (SIL OFL, `assets/fonts/OFL-Barlow.txt`).

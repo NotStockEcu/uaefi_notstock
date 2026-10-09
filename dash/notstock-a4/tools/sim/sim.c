@@ -1,6 +1,7 @@
 /* PC render of the A4 dials (main/ui_a4.c) into a PPM, masked round.
  *   sim out.ppm [page=0..5] [oil=C] [iat=C] [clt=C] [egt=C] [boost=BAR]
  *               [soot=G] [dp=MBAR] [dpft=C] [link=0|1] [t=S] [sweep=1]
+ *               [warn=X] (the shown dial's limit) [screen=menu|limits|order]
  * dpft: the filter temperature, over 400 the regeneration is on
  */
 #include <math.h>
@@ -28,6 +29,7 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
 
 void a4_backlight(uint8_t p) { fprintf(stderr, "backlight %u\n", p); }
 void a4_regen_sound(bool start) { fprintf(stderr, "regen %s\n", start ? "start" : "end"); }
+void a4_settings_save(void) { fprintf(stderr, "settings saved\n"); }
 
 int main(int argc, char **argv)
 {
@@ -49,6 +51,8 @@ int main(int argc, char **argv)
     d.dpf.temp_c = 260;
     d.dpf.soot_meas_g = d.dpf.dist_km = NAN;
     int page = 0, sweep = 0;
+    float warn = NAN;
+    const char *scr = "";
     float t_end = 2.0f;
     for (int i = 2; i < argc; i++) {
         const char *a = argv[i];
@@ -68,6 +72,8 @@ int main(int argc, char **argv)
         else if (K("link")) d.link = atoi(v);
         else if (K("t")) t_end = strtof(v, NULL);
         else if (K("sweep")) sweep = atoi(v);
+        else if (K("warn")) warn = strtof(v, NULL);
+        else if (K("screen")) scr = v;
         else fprintf(stderr, "unknown input '%s'\n", a);
 #undef K
     }
@@ -84,7 +90,18 @@ int main(int argc, char **argv)
     dd.draw_buf = &db;
     lv_disp_drv_register(&dd);
 
-    ui_a4_create(page);
+    a4_settings_defaults();
+    if (!isnan(warn)) g_a4_set.warn[page] = warn;
+    ui_a4_create();
+    ui_a4_page(page);
+    if (!strcmp(scr, "menu")) a4_menu_open();
+    if (!strcmp(scr, "limits") || !strcmp(scr, "order")) {
+        /* the menu's buttons: the 2nd / 3rd child of its screen, clicked */
+        a4_menu_open();
+        lv_obj_t *m = lv_scr_act();
+        lv_event_send(lv_obj_get_child(m, !strcmp(scr, "limits") ? 2 : 3),
+                      LV_EVENT_CLICKED, NULL);
+    }
     if (sweep) ui_a4_sweep();
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {
         ui_a4_update(&d);
