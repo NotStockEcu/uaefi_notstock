@@ -125,6 +125,21 @@ at the gauge). Power: 5 V into the USB-C from a 12 V -> 5 V converter fed
 from OBD pin 16 (always on) or, switched with the ignition, pin 1 if the
 B8 has terminal 15 there: measure it, 12 V with the ignition on, 0 V off.
 
+Measuring values of the B8 2.0 TDI found by sniffing VCDS (all UDS 0x22
+on 0x7E0, the scale checked against VCDS):
+
+| Value | DID | Scale | On the gauge |
+| --- | --- | --- | --- |
+| DPF differential pressure (IDE00427) | 0x10F3 | 1 hPa | DPF |
+| DPF soot, calculated (IDE00434) | 0x114F | 0.01 g | DPF |
+| DPF soot, measured (IDE00435) | 0x114E | 0.01 g | read, not shown |
+| DPF distance since regeneration (IDE00436) | 0x1156 | 1 m, 32 bit | DPF |
+| DPF surface temperature (ENG105228) | 0x1044 | 0.1 K | DPF |
+| Exhaust gas at the turbo (ENG106429) | 0x10FB | 0.1 K | VYFUK, where PID 0x78 is missing |
+| Exhaust gas after the DPF (ENG106430) | 0x10F9 | 0.1 K | DPF |
+| Fuel temperature (IDE00348) | 0x111C | 0.1 K | PALIVO |
+| Injection deviation, cylinder 1 / 2 / 3 / 4 | 0x10FF / 0x1105 / 0x1100 / 0x1104 | 0.01 mg/stroke, signed | ODCHYLKY |
+
 ## Build and flash
 
 ESP-IDF 5.x, LVGL 8.4 from the component manager, with
