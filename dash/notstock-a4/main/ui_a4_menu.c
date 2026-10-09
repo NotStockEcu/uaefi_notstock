@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dtc_text.h"
 
@@ -47,22 +48,19 @@ static void load(lv_obj_t *scr)
 }
 
 /* ------------------------------------------------------------- widgets */
+/* A menu screen: black with the dials' red lit rim. The rim is the DPF
+ * page's face, an image: a lit rim drawn with LVGL's shadow took a third
+ * of a second on the ESP32 for every screen. */
+LV_IMG_DECLARE(a4_face_dpf);
+
 static lv_obj_t *screen(void)
 {
     lv_obj_t *s = lv_obj_create(NULL);
     lv_obj_clear_flag(s, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_color(s, lv_color_black(), 0);
-    /* the red rim, as on the dials */
-    lv_obj_t *rim = lv_obj_create(s);
-    lv_obj_remove_style_all(rim);
-    lv_obj_set_size(rim, 2 * 225, 2 * 225);
-    lv_obj_center(rim);
-    lv_obj_set_style_radius(rim, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_border_width(rim, 2, 0);
-    lv_obj_set_style_border_color(rim, C_RED, 0);
-    lv_obj_set_style_shadow_width(rim, 18, 0);
-    lv_obj_set_style_shadow_color(rim, lv_color_hex(0xA00E16), 0);
-    lv_obj_clear_flag(rim, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *rim = lv_img_create(s);
+    lv_img_set_src(rim, &a4_face_dpf);
+    lv_obj_set_pos(rim, 0, 0);
     return s;
 }
 
@@ -139,11 +137,18 @@ static void go_gauge(lv_event_t *e)
     load(a4_gauge_screen());
 }
 
+/* the settings as they were when the menu opened: stored (and the dial
+ * redrawn) only when something changed */
+static a4_settings_t s_at_open;
+
 static void back_to_menu(lv_event_t *e)
 {
     (void)e;
-    a4_settings_save();
-    a4_settings_changed();
+    if (memcmp(&s_at_open, &g_a4_set, sizeof g_a4_set)) {
+        a4_settings_save();
+        a4_settings_changed();
+        s_at_open = g_a4_set;
+    }
     load(menu_scr);
 }
 
@@ -629,5 +634,6 @@ void a4_menu_create(void)
 
 void a4_menu_open(void)
 {
+    s_at_open = g_a4_set;
     load(menu_scr);
 }

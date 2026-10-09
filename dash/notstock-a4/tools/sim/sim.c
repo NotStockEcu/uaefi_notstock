@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "lvgl.h"
 #include "ui_a4.h"
@@ -144,6 +145,17 @@ int main(int argc, char **argv)
         lv_timer_handler();
     }
     lv_refr_now(NULL);
+    if (getenv("TIMING")) {        /* how long a whole redraw takes, on the PC */
+        struct timespec a, b;
+        clock_gettime(CLOCK_MONOTONIC, &a);
+        for (int i = 0; i < 20; i++) {
+            lv_obj_invalidate(lv_scr_act());
+            lv_refr_now(NULL);
+        }
+        clock_gettime(CLOCK_MONOTONIC, &b);
+        fprintf(stderr, "full redraw: %.2f ms\n",
+                ((b.tv_sec - a.tv_sec) * 1e3 + (b.tv_nsec - a.tv_nsec) / 1e6) / 20);
+    }
 
     FILE *f = fopen(argv[1], "wb");
     if (!f) return 1;
