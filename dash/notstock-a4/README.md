@@ -33,7 +33,7 @@ the needle sweeps to full scale and back, as the cluster does.
 | VODA (coolant) | 50 .. 130 degC | 105 (90 .. 130) |
 | VYFUK (exhaust gas) | 0 .. 1000 degC (x100) | 750 (400 .. 1000) |
 | TURBO (boost) | 0 .. 2.5 bar | 2.2 (0.5 .. 2.5) |
-| DPF | no scale: icon and digits | 24 g soot (5 .. 40) |
+| DPF | no scale: icon and digits | 22.29 g soot (5 .. 40, by 0.1) |
 
 Past the limit the value turns red and blinks. The DPF page: the filter
 icon (white; amber while it regenerates, red and blinking when full), the

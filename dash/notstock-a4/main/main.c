@@ -47,7 +47,9 @@ void a4_flip(void)
     hw_flip_begin();
 }
 
-#define SET_VER 1               /* a4_settings_t changed: back to defaults */
+/* a4_settings_t changed: back to defaults. 2: the DPF limit's default went
+ * from 24 to 22.29 g; a version 1 store is kept but takes that. */
+#define SET_VER 2
 
 static void settings_load(void)
 {
@@ -57,7 +59,7 @@ static void settings_load(void)
     uint8_t ver = 0;
     a4_settings_t tmp;
     size_t len = sizeof tmp;
-    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == SET_VER &&
+    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && (ver == SET_VER || ver == 1) &&
         nvs_get_blob(h, "set", &tmp, &len) == ESP_OK && len == sizeof tmp) {
         bool ok = true, seen[A4_PAGES] = { false };
         for (int i = 0; i < A4_PAGES; i++) {
@@ -66,6 +68,7 @@ static void settings_load(void)
             if (!(tmp.warn[i] >= A4_LIMIT[i].lo && tmp.warn[i] <= A4_LIMIT[i].hi)) ok = false;
         }
         if ((tmp.hidden & 0x3F) == 0x3F) ok = false;
+        if (ok && ver == 1) tmp.warn[A4_DPF] = A4_LIMIT[A4_DPF].def;
         if (ok) g_a4_set = tmp;
     }
     nvs_close(h);

@@ -58,7 +58,7 @@ const a4_limit_t A4_LIMIT[A4_PAGES] = {
     [A4_CLT]   = { "VODA",  "\xC2\xB0" "C", 90,   130,  1,    105,  0 },
     [A4_EGT]   = { "V\xC3\x9D" "FUK", "\xC2\xB0" "C", 400, 1000, 10, 750, 0 },
     [A4_BOOST] = { "TURBO", "bar",  0.5f, 2.5f, 0.05f, 2.2f, 2 },
-    [A4_DPF]   = { "DPF",   "g",    5,    40,   1,    24,   0 },
+    [A4_DPF]   = { "DPF",   "g",    5,    40,   0.1f, 22.29f, 2 },
 };
 
 void a4_settings_defaults(void)
