@@ -52,7 +52,9 @@ typedef enum {
  * (5C oil, 78 EGT) is missing */
 enum { OBD_UDS_OIL, OBD_UDS_EGT,
        OBD_UDS_DPF_DP, OBD_UDS_DPF_SOOT, OBD_UDS_DPF_SOOT_MEAS,
-       OBD_UDS_DPF_DIST, OBD_UDS_DPF_TEMP, OBD_UDS_N };
+       OBD_UDS_DPF_DIST, OBD_UDS_DPF_TEMP,
+       OBD_UDS_DPF_DP_B8,       /* the same pressure where an Audi B8 has it */
+       OBD_UDS_N };
 enum { UDS_UNKNOWN, UDS_OK, UDS_REFUSED };
 extern const uint16_t obd_uds_did[OBD_UDS_N];
 

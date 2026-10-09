@@ -46,6 +46,7 @@ static const uint16_t WANT[] = {
     UDS(OBD_UDS_DPF_SOOT),      /* the DPF ones only every DPF_EVERY */
     0x7A,   /* DPF differential pressure, standard (where the ECU has it) */
     UDS(OBD_UDS_DPF_DP),
+    UDS(OBD_UDS_DPF_DP_B8),
     UDS(OBD_UDS_DPF_SOOT_MEAS),
     UDS(OBD_UDS_DPF_DIST),
     UDS(OBD_UDS_DPF_TEMP),
@@ -59,12 +60,16 @@ const uint16_t obd_uds_did[OBD_UDS_N] = {
     [OBD_UDS_DPF_SOOT_MEAS] = 0x114E,
     [OBD_UDS_DPF_DIST] = 0x1156,
     [OBD_UDS_DPF_TEMP] = 0x1044,
+    /* Audi A4 B8 2.0 TDI (2010): its differential pressure is here, hPa,
+     * found by sniffing VCDS (IDE00427); 0x14F5 is refused there */
+    [OBD_UDS_DPF_DP_B8] = 0x10F3,
 };
 /* the mode 01 PID a value stands in for, 0: none, always read over UDS */
 static const uint8_t UDS_PID[OBD_UDS_N] = {
     [OBD_UDS_OIL] = 0x5C,
     [OBD_UDS_EGT] = 0x78,
     [OBD_UDS_DPF_DP] = 0x7A,
+    [OBD_UDS_DPF_DP_B8] = 0x7A,
 };
 #define N_WANT (sizeof WANT / sizeof WANT[0])
 
@@ -177,7 +182,8 @@ static bool want_now(uint16_t w)
 {
     if (w & 0x100) {
         int i = w & 0xFF;
-        bool dpf = UDS_PID[i] == 0 || i == OBD_UDS_DPF_DP;   /* not the oil, EGT */
+        bool dpf = UDS_PID[i] == 0 || i == OBD_UDS_DPF_DP ||
+                   i == OBD_UDS_DPF_DP_B8;                   /* not the oil, EGT */
         if (dpf && s_polls % DPF_EVERY) return false;
         return obd_uds_used(i);
     }
@@ -217,7 +223,8 @@ static void answer_uds(const uint8_t *d, int n, int64_t now)
         case OBD_UDS_OIL:       g_dash.oilt = kelvin; break;
         case OBD_UDS_EGT:       g_dash.egt = kelvin; break;
         case OBD_UDS_DPF_TEMP:  g_obd.dpf.temp_c = kelvin; break;
-        case OBD_UDS_DPF_DP:    g_obd.dpf.dp_hpa = (int16_t)u; break;
+        case OBD_UDS_DPF_DP:
+        case OBD_UDS_DPF_DP_B8: g_obd.dpf.dp_hpa = (int16_t)u; break;
         case OBD_UDS_DPF_SOOT:  g_obd.dpf.soot_g = (int16_t)u / 100.0f; break;
         case OBD_UDS_DPF_SOOT_MEAS:
             g_obd.dpf.soot_meas_g = (int16_t)u / 100.0f;

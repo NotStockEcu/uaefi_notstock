@@ -83,7 +83,9 @@ CAN-L), the round gauge's client (`../notstock-round/main/can_obd.c`,
   checked on the T5.1's EDC17; the B8's 2.0 TDI (CR, EDC17) should know
   them too, but that is untested: if one stays at `--`, the log shows
   what the engine answered. The DPF differential pressure is read as the
-  standard PID 0x7A where the ECU has it, else as UDS 0x14F5 (the T5.1's).
+  standard PID 0x7A where the ECU has it, else as UDS 0x10F3 (the B8,
+  found by sniffing VCDS: IDE00427, 1 hPa) or 0x14F5 (the T5.1), whichever
+  the ECU answers.
 
 Finding a value the gauge does not read yet (sniffing): plug VCDS or
 OBDeleven in beside the gauge and read the value there (engine, measuring
