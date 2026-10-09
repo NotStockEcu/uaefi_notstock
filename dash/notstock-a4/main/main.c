@@ -1,0 +1,116 @@
+/* NOT STOCK A4 gauge: the Audi A4 B8 2.0 TDI over OBD-II, on the Waveshare
+ * ESP32-S3-Touch-AMOLED-1.32. The NOT STOCK logo, the needle sweep, then
+ * the dials (ui_a4.c) fed by the round gauge's OBD client (can_obd.c).
+ *
+ * Build: idf.py set-target esp32s3 && idf.py build flash monitor
+ * Flash and monitor over the board's USB-C; CAN on the 12-pin header,
+ * GPIO1 (TX) and GPIO2 (RX), see board_a132.h.
+ */
+#include "board_a132.h"
+#include "can_obd.h"
+#include "hw.h"
+#include "sounds.h"
+#include "ui_a4.h"
+
+#include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "lvgl.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+
+static const char *TAG = "a4";
+
+#define UPDATE_MS   33
+#define NS          "a4"
+#define SAVE_MS     3000        /* a page kept this long is remembered */
+#define VOLUME      70          /* % */
+
+/* the round gauge's settings, which its shared code (motion.c, sounds) may
+ * read; this gauge keeps its own in NVS "a4" */
+rnd_settings_t g_rnd_set;
+
+void a4_backlight(uint8_t percent)
+{
+    hw_backlight(percent);
+}
+
+void a4_regen_sound(bool start)
+{
+    int ev = start ? RND_EV_REGEN_START : RND_EV_REGEN_END;
+    size_t n = 0;
+    hw_volume(VOLUME);
+    const int16_t *pcm = rnd_pcm(RND_SND_CHIME, ev, RND_LANG_CS, &n);
+    if (pcm && hw_play(pcm, n)) return;
+    hw_beep(start ? 3 : 1);
+}
+
+static int page_load(void)
+{
+    nvs_handle_t h;
+    uint8_t p = 0;
+    if (nvs_open(NS, NVS_READONLY, &h) == ESP_OK) {
+        nvs_get_u8(h, "page", &p);
+        nvs_close(h);
+    }
+    return p < A4_PAGES ? p : 0;
+}
+
+static void page_save(int p)
+{
+    nvs_handle_t h;
+    if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) return;
+    nvs_set_u8(h, "page", (uint8_t)p);
+    nvs_commit(h);
+    nvs_close(h);
+}
+
+static void update_cb(lv_timer_t *t)
+{
+    (void)t;
+    static rnd_data_t d;
+    static int saved = -1, seen = -1;
+    static int64_t seen_at;
+    can_obd_fill(&d);
+    ui_a4_update(&d);
+
+    int p = ui_a4_current();
+    int64_t now = esp_timer_get_time();
+    if (p != seen) {
+        seen = p;
+        seen_at = now;
+    } else if (p != saved && now - seen_at > SAVE_MS * 1000LL) {
+        page_save(p);
+        saved = p;
+    }
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "NOT STOCK A4 gauge, OBD-II, %s", BOARD_NAME);
+    esp_err_t e = nvs_flash_init();
+    if (e == ESP_ERR_NVS_NO_FREE_PAGES || e == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
+    hw_init();
+    can_obd_start();
+
+    /* the dial first, then the NOT STOCK logo in front of it, out of black
+     * and into it (hw_boot, straight into the frame buffer); then the
+     * needle sweeps to full scale and back, as the cluster does */
+    ui_a4_create(page_load());
+    lv_timer_create(update_cb, UPDATE_MS, NULL);
+    extern const lv_img_dsc_t *const boot_logo[];
+    hw_boot(boot_logo[0]);
+    hw_backlight(100);
+    ui_a4_sweep();
+
+    while (1) {
+        uint32_t next = lv_timer_handler();
+        if (next == LV_NO_TIMER_READY || next > 20) next = 20;
+        if (next < 2) next = 2;
+        vTaskDelay(pdMS_TO_TICKS(next));
+    }
+}

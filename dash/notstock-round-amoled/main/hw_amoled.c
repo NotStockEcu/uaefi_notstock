@@ -9,7 +9,11 @@
  * pixel pairs: areas start on even and end on odd coordinates.
  */
 #include "hw.h"
+#if defined(BOARD_A132)
+#include "board_a132.h"        /* the 1.32, ../notstock-a4 */
+#else
 #include "board_amoled.h"
+#endif
 #include "boot_fb.h"
 
 #include <math.h>
@@ -266,46 +270,78 @@ static void touch_init(void)
     vTaskDelay(pdMS_TO_TICKS(10));
     gpio_set_level(PIN_TP_RST, 1);
     vTaskDelay(pdMS_TO_TICKS(80));
+#if TOUCH_CST8XX
+    /* chip id 0xA7; no auto sleep (0xFE), or it stops answering */
+    const uint8_t id_reg = 0xA7;
+    uint8_t id = 0;
+    s_touch_ok = i2c_write_read(CST8XX_ADDR, &id_reg, 1, &id, 1) == ESP_OK;
+    if (s_touch_ok) {
+        const uint8_t nosleep[2] = { 0xFE, 0x01 };
+        i2c_write(CST8XX_ADDR, nosleep, 2);
+    }
+    ESP_LOGI(TAG, "CST8xx %s, id 0x%02X", s_touch_ok ? "ready" : "not answering", id);
+#else
     const uint8_t cmd[2] = { 0xD0, 0x00 };
     s_touch_ok = i2c_write(CST9217_ADDR, cmd, 2) == ESP_OK;
     ESP_LOGI(TAG, "CST9217 %s", s_touch_ok ? "ready" : "not answering");
+#endif
 }
 
+#if TOUCH_CST8XX
+/* CST816 / CST820: from 0x02 the finger count, then x and y in 12 bits */
+static bool touch_point(lv_coord_t *px, lv_coord_t *py)
+{
+    const uint8_t reg = 0x02;
+    uint8_t b[5];
+    if (i2c_write_read(CST8XX_ADDR, &reg, 1, b, sizeof b) != ESP_OK) return false;
+    if ((b[0] & 0x0F) == 0) return false;
+    *px = (lv_coord_t)(((b[1] & 0x0F) << 8) | b[2]);
+    *py = (lv_coord_t)(((b[3] & 0x0F) << 8) | b[4]);
+    return true;
+}
+#else
 /* The report (as in Waveshare's CST92xx driver): command 0xD000, 15 bytes
  * back, then 0xD000 0xAB to acknowledge. Byte 6 is 0xAB when the report is
  * good, byte 5 the number of fingers; the first finger: event in the low
  * nibble of byte 0 (6: down), x and y in 12 bits over bytes 1..3. */
+static bool touch_point(lv_coord_t *px, lv_coord_t *py)
+{
+    static const uint8_t CMD[2] = { 0xD0, 0x00 };
+    static const uint8_t ACK[3] = { 0xD0, 0x00, 0xAB };
+    uint8_t b[15];
+    if (i2c_write_read(CST9217_ADDR, CMD, 2, b, sizeof b) != ESP_OK) return false;
+    i2c_write(CST9217_ADDR, ACK, 3);
+    int n = b[5] & 0x7F;
+    if (!(b[6] == 0xAB && n >= 1 && n <= 2 && (b[0] & 0x0F) == 0x06)) return false;
+    *px = (lv_coord_t)((b[1] << 4) | (b[3] >> 4));
+    *py = (lv_coord_t)((b[2] << 4) | (b[3] & 0x0F));
+    return true;
+}
+#endif
+
 static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
     static lv_coord_t lx, ly;
-    static const uint8_t CMD[2] = { 0xD0, 0x00 };
-    static const uint8_t ACK[3] = { 0xD0, 0x00, 0xAB };
-    uint8_t b[15];
+    lv_coord_t x, y;
     data->state = LV_INDEV_STATE_RELEASED;
-    if (i2c_write_read(CST9217_ADDR, CMD, 2, b, sizeof b) == ESP_OK) {
-        i2c_write(CST9217_ADDR, ACK, 3);
-        int n = b[5] & 0x7F;
-        if (b[6] == 0xAB && n >= 1 && n <= 2 && (b[0] & 0x0F) == 0x06) {
-            lv_coord_t x = (lv_coord_t)((b[1] << 4) | (b[3] >> 4));
-            lv_coord_t y = (lv_coord_t)((b[2] << 4) | (b[3] & 0x0F));
+    if (touch_point(&x, &y)) {
 #if TOUCH_SWAP_XY
-            lv_coord_t t = x; x = y; y = t;
+        lv_coord_t t = x; x = y; y = t;
 #endif
 #if TOUCH_MIRROR_X
-            x = LCD_H_RES - 1 - x;
+        x = LCD_H_RES - 1 - x;
 #endif
 #if TOUCH_MIRROR_Y
-            y = LCD_V_RES - 1 - y;
+        y = LCD_V_RES - 1 - y;
 #endif
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            if (x >= LCD_H_RES) x = LCD_H_RES - 1;
-            if (y >= LCD_V_RES) y = LCD_V_RES - 1;
-            lx = x;
-            ly = y;
-            data->state = LV_INDEV_STATE_PRESSED;
-        }
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x >= LCD_H_RES) x = LCD_H_RES - 1;
+        if (y >= LCD_V_RES) y = LCD_V_RES - 1;
+        lx = x;
+        ly = y;
+        data->state = LV_INDEV_STATE_PRESSED;
     }
     data->point.x = lx;
     data->point.y = ly;
@@ -680,6 +716,18 @@ out:
 /* ------------------------------------------------------------------ init */
 void hw_init(void)
 {
+#ifdef PIN_BAT_EN
+    /* the 1.32's battery switch: held on, or a battery-only start dies */
+    gpio_config_t pw = { .pin_bit_mask = 1ULL << PIN_BAT_EN, .mode = GPIO_MODE_OUTPUT };
+    gpio_config(&pw);
+    gpio_set_level(PIN_BAT_EN, 1);
+#endif
+#ifdef PIN_CODEC_EN
+    /* the 1.32 switches the codec's supply */
+    gpio_config_t ce = { .pin_bit_mask = 1ULL << PIN_CODEC_EN, .mode = GPIO_MODE_OUTPUT };
+    gpio_config(&ce);
+    gpio_set_level(PIN_CODEC_EN, 1);
+#endif
     i2c_init();
     i2c_scan();
     panel_init();

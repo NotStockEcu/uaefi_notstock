@@ -15,7 +15,9 @@
 
 /* the board: the 2.1" LCD here, the others from their own projects
  * (../notstock-round-amoled, ../notstock-round-lcd185) */
-#if defined(BOARD_AMOLED)
+#if defined(BOARD_A132)
+#include "board_a132.h"
+#elif defined(BOARD_AMOLED)
 #include "board_amoled.h"
 #elif defined(BOARD_LCD185)
 #include "board_lcd185.h"
