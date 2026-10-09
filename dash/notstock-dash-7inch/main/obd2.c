@@ -19,7 +19,7 @@ bool obd_send(uint32_t id, const uint8_t d[8]);
 #define GIVE_UP_TIMEOUTS   6        /* in a row, before NO_ECU */
 #define BARO_EVERY         40       /* baro changes slowly: every 40th poll */
 #define UDS_GIVE_UP        3        /* unanswered UDS reads before REFUSED */
-#define DPF_EVERY          4        /* DPF values: every 4th round */
+/* the DPF and diagnosis values: one per round, in turn (is_slow) */
 #define DTC_WINDOW_US      500000   /* answers to 03 / 07 / 04, all ECUs */
 #define DTC_BUSY_US        5000000  /* after 7F xx 78: the ECU is working on it */
 #define DTC_ECUS           8        /* 0x7E8..0x7EF */
@@ -43,11 +43,11 @@ static const uint16_t WANT[] = {
     UDS(OBD_UDS_EGT),
     0x0D,   /* speed */
     0x33,   /* barometric pressure (only every BARO_EVERY) */
-    UDS(OBD_UDS_DPF_SOOT),      /* the DPF ones only every DPF_EVERY */
+    UDS(OBD_UDS_DPF_SOOT),      /* the DPF ones: one per round, in turn */
     0x7A,   /* DPF differential pressure, standard (where the ECU has it) */
     UDS(OBD_UDS_DPF_DP),
     UDS(OBD_UDS_DPF_DP_B8),
-    UDS(OBD_UDS_FUEL_T),        /* the diagnosis ones: as rarely as the DPF */
+    UDS(OBD_UDS_FUEL_T),        /* the diagnosis ones: as the DPF ones */
     UDS(OBD_UDS_EGT_DPF),
     UDS(OBD_UDS_INJ1),
     UDS(OBD_UDS_INJ2),
@@ -94,6 +94,8 @@ static int s_uds_miss[OBD_UDS_N]; /* unanswered reads in a row */
 static int s_scan_page;           /* 0..7 while scanning: PID 0x00 + 0x20*page */
 static int s_poll;                /* index into WANT */
 static int s_polls;
+static int s_slow;                /* index into WANT: the next slow one */
+static bool s_slow_due;           /* a round began: one slow value first */
 static int s_silent;              /* timeouts in a row */
 
 /* ISO-TP reassembly for multi-frame answers */
@@ -152,6 +154,8 @@ void obd_reset(void)
     s_scan_page = 0;
     s_poll = 0;
     s_polls = 0;
+    s_slow = 0;
+    s_slow_due = true;
     s_silent = 0;
     s_len = s_have = 0;
     s_pending_uds = -1;
@@ -193,20 +197,25 @@ static void request_uds(uint32_t id, int i, int64_t now)
     s_len = s_have = 0;
 }
 
-static bool want_now(uint16_t w)
+/* the slow ones: the DPF and diagnosis values. One of them per round, in
+ * turn, so the gauges' values keep their pace (all of them in one round
+ * held those up for a third of a second) */
+static bool is_slow(uint16_t w)
 {
     if (w & 0x100) {
         int i = w & 0xFF;
-        bool dpf = UDS_PID[i] == 0 || i == OBD_UDS_DPF_DP ||
-                   i == OBD_UDS_DPF_DP_B8;                   /* not the oil, EGT */
-        if (dpf && s_polls % DPF_EVERY) return false;
-        return obd_uds_used(i);
+        return UDS_PID[i] == 0 || i == OBD_UDS_DPF_DP || i == OBD_UDS_DPF_DP_B8;
     }
+    return (uint8_t)w == 0x7A;
+}
+
+static bool want_now(uint16_t w)
+{
+    if (w & 0x100) return obd_uds_used(w & 0xFF);
     uint8_t pid = (uint8_t)w;
     if (!obd_supported(pid)) return false;
     if (pid == 0x0B && obd_supported(0x87)) return false;
     if (pid == 0x33 && g_obd.baro_kpa > 0 && s_polls % BARO_EVERY) return false;
-    if (pid == 0x7A && s_polls % DPF_EVERY) return false;
     return true;
 }
 
@@ -626,13 +635,29 @@ void obd_tick(int64_t now)
         }
     }
 
-    /* polling: next wanted PID that is supported */
+    /* polling: the next wanted value that is supported; at the start of
+     * each round one slow one, the next in turn */
+    uint32_t id = g_obd.ecu_id ? g_obd.ecu_id - 8u : OBD_REQ_ENGINE;
+    if (s_slow_due) {
+        s_slow_due = false;
+        for (int k = 0; k < (int)N_WANT; k++) {
+            uint16_t w = WANT[s_slow];
+            s_slow = (s_slow + 1) % N_WANT;
+            if (is_slow(w) && want_now(w)) {
+                if (w & 0x100) request_uds(id, w & 0xFF, now);
+                else           request(id, (uint8_t)w, now);
+                return;
+            }
+        }
+    }
     for (int tries = 0; tries < (int)N_WANT; tries++) {
         uint16_t w = WANT[s_poll];
         s_poll = (s_poll + 1) % N_WANT;
-        if (s_poll == 0) s_polls++;
-        if (want_now(w)) {
-            uint32_t id = g_obd.ecu_id ? g_obd.ecu_id - 8u : OBD_REQ_ENGINE;
+        if (s_poll == 0) {
+            s_polls++;
+            s_slow_due = true;
+        }
+        if (!is_slow(w) && want_now(w)) {
             if (w & 0x100) request_uds(id, w & 0xFF, now);
             else           request(id, (uint8_t)w, now);
             return;
