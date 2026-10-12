@@ -207,7 +207,9 @@ static void tp_init(void)
 void hw_backlight(uint8_t percent)
 {
     if (percent > 100) percent = 100;
-    pwm_set_gpio_level(L28_PIN_LCD_BL, percent);
+    /* the counter runs 0..100 and the pin is high while it is below the
+     * level: 101 for full on (100 would be 100 / 101) */
+    pwm_set_gpio_level(L28_PIN_LCD_BL, percent == 100 ? 101 : percent);
 }
 
 /* --------------------------------------------------------------- init */
