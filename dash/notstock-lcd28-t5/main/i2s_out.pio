@@ -1,0 +1,17 @@
+; I2S out for the PCM5101A: 16 bit stereo, one 32-bit word a frame (left in
+; the high half), MSB first. Side-set pins: BCK (base), LRCK (base + 1).
+; Two instructions a bit: run the state machine at 64 x the sample rate.
+; As pico-extras' audio_i2s.pio.
+.program i2s_out
+.side_set 2
+bitloop1:
+    out pins, 1       side 0b10
+    jmp x-- bitloop1  side 0b11
+    out pins, 1       side 0b00
+    set x, 14         side 0b01
+bitloop0:
+    out pins, 1       side 0b00
+    jmp x-- bitloop0  side 0b01
+    out pins, 1       side 0b10
+public entry_point:
+    set x, 14         side 0b11

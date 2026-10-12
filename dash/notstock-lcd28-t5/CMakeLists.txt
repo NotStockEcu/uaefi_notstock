@@ -14,8 +14,8 @@ set(LVGL_DIR "" CACHE PATH "LVGL 8.4 source tree")
 if(NOT LVGL_DIR)
     message(FATAL_ERROR "set -DLVGL_DIR=/path/to/lvgl (8.4)")
 endif()
-# shared: the 2" gauge's background, logo, fonts and can2040; the 7" dash's
-# OBD-II / UDS client
+# shared: the 2" gauge's logo and can2040; the 7" dash's OBD-II / UDS
+# client and trouble code texts
 set(L2_DIR ${CMAKE_CURRENT_LIST_DIR}/../notstock-lcd2-emu)
 set(DASH7_DIR ${CMAKE_CURRENT_LIST_DIR}/../notstock-dash-7inch/main)
 set(CAN2040_DIR ${L2_DIR}/third_party/can2040)
@@ -28,21 +28,24 @@ target_compile_definitions(lvgl PUBLIC LV_CONF_INCLUDE_SIMPLE)
 target_compile_options(lvgl PRIVATE -O2 -w)
 target_link_libraries(lvgl pico_stdlib)
 
-file(GLOB FONTS ${L2_DIR}/main/fonts/*.c)
+file(GLOB FONTS ${CMAKE_CURRENT_LIST_DIR}/main/fonts/*.c)
 add_executable(notstock_lcd28_t5
     main/main.c
     main/hw_l28.c
     main/can_t5.c
     main/ui_t5.c
+    main/audio_l28.c
+    main/faces/faces28.c
     ${DASH7_DIR}/obd2.c
-    ${L2_DIR}/main/l2_bg.c
+    ${DASH7_DIR}/dtc_text.c
     ${L2_DIR}/main/l2_splash.c
     ${FONTS}
     ${CMAKE_CURRENT_BINARY_DIR}/can_ram.o
 )
 # obd2.c's rusefi_can.h: only the dash_data_t it decodes into
 target_include_directories(notstock_lcd28_t5 PRIVATE
-    main ${DASH7_DIR} ${CAN2040_DIR})
+    main main/faces ${DASH7_DIR} ${CAN2040_DIR})
+pico_generate_pio_header(notstock_lcd28_t5 ${CMAKE_CURRENT_LIST_DIR}/main/i2s_out.pio)
 
 # can2040 runs in the PIO interrupt: into RAM, so no flash access delays it
 # (can2040 docs/API.md, "Low interrupt latency"). Compiled without
@@ -70,7 +73,7 @@ target_compile_definitions(notstock_lcd28_t5 PRIVATE
     PICO_FLASH_SIZE_BYTES=16777216)
 target_link_libraries(notstock_lcd28_t5
     pico_stdlib hardware_spi hardware_i2c hardware_pwm hardware_dma
-    hardware_pio hardware_irq hardware_clocks lvgl)
+    hardware_pio hardware_irq hardware_clocks hardware_flash lvgl)
 pico_enable_stdio_usb(notstock_lcd28_t5 1)
 pico_enable_stdio_uart(notstock_lcd28_t5 0)
 pico_add_extra_outputs(notstock_lcd28_t5)

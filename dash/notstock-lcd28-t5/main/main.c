@@ -1,15 +1,20 @@
 /* NOT STOCK 2.8" gauge for the VW T5.1 (2.0 TDI CR), on the Waveshare
  * RP2350-Touch-LCD-2.8 (landscape). The NOT STOCK logo fades in and out,
- * then the pages (ui_t5.c) fed by the OBD-II / VW UDS client of the 7" dash
- * over the OBD port's CAN (can_t5.c).
+ * then the gauges, DPF status and diagnostics (ui_t5.c) fed by the
+ * OBD-II / VW UDS client of the 7" dash over the OBD port's CAN
+ * (can_t5.c); beeps on the board's speaker (audio_l28.c).
  *
  * Build: see README.md; flash: hold BOOT, plug USB, copy the .uf2 on the
  * drive that shows up. Log: the USB serial port, 115200.
  */
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
+#include "audio_l28.h"
 #include "can_t5.h"
+#include "hardware/flash.h"
+#include "hardware/sync.h"
 #include "hw_l28.h"
 #include "lvgl.h"
 #include "obd2.h"
@@ -22,25 +27,77 @@
 
 LV_IMG_DECLARE(l2_splash);
 
+/* settings: the flash's last sector, far past the program */
+#define SET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
+
+static void settings_load(void)
+{
+    t5_settings_defaults();
+    t5_settings_t tmp;
+    memcpy(&tmp, (const void *)(XIP_BASE + SET_OFFSET), sizeof tmp);
+    if (t5_settings_valid(&tmp)) g_t5_set = tmp;
+    else printf("settings: none stored, defaults\n");
+}
+
+void t5_settings_save(void)
+{
+    static uint8_t page[FLASH_PAGE_SIZE];
+    _Static_assert(sizeof(t5_settings_t) <= FLASH_PAGE_SIZE, "settings page");
+    memset(page, 0xFF, sizeof page);
+    memcpy(page, &g_t5_set, sizeof g_t5_set);
+    /* no flash reads while it is written: interrupts off (the CAN one is
+     * in RAM, but would wait the ~50 ms anyway) */
+    uint32_t irq = save_and_disable_interrupts();
+    flash_range_erase(SET_OFFSET, FLASH_SECTOR_SIZE);
+    flash_range_program(SET_OFFSET, page, FLASH_PAGE_SIZE);
+    restore_interrupts(irq);
+    printf("settings: saved\n");
+}
+
+/* the UI's platform hooks */
+void t5_beep(int n)
+{
+    if (g_t5_set.sound != T5_SND_BEEP) return;
+    audio_volume(g_t5_set.volume);
+    audio_beep(n);
+}
+void t5_backlight(uint8_t percent) { hw_backlight(percent); }
+void t5_dtc_read(void) { obd_dtc_read(); }
+void t5_dtc_clear(void) { obd_dtc_clear(); }
+
 static void update_cb(lv_timer_t *t)
 {
     (void)t;
-    t5_view_t v;
+    static t5_view_t v;
     int64_t now = (int64_t)time_us_64();
     v.link = g_dash.last_rx_us != 0 && now - g_dash.last_rx_us < LINK_US;
     v.state = g_obd.state == OBD_NO_ECU ? T5_ST_NO_ECU
             : g_obd.state == OBD_POLLING ? T5_ST_POLLING : T5_ST_SCANNING;
-    float n = NAN;
-    v.x[T5_BOOST] = v.link ? g_dash.boost : n;
-    v.x[T5_EGT]   = v.link ? g_dash.egt : n;
-    v.x[T5_OILT]  = v.link ? g_dash.oilt : n;
-    v.x[T5_CLT]   = v.link ? g_dash.clt : n;
-    v.x[T5_IAT]   = v.link ? g_dash.iat : n;
-    v.x[T5_RPM]   = v.link ? g_dash.rpm : n;
-    v.x[T5_SPEED] = v.link ? g_dash.speed : n;
-    v.x[T5_SOOT]  = v.link ? g_obd.dpf.soot_g : n;
-    v.x[T5_DP]    = v.link ? g_obd.dpf.dp_hpa : n;   /* hPa = mbar */
-    v.x[T5_KM]    = v.link ? g_obd.dpf.dist_km : n;
+    const float n = NAN;
+    bool k = v.link;
+    v.x[T5_BOOST]     = k ? g_dash.boost : n;
+    v.x[T5_EGT]       = k ? g_dash.egt : n;
+    v.x[T5_OILT]      = k ? g_dash.oilt : n;
+    v.x[T5_CLT]       = k ? g_dash.clt : n;
+    v.x[T5_IAT]       = k ? g_dash.iat : n;
+    v.x[T5_RPM]       = k ? g_dash.rpm : n;
+    v.x[T5_SPEED]     = k ? g_dash.speed : n;
+    v.x[T5_SOOT]      = k ? g_obd.dpf.soot_g : n;
+    v.x[T5_SOOT_MEAS] = k ? g_obd.dpf.soot_meas_g : n;
+    v.x[T5_DP]        = k ? g_obd.dpf.dp_hpa : n;      /* hPa = mbar */
+    v.x[T5_KM]        = k ? g_obd.dpf.dist_km : n;
+    v.x[T5_DPF_T]     = k ? g_obd.dpf.temp_c : n;
+    v.dtc.busy = g_obd.dtc.busy;
+    v.dtc.result = g_obd.dtc.result;
+    v.dtc.nrc = g_obd.dtc.nrc;
+    v.dtc.n = g_obd.dtc.n > T5_DTC_MAX ? T5_DTC_MAX : g_obd.dtc.n;
+    v.dtc.more = g_obd.dtc.more;
+    v.dtc.seq = g_obd.dtc.seq;
+    for (int i = 0; i < v.dtc.n; i++) {
+        v.dtc.list[i].code = g_obd.dtc.list[i].code;
+        v.dtc.list[i].ecu = g_obd.dtc.list[i].ecu;
+        v.dtc.list[i].kind = g_obd.dtc.list[i].kind;
+    }
     ui_t5_update(&v);
 }
 
@@ -50,6 +107,7 @@ static void run_ms(uint32_t ms)
     while ((int32_t)(end - to_ms_since_boot(get_absolute_time())) > 0) {
         lv_timer_handler();
         can_t5_poll();
+        audio_poll();
         sleep_ms(5);
     }
 }
@@ -68,7 +126,9 @@ int main(void)
     stdio_init_all();
     hw_init();
     printf("NOT STOCK 2.8\" gauge, VW T5.1 OBD, RP2350-Touch-LCD-2.8\n");
+    settings_load();
     can_t5_start();
+    audio_init();
 
     /* the logo, out of black and into it */
     lv_obj_t *logo_scr = lv_obj_create(NULL);
@@ -91,6 +151,7 @@ int main(void)
     while (1) {
         uint32_t next = lv_timer_handler();
         can_t5_poll();
+        audio_poll();
         if (next > 5) next = 5;          /* the OBD client wants a quick loop */
         if (next < 1) next = 1;
         sleep_ms(next);

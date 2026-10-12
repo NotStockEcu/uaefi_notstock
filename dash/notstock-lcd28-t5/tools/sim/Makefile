@@ -1,17 +1,17 @@
-# Host build of the 2.8" T5.1 pages, see sim.c. Needs a C compiler and LVGL 8.4:
+# Host build of the 2.8" T5.1 screens, see sim.c. Needs a C compiler and LVGL 8.4:
 #   make LVGL_DIR=/path/to/lvgl
 ROOT     := ../..
-L2       := $(ROOT)/../notstock-lcd2-emu/main
+DASH7    := $(ROOT)/../notstock-dash-7inch/main
 LVGL_DIR ?= $(ROOT)/lvgl
 OUT      ?= build
 
 CC      ?= cc
 CFLAGS  += -O1 -g0 -w -std=gnu99 \
            -DLV_CONF_SKIP -DLV_LVGL_H_INCLUDE_SIMPLE \
-           -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(128U*1024U)' \
-           -I$(ROOT)/main -I$(LVGL_DIR) -I$(LVGL_DIR)/src
+           -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=0 -DLV_MEM_SIZE='(128U*1024U)' -DLV_FONT_MONTSERRAT_20=1 \
+           -I$(ROOT)/main -I$(ROOT)/main/faces -I$(DASH7) -I$(LVGL_DIR) -I$(LVGL_DIR)/src
 
-APP_SRC  := sim.c $(ROOT)/main/ui_t5.c $(L2)/l2_bg.c $(wildcard $(L2)/fonts/*.c)
+APP_SRC  := sim.c $(ROOT)/main/ui_t5.c $(ROOT)/main/faces/faces28.c $(DASH7)/dtc_text.c $(wildcard $(ROOT)/main/fonts/*.c)
 LVGL_SRC := $(shell find $(LVGL_DIR)/src -name '*.c')
 LVGL_OBJ := $(patsubst $(LVGL_DIR)/%.c,$(OUT)/lvgl/%.o,$(LVGL_SRC))
 

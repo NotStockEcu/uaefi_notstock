@@ -1,5 +1,5 @@
 /* RP2350-Touch-LCD-2.8 board layer, see hw_l28.h. The panel is an ST7789
- * (240 x 320) with a standard ST7789 set-up; the pixels go out by DMA in
+ * (240 x 320), set up as Waveshare's driver for the board does; the pixels go out by DMA in
  * 16-bit SPI frames, so LVGL's RGB565 needs no byte swap. */
 #include "hw_l28.h"
 
@@ -54,19 +54,21 @@ static void lcd_init(void)
      * HORIZONTAL); flipped: MV + MY; BGR if the panel wants it */
     CMD(0x36, (L28_FLIP ? 0xA0 : 0x70) | (L28_BGR ? 0x08 : 0x00));
     CMD(0x3A, 0x05);                           /* 16 bit / pixel */
-    CMD(0xB2, 0x0C, 0x0C, 0x00, 0x33, 0x33);   /* porches */
-    CMD(0xB7, 0x35);                           /* gate voltages */
-    CMD(0xBB, 0x1F);                           /* VCOM */
+    /* the rest as Waveshare's own driver for this board (lcd_2inch8.py) */
+    CMD(0xB2, 0x0B, 0x0B, 0x00, 0x33, 0x35);   /* porches */
+    CMD(0xB7, 0x11);                           /* gate voltages */
+    CMD(0xBB, 0x35);                           /* VCOM */
     CMD(0xC0, 0x2C);
     CMD(0xC2, 0x01);
-    CMD(0xC3, 0x12);
+    CMD(0xC3, 0x0D);
     CMD(0xC4, 0x20);
-    CMD(0xC6, 0x0F);                           /* 60 Hz */
+    CMD(0xC6, 0x13);
     CMD(0xD0, 0xA4, 0xA1);                     /* power */
-    CMD(0xE0, 0xD0, 0x08, 0x11, 0x08, 0x0C, 0x15, 0x39, 0x33, 0x50, 0x36,
-        0x13, 0x14, 0x29, 0x2D);
-    CMD(0xE1, 0xD0, 0x08, 0x10, 0x08, 0x06, 0x06, 0x39, 0x44, 0x51, 0x0B,
-        0x16, 0x14, 0x2F, 0x31);
+    CMD(0xD6, 0xA1);
+    CMD(0xE0, 0xF0, 0x06, 0x0B, 0x0A, 0x09, 0x26, 0x29, 0x33, 0x41, 0x18,
+        0x16, 0x15, 0x29, 0x2D);
+    CMD(0xE1, 0xF0, 0x04, 0x08, 0x08, 0x07, 0x03, 0x28, 0x32, 0x40, 0x3B,
+        0x19, 0x18, 0x2A, 0x2E);
     lcd_cmd(0x21, NULL, 0);                    /* inversion on (IPS) */
     lcd_cmd(0x29, NULL, 0);                    /* display on */
 }
@@ -129,7 +131,8 @@ static bool tp_read(uint16_t *x, uint16_t *y)
     if ((n & 0x0F) == 0) return false;
     bool ok = tp_reg_read(0xD000, d, 5);
     tp_reg_write(0xD005, 0);
-    if (!ok) return false;
+    /* the first point's state: 6 while the finger is down */
+    if (!ok || (d[0] & 0x0F) != 0x06) return false;
     int rx = (d[1] << 4) | (d[3] >> 4);        /* panel native: 240 wide */
     int ry = (d[2] << 4) | (d[3] & 0x0F);      /* 320 high */
     /* to landscape, as the picture (MADCTL MV + MX) */
@@ -178,9 +181,17 @@ static void tp_init(void)
     sleep_ms(100);
     gpio_init(L28_PIN_TP_INT);
     gpio_set_dir(L28_PIN_TP_INT, GPIO_IN);
-    uint8_t n;
-    bool ok = tp_reg_read(0xD005, &n, 1);
-    printf("touch: CST328 at 0x%02X %s\n", TP_ADDR, ok ? "answers" : "NOT answering");
+    gpio_pull_up(L28_PIN_TP_INT);
+    /* debug info mode: the chip's check word 0xCACA at 0xD1FC + 2, then
+     * back to normal (reporting) mode, as Waveshare's driver */
+    uint8_t cmd[2] = { 0xD1, 0x01 }, id[4] = { 0 };
+    i2c_write_timeout_us(TP_I2C, TP_ADDR, cmd, 2, false, 2000);
+    bool ok = tp_reg_read(0xD1FC, id, 4);
+    cmd[1] = 0x09;
+    i2c_write_timeout_us(TP_I2C, TP_ADDR, cmd, 2, false, 2000);
+    printf("touch: CST328 at 0x%02X %s, check 0x%02X%02X%s\n", TP_ADDR,
+           ok ? "answers" : "NOT answering", id[3], id[2],
+           (id[3] << 8 | id[2]) == 0xCACA ? " (ok)" : "");
 }
 
 /* --------------------------------------------------------- backlight */
