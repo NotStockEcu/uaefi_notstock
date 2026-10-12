@@ -30,6 +30,11 @@ BIG = [
 ]
 
 
+# high contrast (SETTINGS -> KONTRAST): brighter numbers and ticks
+HC = {"C_NUM": (240, 242, 245), "C_MINOR": (165, 171, 179),
+      "C_MAJOR": (255, 255, 255), "C_ICON": (255, 255, 255)}
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     rows = {p[0]: p for p in gf.PAGES}
@@ -51,19 +56,29 @@ def main():
     h.append("typedef struct { float lo, hi, warn; const char *unit; } f28_page_t;")
     h.append("extern const f28_page_t F28_PAGE[F28_N];")
     h.append("extern const lv_img_dsc_t *const f28_face[F28_N];")
+    h.append("extern const lv_img_dsc_t *const f28_face_hc[F28_N];   /* high contrast */")
     tbl = []
-    for n, row in BIG:
-        p = rows[row]
-        img = gf.draw_face(p, SIZE)
-        img.save(os.path.join(ROOT, "preview", "face-%s.png" % n))
-        gf.emit_rgb(c, "f28_" + n, img)
-        h.append("extern const lv_img_dsc_t f28_%s;" % n)
-        tbl.append('    { %g, %g, %g, "%s" },' % (p[3], p[4], p[8], p[2]))
+    normal = {k: getattr(gf, k) for k in HC}
+    for sfx, colours in (("", normal), ("_hc", HC)):
+        for k, v in colours.items():
+            setattr(gf, k, v)
+        for n, row in BIG:
+            p = rows[row]
+            img = gf.draw_face(p, SIZE)
+            if not sfx:
+                img.save(os.path.join(ROOT, "preview", "face-%s.png" % n))
+                tbl.append('    { %g, %g, %g, "%s" },' % (p[3], p[4], p[8], p[2]))
+            gf.emit_rgb(c, "f28_" + n + sfx, img)
+            h.append("extern const lv_img_dsc_t f28_%s%s;" % (n, sfx))
+    for k, v in normal.items():
+        setattr(gf, k, v)
     c.append("const f28_page_t F28_PAGE[F28_N] = {")
     c += tbl
     c.append("};")
     c.append("const lv_img_dsc_t *const f28_face[F28_N] = { %s };"
              % ", ".join("&f28_" + n for n, _ in BIG))
+    c.append("const lv_img_dsc_t *const f28_face_hc[F28_N] = { %s };"
+             % ", ".join("&f28_" + n + "_hc" for n, _ in BIG))
     c.append("")
     m = gf.icon_mask("dpf", 64)
     gf.emit_a8(c, "f28_icon_dpf", m)

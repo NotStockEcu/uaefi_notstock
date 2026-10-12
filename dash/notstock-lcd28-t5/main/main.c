@@ -34,7 +34,23 @@ static void settings_load(void)
 {
     t5_settings_defaults();
     t5_settings_t tmp;
-    memcpy(&tmp, (const void *)(XIP_BASE + SET_OFFSET), sizeof tmp);
+    const uint8_t *f = (const uint8_t *)(XIP_BASE + SET_OFFSET);
+    memcpy(&tmp, f, sizeof tmp);
+    if (f[0] == 1) {
+        /* version 1: no contrast yet, everything else the same */
+        struct {
+            uint8_t ver, lang, sound, volume, big, small[T5_SMALL];
+            float limit[T5_CH_N];
+        } v1;
+        memcpy(&v1, f, sizeof v1);
+        tmp = g_t5_set;
+        tmp.lang = v1.lang;
+        tmp.sound = v1.sound;
+        tmp.volume = v1.volume;
+        tmp.big = v1.big;
+        memcpy(tmp.small, v1.small, sizeof tmp.small);
+        memcpy(tmp.limit, v1.limit, sizeof tmp.limit);
+    }
     if (t5_settings_valid(&tmp)) g_t5_set = tmp;
     else printf("settings: none stored, defaults\n");
 }

@@ -7,9 +7,10 @@
  *                regeneration, measured soot
  *   DIAGNOSTIKA  trouble codes, read and cleared
  *   NASTAVENÍ    LIMITY (each value's red limit), ZOBRAZENÍ (which values
- *                the big dial shows, what the small ones show), ZVUK (beeps
- *                on or off, volume, a test), JAZYK (Czech / English)
- * Double tap: night (dimmer) and back.
+ *                the big dial shows, what the small ones show), KONTRAST
+ *                (normal / high), ZVUK (beeps on or off, volume, a test),
+ *                JAZYK (Czech / English)
+ * Swipe down: night (dimmer), swipe up: day.
  * A regeneration (the filter's surface temperature over 400 degC) beeps
  * three times, brings up STAV DPF and puts REGENERACE DPF on the dial; its
  * end beeps once and goes back to the gauges.
@@ -58,12 +59,13 @@ enum { T5_SND_OFF, T5_SND_BEEP };
 /* settings: the UI edits them in place; the platform loads them before
  * ui_t5_create() (or keeps t5_settings_defaults()) and stores them when
  * t5_settings_save() is called */
-#define T5_SET_VER 1
+#define T5_SET_VER 2
 typedef struct {
     uint8_t ver;
     uint8_t lang;                 /* T5_LANG_* */
     uint8_t sound;                /* T5_SND_* */
     uint8_t volume;               /* 1..3 */
+    uint8_t contrast;             /* 1: high (brighter text, scales) */
     uint8_t big;                  /* bit per T5_CH_*: on the big dial */
     uint8_t small[T5_SMALL];      /* T5_CH_* on the small dials */
     float   limit[T5_CH_N];       /* red from here */

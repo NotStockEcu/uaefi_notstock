@@ -14,10 +14,17 @@ enum { F28_BOOST, F28_EGT, F28_RPM, F28_IAT, F28_OIL, F28_CLT, F28_N };
 typedef struct { float lo, hi, warn; const char *unit; } f28_page_t;
 extern const f28_page_t F28_PAGE[F28_N];
 extern const lv_img_dsc_t *const f28_face[F28_N];
+extern const lv_img_dsc_t *const f28_face_hc[F28_N];   /* high contrast */
 extern const lv_img_dsc_t f28_boost;
 extern const lv_img_dsc_t f28_egt;
 extern const lv_img_dsc_t f28_rpm;
 extern const lv_img_dsc_t f28_iat;
 extern const lv_img_dsc_t f28_oil;
 extern const lv_img_dsc_t f28_clt;
+extern const lv_img_dsc_t f28_boost_hc;
+extern const lv_img_dsc_t f28_egt_hc;
+extern const lv_img_dsc_t f28_rpm_hc;
+extern const lv_img_dsc_t f28_iat_hc;
+extern const lv_img_dsc_t f28_oil_hc;
+extern const lv_img_dsc_t f28_clt_hc;
 extern const lv_img_dsc_t f28_icon_dpf;      /* 64 px, A8 */

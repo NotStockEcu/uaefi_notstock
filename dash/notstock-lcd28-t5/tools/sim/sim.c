@@ -3,7 +3,7 @@
  *               [speed=KMH] [soot=G] [sootm=G] [dp=MBAR] [km=KM]
  *               [dpft=C] [peak=BAR] [page=N] [screen=0..3] [link=0|1]
  *               [state=0|1|2] [dtc=N] [dtcres=0..4] [t=S]
- *               [lang=0|1] [big=MASK] [small=ABC]
+ *               [lang=0|1] [hc=0|1] [big=MASK] [small=ABC]
  * screen: 0 gauges, 1 menu, 2 DPF, 3 diagnostics, 4 settings, 5 limits,
  * 6 display, 7 sound, 8 language; page: the big dial's value (T5_CH_*);
  * small: the three small dials' values as digits (T5_CH_*); state: 0 polling,
@@ -83,6 +83,7 @@ int main(int argc, char **argv)
         else if (!strncmp(a, "dtc=", 4)) ndtc = (int)x;
         else if (!strncmp(a, "dtcres=", 7)) dtcres = (int)x;
         else if (!strncmp(a, "lang=", 5)) g_t5_set.lang = (uint8_t)x;
+        else if (!strncmp(a, "hc=", 3)) g_t5_set.contrast = (uint8_t)x;
         else if (!strncmp(a, "big=", 4)) g_t5_set.big = (uint8_t)x;
         else if (!strncmp(a, "small=", 6)) {
             for (int k = 0; k < T5_SMALL && e[1 + k]; k++) g_t5_set.small[k] = (uint8_t)(e[1 + k] - '0');

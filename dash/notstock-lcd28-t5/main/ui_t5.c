@@ -21,18 +21,21 @@ LV_FONT_DECLARE(t5_code_36);
 LV_FONT_DECLARE(t5_t14);
 LV_FONT_DECLARE(t5_t11);
 
+/* the greys follow SETTINGS -> KONTRAST (read when a screen is built; the
+ * screens are rebuilt when it changes) */
+#define HC       (g_t5_set.contrast)
 #define C_W      lv_color_hex(0xFFFFFF)
-#define C_GREY   lv_color_hex(0x8A9096)
-#define C_DIM    lv_color_hex(0x5A5F66)
-#define C_DOT    lv_color_hex(0x3A3F45)
+#define C_GREY   lv_color_hex(HC ? 0xDDE1E5 : 0x8A9096)
+#define C_DIM    lv_color_hex(HC ? 0xAEB4BA : 0x5A5F66)
+#define C_DOT    lv_color_hex(HC ? 0x70767E : 0x3A3F45)
 #define C_RED    lv_color_hex(0xFF3030)
-#define C_ZONE   lv_color_hex(0x5A1414)
+#define C_ZONE   lv_color_hex(HC ? 0x9A1E1E : 0x5A1414)
 #define C_REGEN  lv_color_hex(0xFF9A1F)
 #define C_OK     lv_color_hex(0x3CD070)
-#define C_TRACK  lv_color_hex(0x1A1D21)
+#define C_TRACK  lv_color_hex(HC ? 0x3A3F45 : 0x1A1D21)
 #define C_PANEL  lv_color_hex(0x16191C)
-#define C_EDGE   lv_color_hex(0x2A2D31)
-#define C_TITLE  lv_color_hex(0x969CA4)
+#define C_EDGE   lv_color_hex(HC ? 0x50565E : 0x2A2D31)
+#define C_TITLE  lv_color_hex(HC ? 0xF0F2F4 : 0x969CA4)
 
 #define BIG_C    (F28_SIZE / 2 + 2)          /* the big dial's centre, x = y */
 #define REGEN_ON   400.0f    /* filter surface hotter than this: regenerating */
@@ -93,6 +96,7 @@ void t5_settings_defaults(void)
     g_t5_set.lang = T5_LANG_CS;
     g_t5_set.sound = T5_SND_BEEP;
     g_t5_set.volume = 2;
+    g_t5_set.contrast = 0;
     g_t5_set.big = 1u << T5_CH_BOOST | 1u << T5_CH_EGT | 1u << T5_CH_RPM
                  | 1u << T5_CH_IAT;
     g_t5_set.small[0] = T5_CH_OIL;
@@ -104,7 +108,7 @@ void t5_settings_defaults(void)
 bool t5_settings_valid(const t5_settings_t *s)
 {
     if (s->ver != T5_SET_VER || s->lang > T5_LANG_EN || s->sound > T5_SND_BEEP
-        || s->volume < 1 || s->volume > 3) return false;
+        || s->volume < 1 || s->volume > 3 || s->contrast > 1) return false;
     for (int i = 0; i < T5_SMALL; i++) if (s->small[i] >= T5_CH_N) return false;
     for (int i = 0; i < T5_CH_N; i++) {
         if (!(s->limit[i] >= CH[i].lim_lo && s->limit[i] <= CH[i].lim_hi)) return false;
@@ -301,7 +305,6 @@ static lv_obj_t *s_scr[T5_SCR_N];
 static int s_cur = T5_SCR_GAUGES;
 static uint32_t s_shown_at;            /* when the screen came up */
 static bool s_night;
-static uint32_t s_last_tap;
 static t5_settings_t s_set_at_open;     /* to save only what changed */
 static void build_all(void);
 
@@ -336,19 +339,49 @@ static void open_cb(lv_event_t *e)
     show((int)(intptr_t)lv_event_get_user_data(e));
 }
 
-/* double tap: night and back */
-#define DOUBLE_TAP_MS 600     /* the second tap within this of the first */
-static void tap_cb(lv_event_t *e)
+/* day / night: swipe up / down on the gauges and the DPF screen; a toast
+ * says which */
+static lv_obj_t *s_toast;
+static lv_timer_t *s_toast_t;
+
+static void toast_hide(lv_timer_t *t)
 {
-    (void)e;
-    uint32_t now = lv_tick_get();
-    if (s_last_tap && now - s_last_tap < DOUBLE_TAP_MS) {
-        s_night = !s_night;
-        t5_backlight(s_night ? NIGHT_PCT : 100);
-        s_last_tap = 0;
-    } else {
-        s_last_tap = now;
+    (void)t;
+    if (s_toast) lv_obj_add_flag(s_toast, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void night_set(bool on)
+{
+    s_night = on;
+    t5_backlight(on ? NIGHT_PCT : 100);
+    if (!s_toast) {
+        s_toast = lv_label_create(lv_layer_top());
+        lv_obj_set_style_text_font(s_toast, &t5_t14, 0);
+        lv_obj_set_style_text_color(s_toast, lv_color_hex(0xFFFFFF), 0);
+        lv_obj_set_style_bg_color(s_toast, lv_color_hex(0x16191C), 0);
+        lv_obj_set_style_bg_opa(s_toast, LV_OPA_COVER, 0);
+        lv_obj_set_style_radius(s_toast, 14, 0);
+        lv_obj_set_style_pad_hor(s_toast, 16, 0);
+        lv_obj_set_style_pad_ver(s_toast, 6, 0);
+        lv_obj_set_style_border_color(s_toast, lv_color_hex(0x50565E), 0);
+        lv_obj_set_style_border_width(s_toast, 1, 0);
     }
+    lv_label_set_text(s_toast, on ? TR("NOC", "NIGHT") : TR("DEN", "DAY"));
+    lv_obj_align(s_toast, LV_ALIGN_TOP_MID, 0, 8);
+    lv_obj_clear_flag(s_toast, LV_OBJ_FLAG_HIDDEN);
+    if (!s_toast_t) s_toast_t = lv_timer_create(toast_hide, 1200, NULL);
+    lv_timer_set_repeat_count(s_toast_t, 1);
+    lv_timer_reset(s_toast_t);
+    lv_timer_resume(s_toast_t);
+}
+
+/* true when it was an up / down swipe (handled) */
+static bool day_night_gesture(lv_dir_t d)
+{
+    if (d == LV_DIR_BOTTOM) night_set(true);
+    else if (d == LV_DIR_TOP) night_set(false);
+    else return false;
+    return true;
 }
 
 /* ------------------------------------------------------------ the gauges */
@@ -386,7 +419,7 @@ static void big_set(int c)
     }
     g.ch = c;
     const chan_t *h = &CH[c];
-    lv_img_set_src(g.face, f28_face[h->face]);
+    lv_img_set_src(g.face, (HC ? f28_face_hc : f28_face)[h->face]);
     lv_label_set_text(g.title, ch_name(c));
     lv_label_set_text(g.unit, ch_unit(c));
     zone_set(g.zone, F28_SWEEP, (g_t5_set.limit[c] - h->lo) / (h->hi - h->lo));
@@ -420,6 +453,7 @@ static void gesture_cb(lv_event_t *e)
 {
     (void)e;
     lv_dir_t d = lv_indev_get_gesture_dir(lv_indev_get_act());
+    if (day_night_gesture(d)) return;
     uint8_t m = big_mask();
     int c = g.ch;
     if (d != LV_DIR_LEFT && d != LV_DIR_RIGHT) return;
@@ -477,7 +511,6 @@ static void gauges_create(void)
 
     lv_obj_add_event_cb(s, gesture_cb, LV_EVENT_GESTURE, NULL);
     lv_obj_add_event_cb(s, open_cb, LV_EVENT_LONG_PRESSED, (void *)T5_SCR_MENU);
-    lv_obj_add_event_cb(s, tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
     big_set(g.ch);
 }
 
@@ -575,6 +608,12 @@ static struct {
     float shown;
 } dp;
 
+static void dpf_gesture_cb(lv_event_t *e)
+{
+    (void)e;
+    day_night_gesture(lv_indev_get_gesture_dir(lv_indev_get_act()));
+}
+
 static void dpf_create(void)
 {
     lv_obj_t *s = s_scr[T5_SCR_DPF] = screen_new();
@@ -618,7 +657,7 @@ static void dpf_create(void)
         dp.row[i] = label_c(s, &t5_v20, C_W, 281, y + 16, 78);
     }
     lv_obj_add_event_cb(s, open_cb, LV_EVENT_LONG_PRESSED, (void *)T5_SCR_GAUGES);
-    lv_obj_add_event_cb(s, tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
+    lv_obj_add_event_cb(s, dpf_gesture_cb, LV_EVENT_GESTURE, NULL);
 }
 
 static void dpf_update(const t5_view_t *v)
@@ -833,21 +872,38 @@ static void set_back_cb(lv_event_t *e)
     show(T5_SCR_MENU);
 }
 
+static void contrast_cb(lv_event_t *e)
+{
+    if (too_soon()) return;
+    (void)e;
+    g_t5_set.contrast ^= 1;
+    build_all();                          /* the colours are built in */
+    show(T5_SCR_SET);
+}
+
 static void set_create(void)
 {
     lv_obj_t *s = s_scr[T5_SCR_SET] = screen_new();
-    title_mk(s, TR("NASTAVENÍ", "SETTINGS"), 6);
-    static const int TO[4] = { T5_SCR_LIMITS, T5_SCR_VIEW, T5_SCR_SOUND, T5_SCR_LANG };
-    const char *const NAME[4] = {
-        TR("LIMITY", "LIMITS"), TR("ZOBRAZENÍ", "DISPLAY"),
+    title_mk(s, TR("NASTAVENÍ", "SETTINGS"), 4);
+    static const int TO[5] = { T5_SCR_LIMITS, T5_SCR_VIEW, -1, T5_SCR_SOUND,
+                               T5_SCR_LANG };
+    char hc[40];
+    snprintf(hc, sizeof hc, "%s: %s", TR("KONTRAST", "CONTRAST"),
+             HC ? TR("VYSOKÝ", "HIGH") : TR("NORMÁLNÍ", "NORMAL"));
+    const char *const NAME[5] = {
+        TR("LIMITY", "LIMITS"), TR("ZOBRAZENÍ", "DISPLAY"), hc,
         TR("ZVUK", "SOUND"), TR("JAZYK", "LANGUAGE"),
     };
     lv_obj_t *l;
-    for (int i = 0; i < 4; i++) {
-        pill_u(s, T5_W / 2, 24 + i * 42, 230, 36, open_cb, TO[i], &l);
-        lv_label_set_text(l, NAME[i]);
+    for (int i = 0; i < 5; i++) {
+        if (TO[i] < 0) {
+            pill(s, T5_W / 2, 20 + i * 36, 250, 32, NAME[i], contrast_cb, NULL);
+        } else {
+            pill_u(s, T5_W / 2, 20 + i * 36, 250, 32, open_cb, TO[i], &l);
+            lv_label_set_text(l, NAME[i]);
+        }
     }
-    pill(s, T5_W / 2, 194, 230, 36, TR("ZPĚT", "BACK"), set_back_cb, NULL);
+    pill(s, T5_W / 2, 202, 250, 32, TR("ZPĚT", "BACK"), set_back_cb, NULL);
     lv_obj_add_event_cb(s, set_back_cb, LV_EVENT_LONG_PRESSED, NULL);
 }
 
