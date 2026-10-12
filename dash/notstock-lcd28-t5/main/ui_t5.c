@@ -299,6 +299,7 @@ static lv_obj_t *title_mk(lv_obj_t *s, const char *t, lv_coord_t y)
 /* --------------------------------------------------------- screens, taps */
 static lv_obj_t *s_scr[T5_SCR_N];
 static int s_cur = T5_SCR_GAUGES;
+static uint32_t s_shown_at;            /* when the screen came up */
 static bool s_night;
 static uint32_t s_last_tap;
 static t5_settings_t s_set_at_open;     /* to save only what changed */
@@ -307,6 +308,7 @@ static void build_all(void);
 static void show(int scr)
 {
     s_cur = scr;
+    s_shown_at = lv_tick_get();
     lv_scr_load(s_scr[scr]);
     /* a long press: the finger is still down, and counts for nothing on
      * the new screen until it is lifted. A tap (released already) must not
@@ -320,14 +322,24 @@ void ui_t5_open(int screen)
     if (screen >= 0 && screen < T5_SCR_N) show(screen);
 }
 
+/* a click right after a screen came up is the finger that brought it up
+ * (a long press), not a choice on it */
+#define GUARD_MS 400
+static bool too_soon(void)
+{
+    return lv_tick_elaps(s_shown_at) < GUARD_MS;
+}
+
 static void open_cb(lv_event_t *e)
 {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED && too_soon()) return;
     show((int)(intptr_t)lv_event_get_user_data(e));
 }
 
 /* double tap: night and back */
 static void tap_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     uint32_t now = lv_tick_get();
     if (now - s_last_tap < 400) {
@@ -529,12 +541,14 @@ static void gauges_update(const t5_view_t *v)
 static void diag_open(void);
 static void diag_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     diag_open();
 }
 
 static void set_open_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     s_set_at_open = g_t5_set;
     show(T5_SCR_SET);
@@ -656,12 +670,14 @@ static struct {
 
 static void diag_read_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     t5_dtc_read();
 }
 
 static void diag_clear_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     uint32_t now = lv_tick_get();
     if (dg.arm_until && (int32_t)(dg.arm_until - now) > 0) {
@@ -808,6 +824,7 @@ static void diag_update(const t5_view_t *v)
 /* ------------------------------------------------------------- settings */
 static void set_back_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     if (memcmp(&s_set_at_open, &g_t5_set, sizeof g_t5_set)) {
         t5_settings_save();
@@ -864,6 +881,7 @@ static void limits_step(int dir)
 
 static void limits_pm_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int dir = (int)(intptr_t)lv_event_get_user_data(e);
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_PRESSED) {
@@ -879,6 +897,7 @@ static void limits_pm_cb(lv_event_t *e)
 
 static void limits_lr_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int dir = (int)(intptr_t)lv_event_get_user_data(e);
     lm.c = (lm.c + dir + T5_CH_N) % T5_CH_N;
     limits_show();
@@ -907,6 +926,7 @@ static lv_obj_t *round_btn(lv_obj_t *s, lv_coord_t cx, lv_coord_t cy, int r,
 
 static void back_to_set_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     (void)e;
     show(T5_SCR_SET);
 }
@@ -963,6 +983,7 @@ static void view_show(void)
 
 static void view_big_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int c = big_ch((int)(intptr_t)lv_event_get_user_data(e));
     uint8_t m = g_t5_set.big ^ (1u << c);
     if (m) g_t5_set.big = m;              /* one at least */
@@ -972,6 +993,7 @@ static void view_big_cb(lv_event_t *e)
 
 static void view_small_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int i = (int)(intptr_t)lv_event_get_user_data(e);
     g_t5_set.small[i] = (uint8_t)((g_t5_set.small[i] + 1) % T5_CH_N);
     view_show();
@@ -1018,6 +1040,7 @@ static void sound_show(void)
 
 static void sound_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int what = (int)(intptr_t)lv_event_get_user_data(e);
     if (what == 0) g_t5_set.sound = g_t5_set.sound == T5_SND_BEEP ? T5_SND_OFF
                                                                   : T5_SND_BEEP;
@@ -1045,6 +1068,7 @@ static void sound_create(void)
 /* JAZYK: everything is rebuilt in the other language */
 static void lang_cb(lv_event_t *e)
 {
+    if (too_soon()) return;
     int l = (int)(intptr_t)lv_event_get_user_data(e);
     if (l == g_t5_set.lang) return;
     g_t5_set.lang = (uint8_t)l;

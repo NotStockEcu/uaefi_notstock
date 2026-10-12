@@ -155,18 +155,27 @@ static bool tp_read(uint16_t *x, uint16_t *y)
     return true;
 }
 
+/* The CST328 now and then reports no finger between two reports while one
+ * is held: a lift only after RELEASE_READS reads in a row without one, or
+ * LVGL sees lift + press, and a long press clicks through to the screen it
+ * opened. */
+#define RELEASE_READS 3
+
 static void touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
     static uint16_t lx, ly;
+    static int none = RELEASE_READS;
     uint16_t x, y;
     if (tp_read(&x, &y)) {
         lx = x;
         ly = y;
-        data->state = LV_INDEV_STATE_PRESSED;
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED;
+        none = 0;
+    } else if (none < RELEASE_READS) {
+        none++;
     }
+    data->state = none < RELEASE_READS ? LV_INDEV_STATE_PRESSED
+                                       : LV_INDEV_STATE_RELEASED;
     data->point.x = lx;
     data->point.y = ly;
 }
