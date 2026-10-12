@@ -25,7 +25,7 @@
 #define UPDATE_MS 33
 #define LINK_US   1500000          /* the ECU answered within this: live */
 
-LV_IMG_DECLARE(l2_splash);
+LV_IMG_DECLARE(t5_splash);
 
 /* settings: the flash's last sector, far past the program */
 #define SET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
@@ -150,7 +150,7 @@ int main(void)
     lv_obj_t *logo_scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(logo_scr, lv_color_black(), 0);
     lv_obj_t *logo = lv_img_create(logo_scr);
-    lv_img_set_src(logo, &l2_splash);
+    lv_img_set_src(logo, &t5_splash);
     lv_obj_center(logo);
     lv_scr_load(logo_scr);
     lv_refr_now(NULL);

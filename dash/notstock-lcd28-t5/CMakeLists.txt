@@ -14,7 +14,7 @@ set(LVGL_DIR "" CACHE PATH "LVGL 8.4 source tree")
 if(NOT LVGL_DIR)
     message(FATAL_ERROR "set -DLVGL_DIR=/path/to/lvgl (8.4)")
 endif()
-# shared: the 2" gauge's logo and can2040; the 7" dash's OBD-II / UDS
+# shared: the 2" gauge's can2040; the 7" dash's OBD-II / UDS
 # client and trouble code texts
 set(L2_DIR ${CMAKE_CURRENT_LIST_DIR}/../notstock-lcd2-emu)
 set(DASH7_DIR ${CMAKE_CURRENT_LIST_DIR}/../notstock-dash-7inch/main)
@@ -38,7 +38,7 @@ add_executable(notstock_lcd28_t5
     main/faces/faces28.c
     ${DASH7_DIR}/obd2.c
     ${DASH7_DIR}/dtc_text.c
-    ${L2_DIR}/main/l2_splash.c
+    main/t5_splash.c
     ${FONTS}
     ${CMAKE_CURRENT_BINARY_DIR}/can_ram.o
 )
