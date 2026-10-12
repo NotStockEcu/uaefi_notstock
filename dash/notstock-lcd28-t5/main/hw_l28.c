@@ -156,7 +156,8 @@ static bool tp_read(uint16_t *x, uint16_t *y)
 }
 
 /* The CST328 now and then reports no finger between two reports while one
- * is held: a lift only after RELEASE_READS reads in a row without one, or
+ * is held: a lift only after RELEASE_READS reads (10 ms apart) in a row
+ * without one, or
  * LVGL sees lift + press, and a long press clicks through to the screen it
  * opened. */
 #define RELEASE_READS 3

@@ -14,7 +14,7 @@
 #define LV_TICK_CUSTOM_SYS_TIME_EXPR (to_ms_since_boot(get_absolute_time()))
 
 #define LV_DISP_DEF_REFR_PERIOD  20
-#define LV_INDEV_DEF_READ_PERIOD 20
+#define LV_INDEV_DEF_READ_PERIOD 10     /* touch: quick taps stay apart */
 
 #define LV_USE_LOG         0
 #define LV_USE_ASSERT_NULL 1

@@ -337,12 +337,12 @@ static void open_cb(lv_event_t *e)
 }
 
 /* double tap: night and back */
+#define DOUBLE_TAP_MS 600     /* the second tap within this of the first */
 static void tap_cb(lv_event_t *e)
 {
-    if (too_soon()) return;
     (void)e;
     uint32_t now = lv_tick_get();
-    if (now - s_last_tap < 400) {
+    if (s_last_tap && now - s_last_tap < DOUBLE_TAP_MS) {
         s_night = !s_night;
         t5_backlight(s_night ? NIGHT_PCT : 100);
         s_last_tap = 0;
