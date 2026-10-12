@@ -1,6 +1,7 @@
 """holder_t5.py DIR [T]: the VW T5 vent gauge holder (52 mm ring, a 3MF
 exported to DIR/holder.stl) turned into a frame for the Waveshare
-RP2350-Touch-LCD-2.8 in landscape, facing where the ring faced.
+RP2350-Touch-LCD-2.8 in landscape, its face flush with the louvers' front
+edges: one flat face, nothing standing out.
 
 The ring goes; in its place a rectangular housing: a 1.6 mm lip over the
 glass's black border at the front, the module put in from the back, held by
@@ -27,15 +28,21 @@ holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
 trimesh.repair.fix_normals(holder)
 
-# the ring's axis (fitted from sections) and its front
+# the ring's axis (fitted from sections), to take the ring out
 C0 = np.array([48.0, 25.76, 0.0])
 AX = np.array([0.0, 27.82 - 25.76, 15.0]); AX /= np.linalg.norm(AX)
-RING_FRONT = 21.0                 # along the axis from C0: the rim's top
 RING_OUT = 34.6                   # the ring's outer radius, and a little
-W = AX
+MR = np.eye(4); MR[:3, 0] = [1, 0, 0]; MR[:3, 1] = np.cross(AX, [1, 0, 0])
+MR[:3, 2] = AX; MR[:3, 3] = C0
+# the louvers' front edges lie in one plane, z = 26.06 - 0.2424 y (fitted,
+# +-0.5 mm): the display's face goes into it, flush, and nothing stands out
+# of it (what did is cut off)
+FRONT_Z0, FRONT_DZDY = 26.06, -0.2424
+Y_MID = 29.7                      # the holder's middle, top to bottom
+W = np.array([0.0, -FRONT_DZDY, 1.0]); W /= np.linalg.norm(W)
 U = np.array([1.0, 0, 0])
 V = np.cross(W, U)
-F = C0 + RING_FRONT * W
+F = np.array([48.0, Y_MID, FRONT_Z0 + FRONT_DZDY * Y_MID])
 M = np.eye(4); M[:3, 0] = U; M[:3, 1] = V; M[:3, 2] = W; M[:3, 3] = F
 
 GLASS = (73.06, 50.54)
@@ -102,10 +109,12 @@ for s in (-1, 1):
 housing -= notches
 
 pod = to_mf(holder)
-pod -= place(cyl(RING_OUT, -80, 80, seg=128))                  # the ring out
+pod -= mf.Manifold.cylinder(160, RING_OUT, RING_OUT, 128).translate(
+    (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
 pod -= place(rbox(POCKET[0], POCKET[1], R_POCKET, W_BACK - 40, 40))
 pod -= place(notches)
 out = pod + place(housing)
+out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the front
 res = to_tm(out)
 res.export(f"{D}/holder28.stl")
 
