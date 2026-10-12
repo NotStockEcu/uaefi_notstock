@@ -308,10 +308,11 @@ static void show(int scr)
 {
     s_cur = scr;
     lv_scr_load(s_scr[scr]);
-    /* the finger of a long press is still down: it counts for nothing on
-     * the new screen until it is lifted */
+    /* a long press: the finger is still down, and counts for nothing on
+     * the new screen until it is lifted. A tap (released already) must not
+     * wait, or it would eat the next tap */
     lv_indev_t *in = lv_indev_get_act();
-    if (in) lv_indev_wait_release(in);
+    if (in && in->proc.state == LV_INDEV_STATE_PRESSED) lv_indev_wait_release(in);
 }
 
 void ui_t5_open(int screen)
