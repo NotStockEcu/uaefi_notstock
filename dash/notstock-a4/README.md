@@ -68,8 +68,12 @@ a holder for this board: the ring replaced by a slim tube round the display
 (its lowest edge, on the driver's side, level with the louvers' fronts, so
 only the slanted face stands out), the louvers carried on into it, a slot
 in the tube wall for the USB-C plug (a 90 degree one, cable to the rear),
-and a rear spider with three M2 x 6 screws into the display's standoffs.
-The display goes in from the front. Inputs: the pod STL and Waveshare's
+a 2 mm lip round the glass at the front (hides the gap and the printed
+edge), and a separate rear spider (`spider_a132.stl`) with three M2 x 6
+screws into the display's standoffs. The display goes in from the back:
+spider screwed on, display in until the glass sits in the lip, the
+spider's arms in the slots at the tube's back end, a drop of glue there.
+Inputs: the pod STL and Waveshare's
 STEP of the board as STL (`python3 cad/pod_a132.py <dir>` with `pod.stl`
 and `disp.stl` in it); needs trimesh and manifold3d. Print in ASA or PETG.
 

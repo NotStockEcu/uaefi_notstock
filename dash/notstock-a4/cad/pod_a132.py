@@ -2,8 +2,10 @@
 ring replaced by a slim tube just round the display, sunk so its lowest
 point (driver's side) is level with the louvers' fronts; the louvers run on
 into the tube; USB-C to the right through a slot in the tube wall (no louver
-in front of it); a rear spider with three M2 bosses on the display's
-standoffs. Writes pod_a132.stl, disp_placed.stl."""
+in front of it); a 2 mm lip round the glass at the front, so the display
+goes in from the back; a separate rear spider with three M2 bosses on the
+display's standoffs, its arms glued into slots at the tube's back end.
+Writes pod_a132.stl, spider_a132.stl, disp_placed.stl."""
 import sys, numpy as np, trimesh, manifold3d as mf
 
 D = sys.argv[1]
@@ -40,6 +42,8 @@ def place(x):
     return x.transform(M[:3, :].tolist())
 
 GLASS = 0.5                     # glass behind the tube's front
+LIP_IN = 17.3                   # the lip round the glass (r 17.15 + play)
+LIP_T = 0.95                    # to just in front of the panel's r 18.2 step
 DM = np.eye(4); DM[:3, :3] = [[0, 0, 1], [1, 0, 0], [0, 1, 0]]; DM[2, 3] = -1.3 - GLASS
 disp_l = disp.copy(); disp_l.apply_transform(DM)
 
@@ -47,16 +51,21 @@ SPIDER = (-15.3, -12.3)
 NECK = (-12.3, -10.5)
 BOSSES = [(0.0, 15.87), (11.04, -10.8), (-11.04, -10.8)]
 
-tube = cyl(TUBE_OD, SPIDER[0], 0) - cyl(TUBE_IN, SPIDER[0] - 1, 1)
+tube = cyl(TUBE_OD, SPIDER[0], 0) - cyl(TUBE_IN, SPIDER[0] - 1, -LIP_T) \
+    - cyl(LIP_IN, -LIP_T - 1, 1)
 # keys: the USB-C receptacle (r 19.25) and the glass's flex tab (r 19.31)
-tube -= box(16.5, 19.7, -5.4, 5.4, SPIDER[0] - 1, 1)
-tube -= box(-19.7, -16.5, -5.6, 5.6, SPIDER[0] - 1, 1)
+tube -= box(16.5, 19.7, -5.4, 5.4, SPIDER[0] - 1, -LIP_T)
+tube -= box(-19.7, -16.5, -5.6, 5.6, SPIDER[0] - 1, -LIP_T)
 spider = mf.Manifold()
+slots = mf.Manifold()
 for u, v in BOSSES:
     spider += cyl(3.6, *SPIDER, u, v, 48) + cyl(1.9, *NECK, u, v, 48)
     a = np.arctan2(v, u)
-    L = TUBE_IN + 0.8 - np.hypot(u, v)
+    L = TUBE_OD - 0.3 - np.hypot(u, v)
     spider += box(0, L, -2.6, 2.6, *SPIDER).rotate((0, 0, np.degrees(a))).translate((u, v, 0))
+    # its slot, open to the back, a little long: the display stops at the lip
+    slots += box(0, TUBE_OD + 1 - np.hypot(u, v), -2.8, 2.8, SPIDER[0] - 1, SPIDER[1] + 0.3) \
+        .rotate((0, 0, np.degrees(a))).translate((u, v, 0))
 holes = mf.Manifold()
 for u, v in BOSSES:
     holes += cyl(1.15, SPIDER[0] - 1, NECK[1] + 1, u, v, 32)
@@ -64,7 +73,8 @@ for u, v in BOSSES:
 # USB-C: receptacle at w -10.3..-6.1, v +-4.8: a slot through the tube wall,
 # open to the back, for the plug (straight or angled)
 usb = box(16.0, TUBE_OD + 3, -6.6, 6.6, SPIDER[0] - 5, -3.6)
-adapter = tube + spider - holes - usb
+adapter = tube - usb - slots
+spider -= holes
 
 # louvers: the old ring out, the slats carried on to the tube
 podm = to_mf(pod) - place(cyl(OLD_OD - 0.1, -80, 80))
@@ -85,10 +95,13 @@ ext = ext ^ ring_zone
 # edges to its neighbours
 ext += mf.Manifold.cube((2.0, 18.2, 2.5)).translate((30.0, -9.1, ZB))
 ext -= place(usb)
-out = place(adapter) + podm + ext
+out = place(adapter) + podm + ext - place(slots)
 res = to_tm(out)
 res.export(f"{D}/pod_a132.stl")
 print("watertight", res.is_watertight, "parts", [round(p.volume(), 1) for p in out.decompose()],
       "bounds", np.round(res.bounds, 2).tolist())
+sp = to_tm(spider)
+sp.export(f"{D}/spider_a132.stl")
+print("spider watertight", sp.is_watertight, "volume", round(sp.volume, 1))
 dl = disp_l.copy(); dl.apply_transform(M)
 dl.export(f"{D}/disp_placed.stl")
