@@ -1153,14 +1153,14 @@
     (at 135.7 105 180)
     (descr "D_SOD-123F")
     (tags "D_SOD-123F")
-    (property "LCSC" "C110797")
+    (property "LCSC" "C2943756")
     (path "/a65aa411-c3a0-5e42-80fb-b8b66e34ad55")
     (attr smd)
     (fp_text reference "D3" (at -0.0225 -1.875 180) (layer "F.SilkS")
         (effects (font (size 0.8 0.8) (thickness 0.13)))
       (tstamp 4b6f37e1-ce29-43db-80a5-a99f53c743e9)
     )
-    (fp_text value "PMEG6010CEH" (at 0 2.1 180) (layer "F.Fab") hide
+    (fp_text value "K16" (at 0 2.1 180) (layer "F.Fab") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 3185d68c-f0f5-4dee-9339-f96f8261bef4)
     )

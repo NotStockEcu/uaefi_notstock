@@ -81,8 +81,10 @@ part("R1", "Device:R", "100k", R0603, {"1": "VIN", "2": "EN"},
      (-2.3, -2.5, 90), mpn="UNI-ROYAL 0603WAF1003T5E (100 k 1%)", lcsc="C25803")
 part("C3", "Device:C", "100n", C0603, {"1": "CB", "2": "SW"},
      (-6.0, 1.0, 0), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
-part("D3", "Device:D_Schottky", "PMEG6010CEH", "Diode_SMD:D_SOD-123F",
-     {"1": "SW", "2": "GND"}, (-6.5, 3.5, 0), mpn="Nexperia PMEG6010CEH,115", lcsc="C110797")
+# K16 (60 V 1 A, SOD-123FL, the same pads as SOD-123F); the PMEG6010CEH
+# (C110797) went out of stock at LCSC
+part("D3", "Device:D_Schottky", "K16", "Diode_SMD:D_SOD-123F",
+     {"1": "SW", "2": "GND"}, (-6.5, 3.5, 0), mpn="GOODWORK K16 (60 V 1 A Schottky, SOD-123FL)", lcsc="C2943756")
 part("L1", "Device:L", "22u", "Inductor_SMD:L_Sunlord_SWPA4026S",
      {"1": "SW", "2": "VSYS"}, (-1.5, 2.5, 0),
      mpn="Sunlord SWPA4026S220MT (22 uH)", lcsc="C88254")

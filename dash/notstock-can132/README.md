@@ -71,7 +71,7 @@ from Waveshare's STEP, not measured.
 | Block | Parts |
 | --- | --- |
 | Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
-| 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 56 k / 10 k: 0.765 V x 6.6 = 5.05 V. Under about 5.5 V in (cranking) the output follows the input down; the display's regulator runs from 2.3 V |
+| 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 K16 (60 V 1 A Schottky), 2 x 22 uF out; 56 k / 10 k: 0.765 V x 6.6 = 5.05 V. Under about 5.5 V in (cranking) the output follows the input down; the display's regulator runs from 2.3 V |
 | CAN | U2 SN65HVD230 (3.3 V from the display), Rs to GND: full speed; D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1 (TERM), open, not assembled; R6 1 k in RXD |
 
 Termination: JP1 open, R4/R5/C8 not assembled. With the key out, measure

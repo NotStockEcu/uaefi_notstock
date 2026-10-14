@@ -51,7 +51,7 @@ regulator runs down to 4 V input, so the display rides through the dip.
 | Block | Parts |
 | --- | --- |
 | Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
-| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 PMEG6010CEH, 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
+| 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 K16 (60 V 1 A Schottky), 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
 | 3.75 V out | J3, two solder pads for the wires to the display's battery socket |
 | CAN | U2 SN65HVD230 (3.3 V from the display's UART socket, Rs to GND: full speed); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
@@ -106,7 +106,7 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | D4 | onsemi NUP2105LT1G | C14486 |
 | D1 | SS16 (UMW) | C2758574 |
 | D2 | SMAJ26A | C383018 |
-| D3 | Nexperia PMEG6010CEH | C110797 |
+| D3 | GOODWORK K16 (60 V 1 A, SOD-123FL) | C2943756 |
 | F1 | SMD1812P050TF/30 (RUILON) | C12559 |
 | L1 | Sunlord SWPA4026S220MT | C88254 |
 | J1 | JST B4B-PH-SM4-TB (vertical) | C160354 |
