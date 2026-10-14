@@ -50,12 +50,15 @@
 #define PIN_TWAI_RX 2         /* J1 pin 6 */
 
 /* how it is mounted, the picture turned to suit in hw_amoled.c's flush and
- * the touch with it: LCD_ROT90 for the USB-C to the right (the vent pod,
- * cad/), LCD_ROT180 for it at the bottom, neither for it at the top */
-#define LCD_ROT90  1
-#define LCD_ROT180 0
+ * the touch with it. LCD_ROT, the panel's top (the USB-C) at: 0 the top,
+ * 90 the right, 180 the bottom, 270 the left. Each step of 90 turns the
+ * picture a quarter to the left; to turn it to the right, step back. */
+#define LCD_ROT 0
+#define LCD_ROT90  (LCD_ROT == 90)
+#define LCD_ROT180 (LCD_ROT == 180)
+#define LCD_ROT270 (LCD_ROT == 270)
 
 /* touch to screen; flip these if a tap lands mirrored */
-#define TOUCH_SWAP_XY  LCD_ROT90
+#define TOUCH_SWAP_XY  (LCD_ROT90 || LCD_ROT270)
 #define TOUCH_MIRROR_X (LCD_ROT90 || LCD_ROT180)
-#define TOUCH_MIRROR_Y LCD_ROT180
+#define TOUCH_MIRROR_Y (LCD_ROT180 || LCD_ROT270)

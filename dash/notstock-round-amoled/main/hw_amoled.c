@@ -190,6 +190,7 @@ static inline void swap_copy_rev(uint16_t *d, const uint16_t *s, size_t n)
  * rectangle of the screen (rows stride apart) becomes w panel rows of h,
  * the first row its right column. Read along the source rows, which may
  * be in PSRAM. */
+#if LCD_ROT90
 static void rot90_copy(uint16_t *d, const uint16_t *s, int w, int h, int stride)
 {
     for (int c = 0; c < h; c++) {
@@ -198,6 +199,24 @@ static void rot90_copy(uint16_t *d, const uint16_t *s, int w, int h, int stride)
         for (int r = 0; r < w; r++, col += h) *col = __builtin_bswap16(row[-r]);
     }
 }
+#endif
+
+#ifndef LCD_ROT270
+#define LCD_ROT270 0
+#endif
+/* the other quarter (LCD_ROT270: the panel's top, the USB-C, to the left):
+ * screen (X, Y) is panel (H-1-Y, X). A w x h rectangle becomes w panel rows
+ * of h, the first row its left column read upwards. */
+#if LCD_ROT270
+static void rot270_copy(uint16_t *d, const uint16_t *s, int w, int h, int stride)
+{
+    for (int c = 0; c < h; c++) {
+        const uint16_t *row = s + (size_t)(h - 1 - c) * stride;
+        uint16_t *col = d + c;
+        for (int r = 0; r < w; r++, col += h) *col = __builtin_bswap16(row[r]);
+    }
+}
+#endif
 
 /* Waveshare's set-up for this panel (their BSP); brightness starts at 0,
  * the boot logo brings it up */
@@ -577,7 +596,7 @@ static void rounder_cb(lv_disp_drv_t *drv, lv_area_t *a)
     a->y2 |= 1;
 }
 
-#if LCD_ROT90
+#if LCD_ROT90 || LCD_ROT270
 static uint16_t *s_rot;                   /* a flush turned, going out */
 #endif
 
@@ -597,6 +616,10 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *a, lv_color_t *px)
     rot90_copy(s_rot, p, w, h, w);            /* free: the last flush is out */
     p = s_rot;
     lcd_window(a->y1, LCD_H_RES - 1 - a->x2, a->y2, LCD_H_RES - 1 - a->x1);
+#elif LCD_ROT270
+    rot270_copy(s_rot, p, w, h, w);
+    p = s_rot;
+    lcd_window(LCD_V_RES - 1 - a->y2, a->x1, LCD_V_RES - 1 - a->y1, a->x2);
 #elif LCD_ROT180
     swap_copy_rev(p, p, (size_t)w * h);       /* in place: it is ours now */
     lcd_window(LCD_H_RES - 1 - a->x2, LCD_V_RES - 1 - a->y2,
@@ -626,7 +649,7 @@ static void lvgl_init(void)
     lv_color_t *b2 = heap_caps_malloc(px * sizeof(lv_color_t),
                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
     assert(b1 && b2);
-#if LCD_ROT90
+#if LCD_ROT90 || LCD_ROT270
     s_rot = heap_caps_malloc(px * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
     assert(s_rot);
 #endif
@@ -672,6 +695,9 @@ static void push_frame(const uint16_t *fb)
 #if LCD_ROT90
         /* panel rows y.. are the frame's columns W-1-y.. leftwards */
         rot90_copy(s_strip[k], fb + (LCD_H_RES - y - h), h, LCD_V_RES, LCD_H_RES);
+#elif LCD_ROT270
+        /* panel rows y.. are the frame's columns y.., read upwards */
+        rot270_copy(s_strip[k], fb + y, h, LCD_V_RES, LCD_H_RES);
 #elif LCD_ROT180
         /* panel rows y.. are the frame's last rows, backwards */
         swap_copy_rev(s_strip[k], fb + (LCD_V_RES - y - h) * LCD_H_RES,
@@ -808,11 +834,15 @@ void hw_flip_begin(void)
 void hw_flip_end(void)
 {
     if (!s_flip) return;
+    int64_t t0 = esp_timer_get_time();
     lv_obj_invalidate(lv_scr_act());       /* all of it into the frame */
     lv_refr_now(NULL);
+    int64_t t1 = esp_timer_get_time();
     push_frame(s_flip_fb);
     s_shadow = NULL;
     s_flip = false;
+    ESP_LOGI(TAG, "page flip: drawn in %d ms, out in %d ms",
+             (int)((t1 - t0) / 1000), (int)((esp_timer_get_time() - t1) / 1000));
 }
 
 /* ------------------------------------------------------------------ init */

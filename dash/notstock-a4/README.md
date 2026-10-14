@@ -56,10 +56,10 @@ A page or screen change is drawn whole into PSRAM first and goes to the
 panel in one go (`hw_flip_begin/end` in `hw_amoled.c`), not strip by
 strip down the panel.
 
-The board sits in the left centre vent with its USB-C to the right: the
-picture is turned a quarter in software, touch with it (`LCD_ROT90` in
-`main/board_a132.h`; `LCD_ROT180` instead for the USB-C at the bottom,
-neither for it at the top).
+The picture is turned in software to how the board sits, touch with it:
+`LCD_ROT` in `main/board_a132.h`, where the panel's top (the USB-C) is:
+0 at the top (now), 90 the right, 180 the bottom, 270 the left. A page
+flip logs how long it took to draw and to send.
 
 ### The vent pod
 
