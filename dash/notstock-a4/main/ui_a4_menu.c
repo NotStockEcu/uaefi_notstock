@@ -41,10 +41,26 @@ LV_FONT_DECLARE(a4_code_76);
 static lv_obj_t *menu_scr, *lim_scr, *ord_scr, *dg_scr, *inj_scr, *dtc_scr;
 
 /* a screen change goes out whole, as a page change */
+/* A screen brought up by a press (a long one, mostly) must not take that
+ * finger's release as a tap on what is now under it: the press is ignored
+ * until the finger is lifted, and the touch rests GUARD_MS anyway. */
+#define GUARD_MS 350
+
+static void touch_on(lv_timer_t *t)
+{
+    (void)t;
+    lv_indev_enable(NULL, true);
+}
+
 static void load(lv_obj_t *scr)
 {
     a4_flip();
     lv_scr_load(scr);
+    lv_indev_t *in = lv_indev_get_act();
+    if (in && in->proc.state == LV_INDEV_STATE_PRESSED) lv_indev_wait_release(in);
+    lv_indev_enable(NULL, false);
+    lv_timer_t *t = lv_timer_create(touch_on, GUARD_MS, NULL);
+    lv_timer_set_repeat_count(t, 1);
 }
 
 /* ------------------------------------------------------------- widgets */

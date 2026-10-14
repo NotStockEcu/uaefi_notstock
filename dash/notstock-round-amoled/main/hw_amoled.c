@@ -371,13 +371,23 @@ static bool touch_point(lv_coord_t *px, lv_coord_t *py)
 }
 #endif
 
+#define RELEASE_READS 3                   /* x 20 ms (LV_INDEV_DEF_READ_PERIOD) */
+
 static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
     static lv_coord_t lx, ly;
+    static uint8_t gone = RELEASE_READS;  /* reads without the finger */
     lv_coord_t x, y;
     data->state = LV_INDEV_STATE_RELEASED;
-    if (touch_point(&x, &y)) {
+    if (!touch_point(&x, &y)) {
+        /* the controller drops a held finger now and then: a release counts
+         * only after RELEASE_READS reads without it, or the finger coming
+         * back is a new press, and a tap */
+        if (gone < RELEASE_READS && ++gone < RELEASE_READS)
+            data->state = LV_INDEV_STATE_PRESSED;
+    } else {
+        gone = 0;
 #if TOUCH_SWAP_XY
         lv_coord_t t = x; x = y; y = t;
 #endif
