@@ -185,8 +185,8 @@ static inline void swap_copy_rev(uint16_t *d, const uint16_t *s, size_t n)
 #ifndef LCD_ROT90
 #define LCD_ROT90 0
 #endif
-/* the picture turned a quarter (LCD_ROT90: the panel mounted with its top,
- * the USB-C, to the right): screen (X, Y) is panel (Y, W-1-X). A w x h
+/* the picture turned a quarter left on the panel (LCD_ROT90: the panel
+ * mounted turned a quarter right): screen (X, Y) is panel (Y, W-1-X). A w x h
  * rectangle of the screen (rows stride apart) becomes w panel rows of h,
  * the first row its right column. Read along the source rows, which may
  * be in PSRAM. */
@@ -204,7 +204,7 @@ static void rot90_copy(uint16_t *d, const uint16_t *s, int w, int h, int stride)
 #ifndef LCD_ROT270
 #define LCD_ROT270 0
 #endif
-/* the other quarter (LCD_ROT270: the panel's top, the USB-C, to the left):
+/* the other quarter (LCD_ROT270: the panel mounted turned a quarter left):
  * screen (X, Y) is panel (H-1-Y, X). A w x h rectangle becomes w panel rows
  * of h, the first row its left column read upwards. */
 #if LCD_ROT270

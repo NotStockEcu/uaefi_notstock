@@ -50,9 +50,10 @@
 #define PIN_TWAI_RX 2         /* J1 pin 6 */
 
 /* how it is mounted, the picture turned to suit in hw_amoled.c's flush and
- * the touch with it. LCD_ROT, the panel's top (the USB-C) at: 0 the top,
- * 90 the right, 180 the bottom, 270 the left. Each step of 90 turns the
- * picture a quarter to the left; to turn it to the right, step back. */
+ * the touch with it. LCD_ROT, the USB-C (seen from the front) at: 0 the
+ * right (the vent pod, cad/; the panel's own way up), 90 the bottom, 180 the
+ * left, 270 the top. Each step of 90 turns the picture a quarter to the
+ * left; to turn it to the right, step back. */
 #define LCD_ROT 0
 #define LCD_ROT90  (LCD_ROT == 90)
 #define LCD_ROT180 (LCD_ROT == 180)

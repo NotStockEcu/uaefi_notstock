@@ -57,8 +57,9 @@ panel in one go (`hw_flip_begin/end` in `hw_amoled.c`), not strip by
 strip down the panel.
 
 The picture is turned in software to how the board sits, touch with it:
-`LCD_ROT` in `main/board_a132.h`, where the panel's top (the USB-C) is:
-0 at the top (now), 90 the right, 180 the bottom, 270 the left. A page
+`LCD_ROT` in `main/board_a132.h`, where the USB-C is, seen from the
+front: 0 the right (the vent pod; the panel's own way up), 90 the bottom,
+180 the left, 270 the top. A page
 flip logs how long it took to draw and to send.
 
 ### The vent pod
