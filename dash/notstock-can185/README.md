@@ -15,7 +15,9 @@ for reading: [docs/readable.png](docs/readable.png). Placement:
 [docs/assembly.png](docs/assembly.png).
 
 **State: rev 6, designed, DRC clean (0 errors, 0 unconnected), ready to
-order with assembly; not built yet.** Rev 4 feeds the display through its
+order with assembly. Rev 4 built (JLCPCB, assembled): the regulator holds
+3.8 V on J3 from about 4 V to 14.4 V in (bench, no load); with the display,
+the CAN side and in the car not tried yet.** Rev 4 feeds the display through its
 battery socket instead of its USB-C (no room for a USB cable). Rev 6
 takes its 12 V from OBD pin 1 (terminal 15): on and off with the key.
 
