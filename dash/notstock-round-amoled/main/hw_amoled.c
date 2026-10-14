@@ -186,7 +186,7 @@ static inline void swap_copy_rev(uint16_t *d, const uint16_t *s, size_t n)
 #define LCD_ROT90 0
 #endif
 /* the picture turned a quarter left on the panel (LCD_ROT90: the panel
- * mounted turned a quarter right): screen (X, Y) is panel (Y, W-1-X). A w x h
+ * mounted turned a quarter right, its top, the USB-C, to the right): screen (X, Y) is panel (Y, W-1-X). A w x h
  * rectangle of the screen (rows stride apart) becomes w panel rows of h,
  * the first row its right column. Read along the source rows, which may
  * be in PSRAM. */

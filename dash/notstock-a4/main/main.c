@@ -25,6 +25,7 @@ static const char *TAG = "a4";
 #define NS          "a4"
 #define SAVE_MS     3000        /* a page kept this long is remembered */
 #define VOLUME      70          /* % */
+#define FW          "fw15"      /* the build handed out, in the log */
 
 /* the round gauge's settings, which its shared code (motion.c, sounds) may
  * read; this gauge keeps its own in NVS "a4" */
@@ -153,7 +154,7 @@ static void update_cb(lv_timer_t *t)
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "NOT STOCK A4 gauge, OBD-II, %s", BOARD_NAME);
+    ESP_LOGI(TAG, "NOT STOCK A4 gauge %s, OBD-II, %s, LCD_ROT %d", FW, BOARD_NAME, LCD_ROT);
     esp_err_t e = nvs_flash_init();
     if (e == ESP_ERR_NVS_NO_FREE_PAGES || e == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
