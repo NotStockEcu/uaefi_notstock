@@ -70,7 +70,7 @@ from Waveshare's STEP, not measured.
 
 | Block | Parts |
 | --- | --- |
-| Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS16 against reverse polarity; D2 SMAJ26A against load dump |
+| Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS34 against reverse polarity; D2 SMAJ26A against load dump |
 | 12 V -> 5 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 K16 (60 V 1 A Schottky), 2 x 22 uF out; 56 k / 10 k: 0.765 V x 6.6 = 5.05 V. Under about 5.5 V in (cranking) the output follows the input down; the display's regulator runs from 2.3 V |
 | CAN | U2 SN65HVD230 (3.3 V from the display), Rs to GND: full speed; D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1 (TERM), open, not assembled; R6 1 k in RXD |
 
@@ -86,6 +86,10 @@ Three files in `fab/`: `notstock-can132-gerbers.zip` (2 layers, 1.6 mm),
 its LCSC number in `bom.csv`; R4, R5, C8 (termination) and the wire pads
 are not assembled. In the placement preview check the parts with a
 direction: U1, U2, D1..D4, J1 (opening upwards).
+
+Basic parts (no loading fee): the 0603 passives, C4/C5 (Samsung
+CL21A226MAQNNNE 22 uF 25 V 0805, C45783), D1 (MDD SS34, C8678). Extended,
+no basic equivalent: U1, U2, D2 (TVS), D3, D4, F1, L1, J1, C1 (4.7 uF 50 V).
 
 **R2 is 56 k here (UNI-ROYAL 0603WAF5602T5E, LCSC C23206), 39 k on the
 1.85 board.** If it is out of stock, any 56 k 1 % 0603 does (a 5 % one,

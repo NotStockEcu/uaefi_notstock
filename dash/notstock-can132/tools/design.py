@@ -43,6 +43,7 @@ R0603 = "Resistor_SMD:R_0603_1608Metric"
 R0805 = "Resistor_SMD:R_0805_2012Metric"
 C0603 = "Capacitor_SMD:C_0603_1608Metric"
 C1206 = "Capacitor_SMD:C_1206_3216Metric"
+C0805 = "Capacitor_SMD:C_0805_2012Metric"
 
 # car side: 12 V, GND, CAN-H, CAN-L. The 12 V is OBD pin 1, terminal 15 on
 # VW (+12 V switched by the key, as the CANcheck display takes it): the
@@ -58,8 +59,8 @@ part("J1", "Connector_Generic:Conn_01x04", "OBD 12V GND H L",
 part("F1", "Device:Polyfuse", "0.5A 30V", "Fuse:Fuse_1812_4532Metric",
      {"1": "VBAT", "2": "VBAT_F"}, (-11.5, 4.0, 90),
      mpn="RUILON SMD1812P050TF/30 (0.5 A, 30 V)", lcsc="C12559")
-part("D1", "Device:D_Schottky", "SS16", "Diode_SMD:D_SMA",
-     {"1": "VIN", "2": "VBAT_F"}, (-11.5, -4.0, 90), mpn="UMW SS16 (60 V 1 A)", lcsc="C2758574")
+part("D1", "Device:D_Schottky", "SS34", "Diode_SMD:D_SMA",
+     {"1": "VIN", "2": "VBAT_F"}, (-11.5, -4.0, 90), mpn="MDD SS34 (40 V 3 A)", lcsc="C8678")
 part("D2", "Diode:SMAJ26A", "SMAJ26A", "Diode_SMD:D_SMA",
      {"1": "VIN", "2": "GND"}, (-6.2, -8.85, 0), mpn="SMAJ26A", lcsc="C383018")
 part("C1", "Device:C", "4.7u 50V", C1206, {"1": "VIN", "2": "GND"},
@@ -93,10 +94,10 @@ part("R2", "Device:R", "56k", R0603, {"1": "VSYS", "2": "FB"},
      (-0.5, -2.0, 90), mpn="UNI-ROYAL 0603WAF5602T5E (56 k 1%)", lcsc="C23206")
 part("R3", "Device:R", "10k", R0603, {"1": "FB", "2": "GND"},
      (1.2, -2.0, 270), mpn="UNI-ROYAL 0603WAF1002T5E (10 k 1%)", lcsc="C25804")
-part("C4", "Device:C", "22u 16V", C1206, {"1": "VSYS", "2": "GND"},
-     (3.5, 1.0, 90), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
-part("C5", "Device:C", "22u 16V", C1206, {"1": "VSYS", "2": "GND"},
-     (5.9, 1.0, 90), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
+part("C4", "Device:C", "22u 25V", C0805, {"1": "VSYS", "2": "GND"},
+     (3.5, 1.0, 90), mpn="Samsung CL21A226MAQNNNE (22 uF 25 V X5R 0805)", lcsc="C45783")
+part("C5", "Device:C", "22u 25V", C0805, {"1": "VSYS", "2": "GND"},
+     (5.9, 1.0, 90), mpn="Samsung CL21A226MAQNNNE (22 uF 25 V X5R 0805)", lcsc="C45783")
 
 # CAN: SN65HVD230 on the display's 3.3 V (UART socket pin 3); Rs to GND:
 # full speed, no slope control

@@ -54,8 +54,8 @@ part("J1", "Connector_Generic:Conn_01x04", "OBD 12V GND H L",
 part("F1", "Device:Polyfuse", "0.5A 30V", "Fuse:Fuse_1812_4532Metric",
      {"1": "VBAT", "2": "VBAT_F"}, (-8.5, -11.5, 180),
      mpn="RUILON SMD1812P050TF/30 (0.5 A, 30 V)", lcsc="C12559")
-part("D1", "Device:D_Schottky", "SS16", "Diode_SMD:D_SMA",
-     {"1": "VIN", "2": "VBAT_F"}, (-15.0, -6.5, 90), mpn="UMW SS16 (60 V 1 A)", lcsc="C2758574")
+part("D1", "Device:D_Schottky", "SS34", "Diode_SMD:D_SMA",
+     {"1": "VIN", "2": "VBAT_F"}, (-15.0, -6.5, 90), mpn="MDD SS34 (40 V 3 A)", lcsc="C8678")
 part("D2", "Diode:SMAJ26A", "SMAJ26A", "Diode_SMD:D_SMA",
      {"1": "VIN", "2": "GND"}, (-20.0, 0.0, 90), mpn="SMAJ26A", lcsc="C383018")
 part("C1", "Device:C", "4.7u 50V", C1206, {"1": "VIN", "2": "GND"},

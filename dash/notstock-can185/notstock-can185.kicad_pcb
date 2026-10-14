@@ -938,14 +938,14 @@
     (at 135 93.5 90)
     (descr "Diode SMA (DO-214AC)")
     (tags "Diode SMA (DO-214AC)")
-    (property "LCSC" "C2758574")
+    (property "LCSC" "C8678")
     (path "/3b5d597d-1df9-5ffa-9174-34a16490327d")
     (attr smd)
     (fp_text reference "D1" (at 4.225001 0 90) (layer "F.SilkS")
         (effects (font (size 0.8 0.8) (thickness 0.13)))
       (tstamp 02a21711-febf-495a-a32e-f3c606a824ed)
     )
-    (fp_text value "SS16" (at 0 2.6 90) (layer "F.Fab") hide
+    (fp_text value "SS34" (at 0 2.6 90) (layer "F.Fab") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 2171a80a-774b-48b0-bc8f-df4a6aec9e1c)
     )
