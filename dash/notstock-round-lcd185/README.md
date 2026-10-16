@@ -57,6 +57,26 @@ All in `main/board_lcd185.h`:
 The panel comes in two revisions with different set-up tables; the ID read
 at start picks one, as Waveshare's demo does, and the log says which.
 
+## In the VW T5 vent
+
+`cad/vent_t5_185.py` turns the T5 vent gauge holder (52 mm ring, an STL
+from its 3MF) into a housing for this display with the CAN 1.85 board
+behind it: a tube round the display, its face flush with the louvers', a
+lip round the glass (the display goes in from the back), and a lid at the
+back with a window for the board's 4-pin JST, nothing else showing.
+
+The stack is held by three M2 x 16 screws through the display's own three
+standoffs: lid (2.0 mm, its boss 3.5) | CAN board (1.6) | a printed sleeve
+(5.9; or a smooth 6 mm M2 spacer) | standoff (the screw 3 mm into its 4).
+Screw the stack together first, then push it into the tube from the back
+until the glass sits in the lip: the lid's skirt holds in the tube on six
+crush ribs. The display's USB-C is inside: to flash, pull the lid out.
+
+`python3 cad/vent_t5_185.py DIR [UP]` with `holder.stl` and `disp185.stl`
+(Waveshare's STEP as STL) in DIR; writes `vent185.stl`, `lid185.stl`,
+`sleeve185.stl` (three) and `fit185.txt`. UP = -1 turns the display half
+round in the vent (J1 at the bottom). Needs trimesh and manifold3d.
+
 ## If something is off
 
 The console logs the I2C devices found (0x15 touch, 0x20 TCA9554, 0x51 RTC,
