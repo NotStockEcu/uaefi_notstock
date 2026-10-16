@@ -7,8 +7,8 @@
  * CLEAR wants a second tap within CLEAR_ARM_MS and then clears (mode 04)
  * and reads again. Long press: back to the menu.
  *
- * Drawn in the look picked in SETTINGS (rebuilt when it changes): the plain
- * VDO dial with Barlow print, or the FUTURO hex background in neon.
+ * Drawn in the look picked in SETTINGS (rebuilt when it changes): NOTSTOCK,
+ * or the plain VDO dial with Barlow print.
  */
 #include "ui_round_int.h"
 #include "dtc_text.h"
@@ -53,13 +53,6 @@ static const pal_t *pal_get(void)
                      C_AMBER, C_INK_DIM, lv_color_hex(0x161616),
                      lv_color_hex(0x55575A), C_W, C_W,
                      lv_color_hex(0x55575A), 50, 6 };
-        break;
-    case RND_LOOK_FUTURO:
-        p = (pal_t){ &face_futuro_bg, &rnd_18, &rnd_18, &rnd_18, &rnd_56,
-                     &rnd_18, C_TEAL_DIM, C_TEAL_DIM, C_TEAL_DIM, C_ICE,
-                     C_MAGENTA, C_TEAL_DIM, lv_color_hex(0x04161B),
-                     lv_color_hex(0x1F6A78), C_CYAN, C_CYAN,
-                     lv_color_hex(0x123A44), 58, 5 };
         break;
     default:
         p = (pal_t){ NULL, &rnd_18, &rnd_18, &rnd_18, &rnd_56, &rnd_18,

@@ -146,9 +146,8 @@ void rnd_menu_create(void)
  *   NOTSTOCK  the arc over the face's groove and a filter that fills up
  *   RETRO     a VDO-like dial 0..40 g (face_retro_dpf), red needle and band,
  *             readings in windows, a DPF tell-tale: amber over the limit,
- *             orange and glowing while it regenerates
- *   FUTURO    the ring of segments on the hex background, neon readings */
-enum { ST_NOTSTOCK, ST_RETRO, ST_FUTURO };
+ *             orange and glowing while it regenerates */
+enum { ST_NOTSTOCK, ST_RETRO };
 static int dstyle;
 
 static lv_obj_t *dpf, *dpf_arc[N_ARC], *dpf_zone, *body, *fill, *pipe[2];
@@ -161,13 +160,8 @@ static int dpf_level = -1;
 /* RETRO */
 static lv_obj_t *needle, *lamp, *glow;
 static lv_point_t np[2];
-/* FUTURO */
-static lv_obj_t *meter, *icon;
-static lv_meter_indicator_t *seg_lit, *seg_zone;
-static int seg_at;
 
 #define R_SWEEP   180              /* RETRO: 0 g at 9 o'clock, 40 g at 3 */
-#define F_SEGS    46
 
 lv_obj_t *rnd_dpf_screen(void)
 {
@@ -363,66 +357,6 @@ static void build_retro(void)
     lv_obj_set_style_border_width(hub, 2, 0);
 }
 
-static void build_futuro(void)
-{
-    background(&face_futuro_bg);
-    meter = lv_meter_create(dpf);
-    lv_obj_remove_style_all(meter);
-    lv_obj_set_size(meter, 2 * FUTURO_SEG_R, 2 * FUTURO_SEG_R);
-    lv_obj_center(meter);
-    lv_obj_clear_flag(meter, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_width(meter, 0, LV_PART_INDICATOR);
-    lv_obj_set_style_height(meter, 0, LV_PART_INDICATOR);
-    lv_obj_set_style_text_opa(meter, LV_OPA_TRANSP, LV_PART_TICKS);
-    lv_meter_scale_t *sc = lv_meter_add_scale(meter);
-    lv_meter_set_scale_ticks(meter, sc, F_SEGS, 9, FUTURO_SEG_L, C_SEG_OFF);
-    lv_meter_set_scale_major_ticks(meter, sc, 1000, 9, FUTURO_SEG_L,
-                                   C_SEG_OFF, 0);
-    lv_meter_set_scale_range(meter, sc, 0, ARC_MAX, FACE_SWEEP, FACE_START);
-    seg_zone = lv_meter_add_scale_lines(meter, sc, C_SEG_ZONE, C_SEG_ZONE,
-                                        false, 0);
-    seg_lit = lv_meter_add_scale_lines(meter, sc, C_CYAN, C_MAGENTA, false, 0);
-    lv_meter_set_indicator_start_value(meter, seg_lit, 0);
-    lv_meter_set_indicator_end_value(meter, seg_lit, -1);
-    seg_at = -2;
-
-    icon = lv_img_create(dpf);
-    lv_img_set_src(icon, &icon_dpf_40);
-    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 86);
-    lv_obj_set_style_img_recolor(icon, C_CYAN, 0);
-    lv_obj_set_style_img_recolor_opa(icon, LV_OPA_COVER, 0);
-    lv_obj_t *t = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 136);
-    lv_obj_set_style_text_letter_space(t, 5, 0);
-    lv_label_set_text(t, TR("DPF STATUS", "STAV DPF"));
-
-    soot_lbl = rnd_label(dpf, &rnd_84, C_ICE, 170);
-    meas_lbl = rnd_label(dpf, &rnd_18, C_TEAL_DIM, 268);
-    lv_obj_set_style_text_letter_space(meas_lbl, 2, 0);
-
-    for (int i = 0; i < V_COUNT; i++) {
-        lv_coord_t x = CX - COL_W * 3 / 2 + i * COL_W;
-        v_lbl[i] = rnd_label(dpf, &rnd_26, C_ICE, CX + 64);
-        lv_obj_set_width(v_lbl[i], COL_W);
-        lv_obj_set_x(v_lbl[i], x);
-        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_TEAL_DIM, CX + 98);
-        lv_obj_set_width(c, COL_W + 20);
-        lv_obj_set_x(c, x - 10);
-        lv_label_set_text(c, cap_text(i));
-    }
-
-    pill = rect(dpf, CX - 110, 376, 220, 38, lv_color_black());
-    lv_obj_set_style_radius(pill, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_opa(pill, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(pill, 2, 0);
-    lv_obj_set_style_border_color(pill, C_TEAL_DIM, 0);
-    pill_lbl = lv_label_create(pill);
-    lv_obj_set_style_text_font(pill_lbl, &rnd_18, 0);
-    lv_obj_set_style_text_color(pill_lbl, C_CYAN, 0);
-    lv_obj_set_style_text_letter_space(pill_lbl, 2, 0);
-    lv_label_set_text(pill_lbl, "");
-    lv_obj_center(pill_lbl);
-}
-
 static void popup_drop(void);
 
 void rnd_dpf_create(void)
@@ -434,10 +368,9 @@ void rnd_dpf_create(void)
     zone_at = dpf_shown = NAN;
     dpf_level = -1;
     dpf_zone = body = fill = pipe[0] = pipe[1] = pill = NULL;
-    needle = lamp = glow = meter = icon = NULL;
+    needle = lamp = glow = NULL;
     memset(dpf_arc, 0, sizeof dpf_arc);
-    dstyle = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO :
-             g_rnd_set.look == RND_LOOK_FUTURO ? ST_FUTURO : ST_NOTSTOCK;
+    dstyle = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO : ST_NOTSTOCK;
 
     dpf = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(dpf, lv_color_black(), 0);
@@ -447,9 +380,8 @@ void rnd_dpf_create(void)
     rnd_on_long(dpf, go_menu);
     lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
 
-    if (dstyle == ST_RETRO)       build_retro();
-    else if (dstyle == ST_FUTURO) build_futuro();
-    else                          build_notstock();
+    if (dstyle == ST_RETRO) build_retro();
+    else                    build_notstock();
 }
 
 static void fmt_or_dash(lv_obj_t *l, const char *fmt, float v, bool live)
@@ -466,7 +398,7 @@ static void zone_draw(float frac)
 {
     if (dstyle == ST_NOTSTOCK) {
         rnd_zone_set(dpf_zone, frac);
-    } else if (dstyle == ST_RETRO) {
+    } else {
         if (!(frac < 1)) {
             lv_obj_add_flag(dpf_zone, LV_OBJ_FLAG_HIDDEN);
             return;
@@ -475,10 +407,6 @@ static void zone_draw(float frac)
         lv_obj_clear_flag(dpf_zone, LV_OBJ_FLAG_HIDDEN);
         lv_arc_set_bg_angles(dpf_zone, (uint16_t)lroundf(R_SWEEP * frac),
                              R_SWEEP);
-    } else {
-        lv_meter_set_indicator_start_value(meter, seg_zone, frac < 1 ?
-            (int32_t)lroundf((frac < 0 ? 0 : frac) * ARC_MAX) : ARC_MAX + 1);
-        lv_meter_set_indicator_end_value(meter, seg_zone, ARC_MAX);
     }
 }
 
@@ -489,7 +417,7 @@ static void level_draw(float at, int lvl)
     if (dstyle == ST_NOTSTOCK) {
         rnd_arcs_set(dpf_arc, at, lv_color_hex(COL[lvl]));
         lv_obj_set_width(fill, (lv_coord_t)lroundf(at / ARC_MAX * FILL_W));
-    } else if (dstyle == ST_RETRO) {
+    } else {
         float a = (180 + at / ARC_MAX * R_SWEEP) * (float)M_PI / 180.0f;
         float c = cosf(a), s = sinf(a);
         np[0].x = (lv_coord_t)lroundf(CX - 14 * c);
@@ -497,14 +425,6 @@ static void level_draw(float at, int lvl)
         np[1].x = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * c);
         np[1].y = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * s);
         lv_line_set_points(needle, np, 2);
-    } else {
-        int n = (int)lroundf(at / ARC_MAX * (F_SEGS - 1));
-        if (at < 10) n = -1;
-        if (n != seg_at) {
-            seg_at = n;
-            lv_meter_set_indicator_end_value(meter, seg_lit, n < 0 ? -1 :
-                (int32_t)lroundf((float)n * ARC_MAX / (F_SEGS - 1)));
-        }
     }
 }
 
@@ -528,7 +448,7 @@ static void state_draw(int lvl)
         lv_obj_set_style_bg_color(pill, regen ? C_REGEN : C_PANEL, 0);
         lv_obj_set_style_text_color(pill_lbl, regen ? lv_color_black()
                                                     : C_GREY, 0);
-    } else if (dstyle == ST_RETRO) {
+    } else {
         lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_RED : C_W, 0);
         lv_obj_set_style_img_recolor(lamp, regen ? C_REGEN :
                                      lvl == 2 ? C_AMBER :
@@ -536,21 +456,6 @@ static void state_draw(int lvl)
         if (regen) lv_obj_clear_flag(glow, LV_OBJ_FLAG_HIDDEN);
         else       lv_obj_add_flag(glow, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_text_color(pill_lbl, regen ? C_REGEN : C_INK_DIM, 0);
-    } else {
-        lv_color_t warn = lvl == 2 ? C_SEG_WARN : C_CYAN;
-        seg_lit->type_data.scale_lines.color_start =
-            regen ? C_REGEN : lvl == 2 ? C_SEG_WARN : C_CYAN;
-        seg_lit->type_data.scale_lines.color_end =
-            regen ? C_REGEN : lvl == 2 ? C_SEG_WARN : C_MAGENTA;
-        lv_obj_invalidate(meter);
-        lv_obj_set_style_img_recolor(icon, regen ? C_REGEN : warn, 0);
-        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_SEG_WARN : C_ICE,
-                                    0);
-        lv_obj_set_style_border_color(pill, regen ? C_REGEN : C_TEAL_DIM, 0);
-        lv_obj_set_style_bg_opa(pill, regen ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
-        lv_obj_set_style_bg_color(pill, C_REGEN, 0);
-        lv_obj_set_style_text_color(pill_lbl, regen ? lv_color_black()
-                                                    : C_CYAN, 0);
     }
 }
 

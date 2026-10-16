@@ -69,9 +69,8 @@ static float frac_of(int id, float v)
 /* How a slot is drawn depends on the look:
  *   NOTSTOCK  a white arc (the big one over the top, small ones 270 degrees)
  *   RETRO     needles on a pre-rendered dial (face_retro_multi): the big
- *             one over the top half, small ones on their own dials
- *   FUTURO    rings of segments, cyan into magenta, on the hex background */
-enum { ST_NOTSTOCK, ST_RETRO, ST_FUTURO };
+ *             one over the top half, small ones on their own dials */
+enum { ST_NOTSTOCK, ST_RETRO };
 
 typedef struct {
     lv_obj_t *box, *val, *name, *unit;
@@ -81,10 +80,6 @@ typedef struct {
     lv_obj_t *needle;
     lv_point_t np[2];
     int cx, cy, r0, r1;
-    /* FUTURO */
-    lv_obj_t *meter;
-    lv_meter_indicator_t *lit, *zn;
-    int segs, lit_at;
     /* all */
     int start, sweep;            /* degrees the scale covers */
     float shown;
@@ -177,30 +172,6 @@ static lv_obj_t *disc(lv_obj_t *par, int x, int y, int d, lv_color_t c,
     lv_obj_set_style_border_width(o, 2, 0);
     lv_obj_clear_flag(o, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     return o;
-}
-
-static lv_obj_t *meter_in(lv_obj_t *par, int x, int y, int r, int segs,
-                          int w, int len, int start, int sweep, slot_t *s)
-{
-    lv_obj_t *m = lv_meter_create(par);
-    lv_obj_remove_style_all(m);
-    lv_obj_set_size(m, 2 * r, 2 * r);
-    lv_obj_set_pos(m, x - r, y - r);
-    lv_obj_clear_flag(m, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_width(m, 0, LV_PART_INDICATOR);
-    lv_obj_set_style_height(m, 0, LV_PART_INDICATOR);
-    lv_obj_set_style_text_opa(m, LV_OPA_TRANSP, LV_PART_TICKS);
-    lv_meter_scale_t *sc = lv_meter_add_scale(m);
-    lv_meter_set_scale_ticks(m, sc, segs, w, len, C_SEG_OFF);
-    lv_meter_set_scale_major_ticks(m, sc, 1000, w, len, C_SEG_OFF, 0);
-    lv_meter_set_scale_range(m, sc, 0, 1000, sweep, start);
-    s->zn = lv_meter_add_scale_lines(m, sc, C_SEG_ZONE, C_SEG_ZONE, false, 0);
-    s->lit = lv_meter_add_scale_lines(m, sc, C_CYAN, C_MAGENTA, false, 0);
-    lv_meter_set_indicator_start_value(m, s->lit, 0);
-    lv_meter_set_indicator_end_value(m, s->lit, -1);
-    s->segs = segs;
-    s->meter = m;
-    return m;
 }
 
 /* -------------------------------------------------------- NOTSTOCK */
@@ -299,45 +270,9 @@ static void build_retro(void)
     disc(s->box, CX, CX, 40, lv_color_hex(0x111111), lv_color_hex(0x55575A));
 }
 
-/* ----------------------------------------------------------- FUTURO */
-#define FU_START  180
-#define FU_SWEEP  180
-
-static void build_futuro(void)
-{
-    lv_obj_t *bg = lv_img_create(layer);
-    lv_img_set_src(bg, &face_futuro_bg);
-    lv_obj_set_pos(bg, 0, 0);
-    lv_obj_clear_flag(bg, LV_OBJ_FLAG_CLICKABLE);
-
-    slot_t *s = &slot[0];
-    s->box = box_in(layer);
-    s->start = FU_START;
-    s->sweep = FU_SWEEP;
-    meter_in(s->box, CX, CX, FUTURO_SEG_R, 31, 9, FUTURO_SEG_L, FU_START,
-             FU_SWEEP, s);
-    s->name = rnd_label(s->box, &rnd_18, C_TEAL_DIM, 86);
-    lv_obj_set_style_text_letter_space(s->name, 5, 0);
-    s->val = rnd_label(s->box, &rnd_112, C_ICE, 0);
-    s->unit = rnd_label(s->box, &rnd_26, C_MAGENTA, CX - 20);
-
-    for (int i = 1; i < RND_MULTI_SLOTS; i++) {
-        s = &slot[i];
-        int x = CX + (i - 2) * MULTI_MINI_DX, y = CX + MULTI_MINI_Y;
-        s->box = box_in(layer);
-        s->start = 135;
-        s->sweep = 270;
-        meter_in(s->box, x, y, MULTI_MINI_R, 15, 6, 13, 135, 270, s);
-        s->val = label_at(s->box, &rnd_26, C_ICE, x, y, 120);
-        s->name = label_at(s->box, &rnd_18, C_TEAL_DIM, x,
-                           y + MULTI_MINI_R - 8, 140);
-    }
-}
-
 void rnd_multi_build(lv_obj_t *gauge_scr)
 {
-    style = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO :
-            g_rnd_set.look == RND_LOOK_FUTURO ? ST_FUTURO : ST_NOTSTOCK;
+    style = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO : ST_NOTSTOCK;
     memset(slot, 0, sizeof slot);
     layer = lv_obj_create(gauge_scr);
     lv_obj_remove_style_all(layer);
@@ -346,9 +281,8 @@ void rnd_multi_build(lv_obj_t *gauge_scr)
     lv_obj_set_style_bg_opa(layer, LV_OPA_COVER, 0);
     lv_obj_clear_flag(layer, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
 
-    if (style == ST_RETRO)       build_retro();
-    else if (style == ST_FUTURO) build_futuro();
-    else                         build_notstock();
+    if (style == ST_RETRO) build_retro();
+    else                   build_notstock();
 
     regen_lbl = rnd_label(layer, &rnd_18, C_REGEN,
                           style == ST_RETRO ? CX + 20 : CX + 10);
@@ -366,10 +300,8 @@ void rnd_multi_show(bool on)
         return;
     }
     lv_obj_clear_flag(layer, LV_OBJ_FLAG_HIDDEN);
-    lv_color_t on_c = style == ST_FUTURO ? C_CYAN : C_W;
-    lv_color_t off_c = style == ST_FUTURO ? lv_color_hex(0x123A44) :
-                       style == ST_RETRO ? lv_color_hex(0x55575A) : C_DOT;
-    rnd_dots_set(dot, RND_MULTI, on_c, off_c);
+    lv_color_t off_c = style == ST_RETRO ? lv_color_hex(0x55575A) : C_DOT;
+    rnd_dots_set(dot, RND_MULTI, C_W, off_c);
     regen_on = -1;
     for (int i = 0; i < RND_MULTI_SLOTS; i++) {
         slot[i].id = -1;              /* set up again on the next update */
@@ -396,31 +328,14 @@ static void slot_frac(slot_t *s, float f)
         s->np[1].y = (lv_coord_t)lroundf(s->cy + s->r1 * sn);
         lv_line_set_points(s->needle, s->np, 2);
     }
-    if (s->meter) {
-        int n = (int)lroundf(f * (s->segs - 1));
-        if (f < 0.01f) n = -1;
-        if (n != s->lit_at) {
-            s->lit_at = n;
-            lv_meter_set_indicator_end_value(s->meter, s->lit, n < 0 ? -1 :
-                (int32_t)lroundf((float)n * 1000 / (s->segs - 1)));
-        }
-    }
 }
 
 /* over the limit, or back under it */
 static void slot_warn(slot_t *s, bool w)
 {
-    lv_color_t txt = style == ST_FUTURO ? C_ICE : C_W;
-    lv_obj_set_style_text_color(s->val, w ? (style == ST_FUTURO ? C_SEG_WARN
-                                                                : C_RED) : txt,
-                                0);
+    lv_obj_set_style_text_color(s->val, w ? C_RED : C_W, 0);
     if (s->arc && style == ST_NOTSTOCK) {
         lv_obj_set_style_arc_color(s->arc, w ? C_RED : C_W, LV_PART_INDICATOR);
-    }
-    if (s->meter) {
-        s->lit->type_data.scale_lines.color_start = w ? C_SEG_WARN : C_CYAN;
-        s->lit->type_data.scale_lines.color_end = w ? C_SEG_WARN : C_MAGENTA;
-        lv_obj_invalidate(s->meter);
     }
 }
 
@@ -428,7 +343,7 @@ static void slot_warn(slot_t *s, bool w)
 static void slot_setup(slot_t *s, int id)
 {
     s->id = id;
-    s->warn = s->big = s->lit_at = -2;
+    s->warn = s->big = -2;
     s->shown = NAN;
     if (id == RND_MV_NONE) {
         lv_obj_add_flag(s->box, LV_OBJ_FLAG_HIDDEN);
@@ -439,11 +354,7 @@ static void slot_setup(slot_t *s, int id)
     if (s->unit) lv_label_set_text(s->unit, rnd_unit(id));
     /* red zone from the warn limit to the end of the scale */
     float z = frac_of(id, g_rnd_set.warn[id]);
-    if (s->meter) {
-        lv_meter_set_indicator_start_value(s->meter, s->zn, z < 1 ?
-            (int32_t)lroundf(z * 1000) : 1001);
-        lv_meter_set_indicator_end_value(s->meter, s->zn, 1000);
-    } else if (z < 1) {
+    if (z < 1) {
         lv_obj_clear_flag(s->zone, LV_OBJ_FLAG_HIDDEN);
         lv_arc_set_bg_angles(s->zone, (uint16_t)lroundf(z * s->sweep),
                              (uint16_t)s->sweep);

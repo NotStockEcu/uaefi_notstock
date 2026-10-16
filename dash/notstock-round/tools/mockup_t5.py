@@ -63,8 +63,7 @@ def layer_lines(w, h, seed):
 
 
 def gauge(look, d):
-    name = {"notstock": "boost", "retro": "retro-boost",
-            "futuro": "futuro-boost"}[look]
+    name = {"notstock": "boost", "retro": "retro-boost"}[look]
     img = Image.open(os.path.join(PREV, name + ".png")).convert("RGB")
     img = img.resize((d, d), Image.LANCZOS)
     m = Image.new("L", (d, d), 0)
@@ -189,13 +188,13 @@ def _perspective(pa, pb):
 
 def main():
     fronts = {}
-    for look in ("notstock", "retro", "futuro"):
+    for look in ("notstock", "retro"):
         f = compose(look)
         f.save(os.path.join(PREV, "mockup-t5-front-%s.png" % look))
         fronts[look] = f
     driver_view(fronts["notstock"]).save(os.path.join(PREV, "mockup-t5-driver.png"))
-    sheet = Image.new("RGB", (W * 3 // 2, H // 2), (0, 0, 0))
-    for i, look in enumerate(("notstock", "retro", "futuro")):
+    sheet = Image.new("RGB", (W, H // 2), (0, 0, 0))
+    for i, look in enumerate(("notstock", "retro")):
         sheet.paste(fronts[look].resize((W // 2, H // 2), Image.LANCZOS),
                     (i * W // 2, 0))
     sheet.save(os.path.join(PREV, "mockup-t5-looks.png"))

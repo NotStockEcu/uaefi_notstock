@@ -41,10 +41,6 @@ SCENES = {
     "retro-boost": "look=1 page=2",
     "retro-rpm": "look=1 page=5",
     "retro-oil-warn": "look=1 page=1 oil=134",
-    "futuro-water": "look=2 page=0",
-    "futuro-boost": "look=2 page=2",
-    "futuro-rpm": "look=2 page=5",
-    "futuro-oil-warn": "look=2 page=1 oil=134",
     "night-toast": "dtap=1",
     "night-retro": "look=1 night=1",
     "pages": "screen=pages limit=3 hide=8",
@@ -53,7 +49,6 @@ SCENES = {
     "boot-cross": "boot=1 t=3.2",
     "cz-water": "lang=1",
     "cz-retro-rpm": "lang=1 look=1 page=5",
-    "cz-futuro-intake": "lang=1 look=2 page=3",
     "cz-menu": "lang=1 screen=menu",
     "cz-settings": "lang=1 screen=settings",
     "cz-dpf": "lang=1 screen=dpf",
@@ -63,7 +58,6 @@ SCENES = {
     "multi": "page=7",
     "multi-rpm": "page=7 multi=5,2,6,3 rpm=1850",
     "retro-multi": "look=1 page=7",
-    "futuro-multi": "look=2 page=7",
     "cz-retro-multi-warn": "lang=1 look=1 page=7 boost=2.31 oil=134",
     "cz-multi-warn": "lang=1 page=7 boost=2.31 oil=134",
     "cz-multi-edit": "lang=1 screen=multiedit",
@@ -71,10 +65,7 @@ SCENES = {
     "retro-dpf": "look=1 screen=dpf",
     "cz-retro-dpf-full": "lang=1 look=1 screen=dpf soot=26.1",
     "retro-dpf-regen": "look=1 screen=dpf regen=start t=24",
-    "futuro-dpf": "look=2 screen=dpf",
-    "futuro-dpf-regen": "look=2 screen=dpf regen=start t=24",
     "cz-retro-diag": "lang=1 look=1 screen=diag t=1.5",
-    "cz-futuro-diag": "lang=1 look=2 screen=diag t=1.5",
     "retro-diag-clean": "look=1 screen=diag dtc=0 t=1.5",
     "cz-diag-clear": "lang=1 screen=diag t=1.5 tap=319,371",
     "cz-diag-cleared": "lang=1 screen=diag dtcclear=1 t=2",
@@ -114,3 +105,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

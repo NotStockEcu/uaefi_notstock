@@ -3,7 +3,6 @@
  *   NOTSTOCK  grey rings on black, a white dot with a glow, red over 1 g
  *   RETRO     the VDO dial (face_retro_plain), printed rings and scale, a
  *             red ball with a shadow, readings in Barlow
- *   FUTURO    the hex background, cyan rings, a neon dot, magenta over 1 g
  *
  * The dot is the force the driver feels: braking moves it up, speeding up
  * down, a right bend to the left (as a ball on the dash would roll). The
@@ -23,7 +22,7 @@
 #define G_FULL    1.2f            /* g at the outer ring */
 #define G_HOT     1.0f            /* the dot turns over this */
 
-enum { GS_NOTSTOCK, GS_RETRO, GS_FUTURO };
+enum { GS_NOTSTOCK, GS_RETRO };
 
 static lv_obj_t *scr, *dot, *pk_l[4], *now_l, *msg_l, *toast;
 static int style;
@@ -37,18 +36,12 @@ static const lv_font_t *f_val, *f_small;
 
 static void look_setup(void)
 {
-    style = g_rnd_set.look == RND_LOOK_RETRO ? GS_RETRO :
-            g_rnd_set.look == RND_LOOK_FUTURO ? GS_FUTURO : GS_NOTSTOCK;
+    style = g_rnd_set.look == RND_LOOK_RETRO ? GS_RETRO : GS_NOTSTOCK;
     switch (style) {
     case GS_RETRO:
         c_ring = C_INK_DIM; c_ring1 = C_W; c_cross = C_INK_DIM;
         c_text = C_W; c_dim = C_INK_DIM; c_dot = C_NEEDLE; c_hot = C_NEEDLE;
         f_val = &rnd_barlow_23; f_small = &rnd_barlow_20;
-        break;
-    case GS_FUTURO:
-        c_ring = C_TEAL_DIM; c_ring1 = C_CYAN; c_cross = C_SEG_OFF;
-        c_text = C_ICE; c_dim = C_TEAL_DIM; c_dot = C_CYAN; c_hot = C_MAGENTA;
-        f_val = &rnd_26; f_small = &rnd_18;
         break;
     default:
         c_ring = C_DOT; c_ring1 = C_GREY; c_cross = C_DOT;
@@ -154,10 +147,6 @@ static void build_face(void)
         lv_obj_t *bg = lv_img_create(scr);
         lv_img_set_src(bg, &face_retro_plain);
         lv_obj_center(bg);
-    } else if (style == GS_FUTURO) {
-        lv_obj_t *bg = lv_img_create(scr);
-        lv_img_set_src(bg, &face_futuro_bg);
-        lv_obj_center(bg);
     }
 
     /* crosshair, the rings, and on RETRO a printed scale */
@@ -168,7 +157,7 @@ static void build_face(void)
     v[1] = (lv_point_t){ CX, CY + RING_R };
     line(h, c_cross, 2);
     line(v, c_cross, 2);
-    if (style != GS_RETRO) ring(RING_R, style == GS_FUTURO ? C_TEAL_DIM : C_EDGE, 2);
+    if (style != GS_RETRO) ring(RING_R, C_EDGE, 2);
     ring(r05, c_ring, 2);
     ring(r1, c_ring1, style == GS_RETRO ? 3 : 2);
     if (style == GS_RETRO) {
@@ -215,7 +204,7 @@ void rnd_g_create(void)
     build_face();
     for (int i = 0; i < 4; i++) pk_l[i] = window(label(scr, f_small, c_text));
     now_l = window(label(scr, f_val, c_text));
-    msg_l = window(label(scr, f_small, style == GS_FUTURO ? C_MAGENTA : C_REGEN));
+    msg_l = window(label(scr, f_small, C_REGEN));
 
     dot = lv_obj_create(scr);
     lv_obj_remove_style_all(dot);

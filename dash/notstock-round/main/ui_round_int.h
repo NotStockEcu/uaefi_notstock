@@ -26,14 +26,6 @@ void rnd_lang_apply(void);        /* g_rnd_set.lang changed: rebuild */
 #define C_PANEL  lv_color_hex(0x16191C)
 #define C_EDGE   lv_color_hex(0x2A2D31)
 
-/* FUTURO: neon on the hex background */
-#define C_ICE       lv_color_hex(0xC8FBFF)
-#define C_CYAN      lv_color_hex(0x00E5FF)
-#define C_MAGENTA   lv_color_hex(0xFF2BD6)
-#define C_TEAL_DIM  lv_color_hex(0x2A8C9C)
-#define C_SEG_OFF   lv_color_hex(0x0C2830)
-#define C_SEG_ZONE  lv_color_hex(0x4A1024)
-#define C_SEG_WARN  lv_color_hex(0xFF3040)
 /* VDO STYLE (RETRO): print on the dial, the red needle and band */
 #define C_INK_DIM   lv_color_hex(0xA0A09C)
 #define C_NEEDLE    lv_color_hex(0xE8261E)
@@ -86,7 +78,7 @@ typedef struct {
     void (*draw)(const rnd_view_t *v);      /* every frame */
 } rnd_look_t;
 
-extern const rnd_look_t rnd_look_notstock, rnd_look_retro, rnd_look_futuro;
+extern const rnd_look_t rnd_look_notstock, rnd_look_retro;
 void rnd_look_apply(void);                  /* g_rnd_set.look changed */
 
 /* page names (WATER, OIL, ...) and units, in the current language; the

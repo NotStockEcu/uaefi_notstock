@@ -81,7 +81,7 @@ typedef struct {
  * ui_round_create() (or keeps rnd_settings_defaults()) and stores it when
  * rnd_settings_save() is called, on leaving the settings screens. */
 enum { RND_WARN_SOOT = RND_COUNT, RND_WARN_COUNT };  /* after the pages */
-enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_FUTURO, RND_LOOK_COUNT };
+enum { RND_LOOK_NOTSTOCK, RND_LOOK_RETRO, RND_LOOK_COUNT };
 enum { RND_LANG_EN, RND_LANG_CS, RND_LANG_COUNT };
 /* what sounds when a regeneration starts and ends: beeps (every board),
  * bell tones, a gong or a voice (the boards with a speaker; the buzzer of

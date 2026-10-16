@@ -64,9 +64,11 @@ static void settings_load(void)
     size_t len = sizeof tmp;
     if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == VER &&
         nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK && len == sizeof tmp &&
-        tmp.look < RND_LOOK_COUNT && tmp.lang < RND_LANG_COUNT &&
+        tmp.lang < RND_LANG_COUNT &&
         tmp.sound < RND_SND_COUNT && tmp.volume >= 10 && tmp.volume <= 100) {
         g_rnd_set = tmp;
+        /* a look that is gone (FUTURO was 2): NOTSTOCK, the rest kept */
+        if (g_rnd_set.look >= RND_LOOK_COUNT) g_rnd_set.look = RND_LOOK_NOTSTOCK;
         ESP_LOGI(TAG, "settings loaded");
     } else {
         /* the struct changed with a firmware update: defaults, rather than

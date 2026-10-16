@@ -39,10 +39,6 @@
 #define RDPF_SM_W     79
 #define RDPF_SM_DX    98
 
-/* FUTURO: the lit segments */
-#define FUTURO_SEG_R  218
-#define FUTURO_SEG_L  33
-
 /* one row per page, in page order */
 typedef struct {
     const char *unit;
@@ -61,7 +57,6 @@ static const face_page_t FACE_PAGE[FACE_COUNT] = {
 extern const lv_img_dsc_t *const face_img[FACE_COUNT];
 extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];
 extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */
-extern const lv_img_dsc_t face_futuro_bg;
 extern const lv_img_dsc_t face_retro_multi;
 extern const lv_img_dsc_t face_retro_plain;
 extern const lv_img_dsc_t face_retro_dpf;

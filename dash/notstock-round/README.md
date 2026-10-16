@@ -98,16 +98,15 @@ the buzzer sits on the TCA9554 expander (EXIO8).
 
 ## G-meter
 
-![notstock](preview/g.png) ![retro](preview/retro-g.png) ![futuro](preview/futuro-g.png)
+![notstock](preview/g.png) ![retro](preview/retro-g.png)
 
 MENU -> G-METER (`ui_round_g.c`), in the look picked in SETTINGS: grey
 rings and a white dot (NOTSTOCK), printed rings and scale on the VDO dial
-with a red ball (VDO STYLE), cyan rings on the hex grid and a neon dot
-(FUTURO). Every board here has a QMI8658 accelerometer (0x6B on its I2C),
+with a red ball (VDO STYLE). Every board here has a QMI8658 accelerometer (0x6B on its I2C),
 read at 50 Hz by `motion.c`; without one the screen says NO SENSOR.
 
 - The dot is the force the driver feels: braking moves it up, speeding up
-  down, a right bend to the left. Over 1 g it turns red (FUTURO: magenta).
+  down, a right bend to the left. Over 1 g it turns red.
 - The highest of each direction (BRAKE, ACCEL, LEFT, RIGHT) at the edges,
   the total under the dot. Tap: the highest back to zero.
 - Double tap with the car standing: zero, which way is up, so the gauge may
@@ -124,7 +123,7 @@ read at 50 Hz by `motion.c`; without one the screen says NO SENSOR.
 SETTINGS -> LOOK, applies at once, to the gauges, MULTI, DPF status and
 diagnostics. Menu and settings stay the same in every look.
 
-![retro](preview/retro-boost.png) ![futuro](preview/futuro-boost.png)
+![retro](preview/retro-boost.png)
 
 - **NOTSTOCK**: the faces above, glowing value arc.
 - **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
@@ -134,31 +133,25 @@ diagnostics. Menu and settings stay the same in every look.
   the warn limit, a red needle with a shadow over a black hub, a thin
   orange tell-tale needle left at the peak (none for rpm), and the value in
   a small window (Barlow Condensed, SIL OFL).
-- **FUTURO** (`ui_look_futuro.c`): one shared background (black, a hex grid
-  fading to the rim, thin cyan rings) and 46 segments that light up to the
-  value, cyan into magenta; dim red past the warn limit, all red over it.
-  Icon and title on top, a pale neon readout, the scale's ends underneath.
 
 DPF status and diagnostics follow the look (`ui_round_dpf.c`,
 `ui_round_diag.c`, rebuilt when it changes):
 
-![retro dpf](preview/retro-dpf-regen.png) ![futuro dpf](preview/futuro-dpf.png)
-![retro diag](preview/cz-retro-diag.png) ![futuro diag](preview/cz-futuro-diag.png)
+![retro dpf](preview/retro-dpf-regen.png) ![retro diag](preview/cz-retro-diag.png)
 
 - VDO STYLE: a dial 0..40 g with the red band from the soot limit
   (`face_retro_dpf`), the soot in the window, pressure, filter temperature
   and distance in three small windows, and a DPF tell-tale: dark, amber
   over the limit, orange with a glow while it regenerates. Diagnostics on
   the plain dial (`face_retro_plain`), Barlow print.
-- FUTURO: the soot on the ring of segments, cyan into magenta, all red over
-  the limit, orange while it regenerates; neon text on the hex background.
 
 The two extra dials cost about 0.9 MB of flash; the app is 8.1 MB of the
 15 MB partition.
 
 A look is three functions (`rnd_look_t` in `ui_round_int.h`: build, page,
 draw); `ui_round.c` hands it the page and a smoothed value every frame.
-Flash: NOTSTOCK and RETRO faces 2.8 MB each, FUTURO's background 450 kB.
+Flash: NOTSTOCK and RETRO faces 2.8 MB each. (A third look, FUTURO, is
+gone: nobody used it; a gauge that had it set shows NOTSTOCK.)
 
 ## Settings
 
@@ -167,7 +160,7 @@ Flash: NOTSTOCK and RETRO faces 2.8 MB each, FUTURO's background 450 kB.
 Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
-- **LOOK**: NOTSTOCK, RETRO, FUTURO.
+- **LOOK**: NOTSTOCK, VDO STYLE (RETRO).
 - **PAGES**: one gauge at a time in swipe order: SHOWN / HIDDEN, `<` and
   `>` move it earlier or later, swipe for the next. The gauges then swipe
   through the shown ones only, and their dots count those; the last shown
@@ -222,14 +215,13 @@ is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 ![multi](preview/multi.png) ![multi rpm](preview/multi-rpm.png)
 ![multi warn](preview/cz-multi-warn.png) ![editor](preview/cz-multi-edit.png)
 
-![retro multi](preview/retro-multi.png) ![futuro multi](preview/futuro-multi.png)
+![retro multi](preview/retro-multi.png)
 
 A page with four values at once, like a CAN Checked MFD's multi view: a big
 one in the middle with its scale over the top, three small gauges in a row
 below (`ui_round_multi.c`), in the chosen look: white arcs (NOTSTOCK),
 needles on a VDO-style dial with three small dials (RETRO, the dial is
-`face_retro_multi` from `gen_faces.py`), rings of cyan to magenta segments
-(FUTURO). Each has its red zone from its warn limit and
+`face_retro_multi` from `gen_faces.py`). Each has its red zone from its warn limit and
 goes red over it. It takes its place in the swipe order like the gauges
 (last by default) and can be hidden. What it shows: SETTINGS -> PAGES ->
 MULTI -> EDIT, tap a slot for the next value (water, oil, boost, intake,

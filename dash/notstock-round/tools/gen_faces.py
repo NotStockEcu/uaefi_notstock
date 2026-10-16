@@ -588,70 +588,6 @@ def draw_retro_dpf(size):
     return _retro_finish(img, size)
 
 
-# ----------------------------------------------------------------- FUTURO
-FUTURO_SEG_R = 0.935        # outer end of the lit segments (live)
-FUTURO_SEG_L = 0.140        # their length
-
-
-def draw_futuro_bg(size):
-    """One background for every FUTURO page: black, a faint hex grid that
-    fades out to the rim, thin cyan rings, a dotted outer track."""
-    S = size * SS
-    c = R = S / 2
-    img = Image.new("RGB", (S, S), (0, 0, 0))
-    d = ImageDraw.Draw(img)
-
-    # hex grid, faded by distance from the centre
-    grid = Image.new("L", (S, S), 0)
-    gd = ImageDraw.Draw(grid)
-    a = 0.075 * R
-    h = a * math.sqrt(3)
-    for row in range(-16, 17):
-        for col in range(-16, 17):
-            x = c + col * 1.5 * a
-            y = c + row * h + (col % 2) * h / 2
-            pts = [(x + a * math.cos(math.radians(60 * k)),
-                    y + a * math.sin(math.radians(60 * k))) for k in range(7)]
-            gd.line(pts, fill=255, width=max(1, int(0.004 * R)))
-    fade = Image.new("L", (S, S), 0)
-    fd = ImageDraw.Draw(fade)
-    for i in range(40):
-        t = i / 39
-        r = R * (1 - t)
-        fd.ellipse([c - r, c - r, c + r, c + r], fill=int(255 * t ** 0.7))
-    grid = Image.fromarray((np.asarray(grid, dtype=np.float32) *
-                            np.asarray(fade, dtype=np.float32) / 255 * 0.55)
-                           .astype(np.uint8), "L")
-    img.paste(Image.new("RGB", (S, S), (20, 90, 105)), (0, 0), grid)
-
-    # a dim glow in the middle
-    glow = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(glow).ellipse([c - 0.55 * R, c - 0.55 * R,
-                                  c + 0.55 * R, c + 0.55 * R], fill=60)
-    glow = glow.filter(ImageFilter.GaussianBlur(0.25 * R))
-    img.paste(Image.new("RGB", (S, S), (0, 70, 90)), (0, 0), glow)
-
-    # rings and the dotted outer track
-    for rr, col, w in ((0.985, (0, 150, 180), 0.006), (0.965, (0, 60, 75), 0.003),
-                       (0.745, (0, 90, 110), 0.004)):
-        r = rr * R
-        d.ellipse([c - r, c - r, c + r, c + r], outline=col,
-                  width=max(1, int(w * R)))
-    for k in range(0, 360, 6):
-        t = math.radians(k)
-        x, y = c + 0.975 * R * math.cos(t), c + 0.975 * R * math.sin(t)
-        r = 0.006 * R
-        d.ellipse([x - r, y - r, x + r, y + r], fill=(0, 190, 220))
-
-    img = img.resize((size, size), Image.LANCZOS)
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
-    out = Image.new("RGB", (size, size), (0, 0, 0))
-    out.paste(img, (0, 0), mask)
-    return out
-
-
-# ------------------------------------------------------------------- C out
 def rgb565(img):
     px = img.load()
     w, h = img.size
@@ -731,9 +667,6 @@ def main():
     mr = draw_multi_retro(size)
     mr.save(os.path.join(prev, "retro-multi.png"))
     emit_rgb(lines, "face_retro_multi", mr)
-    bg = draw_futuro_bg(size)
-    bg.save(os.path.join(prev, "futuro-bg.png"))
-    emit_rgb(lines, "face_futuro_bg", bg)
     for name, px in UI_ICONS:
         emit_a8(lines, "icon_%s_%d" % (name, px), icon_mask(name, px))
     for arr, lst in (("face_img", names), ("face_retro_img", retro),
@@ -788,10 +721,6 @@ def main():
          "#define RDPF_SM_W     %d" % round(RDPF_SMALL[2] * R),
          "#define RDPF_SM_DX    %d" % round(RDPF_SMALL_DX * R),
          "",
-         "/* FUTURO: the lit segments */",
-         "#define FUTURO_SEG_R  %d" % round(FUTURO_SEG_R * R),
-         "#define FUTURO_SEG_L  %d" % round(FUTURO_SEG_L * R),
-         "",
          "/* one row per page, in page order */",
          "typedef struct {",
          "    const char *unit;",
@@ -807,7 +736,6 @@ def main():
           "extern const lv_img_dsc_t *const face_img[FACE_COUNT];",
           "extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];",
           "extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */",
-          "extern const lv_img_dsc_t face_futuro_bg;",
           "extern const lv_img_dsc_t face_retro_multi;",
           "extern const lv_img_dsc_t face_retro_plain;",
           "extern const lv_img_dsc_t face_retro_dpf;",
