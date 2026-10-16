@@ -4,12 +4,14 @@
  *               [warn=X] (the shown dial's limit)
  *               [screen=menu|limits|order|diag|inj|dtc] [inj1..inj4=MG]
  *               [fuelt=C] [egtdpf=C] [dtc=0..3] (trouble codes in the list)
- * dpft: the filter temperature, over 400 the regeneration is on
+ * dpft: the filter temperature, 580 or over the regeneration is on (after
+ * the minute it must be held, added to t)
  */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "regen_detect.h"
 #include <time.h>
 
 #include "lvgl.h"
@@ -139,6 +141,7 @@ int main(int argc, char **argv)
         }
     }
     if (sweep) ui_a4_sweep();
+    if (d.dpf.temp_c >= REGEN_ON_C) t_end += REGEN_ON_MS / 1000.0f;
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {
         ui_a4_update(&d);
         lv_tick_inc(STEP_MS);

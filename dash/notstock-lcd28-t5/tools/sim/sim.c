@@ -7,12 +7,14 @@
  * screen: 0 gauges, 1 menu, 2 DPF, 3 diagnostics, 4 settings, 5 limits,
  * 6 display, 7 sound, 8 language; page: the big dial's value (T5_CH_*);
  * small: the three small dials' values as digits (T5_CH_*); state: 0 polling,
- * 1 scanning, 2 no ECU; dpft over 400: a regeneration; dtc: that many
+ * 1 scanning, 2 no ECU; dpft 580 or over: a regeneration (the minute it
+ * must be held is added to t); dtc: that many
  * made-up trouble codes; peak: a boost reached before (the MAX)
  */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "regen_detect.h"
 #include <string.h>
 
 #include "lvgl.h"
@@ -125,6 +127,7 @@ int main(int argc, char **argv)
         p.x[T5_BOOST] = peak;
         ui_t5_update(&p);
     }
+    if (v.x[T5_DPF_T] >= REGEN_ON_C) t_end += REGEN_ON_MS / 1000.0f;
     for (float t = 0; t < t_end; t += STEP_MS / 1000.0f) {
         ui_t5_update(&v);
         lv_tick_inc(STEP_MS);

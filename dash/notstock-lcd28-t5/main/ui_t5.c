@@ -4,6 +4,7 @@
  * landscape 320 x 240: its faces come from its own generator at 236 px
  * (tools/gen_faces28.py), its fonts (Orbitron) at the matching sizes. */
 #include "ui_t5.h"
+#include "regen_detect.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -38,8 +39,6 @@ LV_FONT_DECLARE(t5_t11);
 #define C_TITLE  lv_color_hex(HC ? 0xF0F2F4 : 0x969CA4)
 
 #define BIG_C    (F28_SIZE / 2 + 2)          /* the big dial's centre, x = y */
-#define REGEN_ON   400.0f    /* filter surface hotter than this: regenerating */
-#define REGEN_OFF  350.0f    /* ... and over when it is under this again */
 #define SOOT_MAX   40.0f     /* the DPF dial's scale, g */
 #define NIGHT_PCT  25
 #define BACK_MS    5000      /* after a regeneration: back to the gauges */
@@ -1152,9 +1151,9 @@ static uint32_t s_back_at;
 
 static void regen_watch(const t5_view_t *v)
 {
-    float t = v->x[T5_DPF_T];
-    if (!isnan(t)) {                          /* not read: no change */
-        if (!s_regen && t >= REGEN_ON) {
+    static regen_det_t det;                   /* regen_detect.h */
+    if (regen_step(&det, v->x[T5_DPF_T], lv_tick_get())) {
+        if (det.on) {
             s_regen = true;
             s_back_at = 0;
             t5_beep(3);
@@ -1162,7 +1161,7 @@ static void regen_watch(const t5_view_t *v)
                 s_before_regen = s_cur == T5_SCR_GAUGES ? T5_SCR_GAUGES : -1;
                 show(T5_SCR_DPF);
             }
-        } else if (s_regen && t < REGEN_OFF) {
+        } else {
             s_regen = false;
             t5_beep(1);
             if (s_before_regen >= 0) s_back_at = lv_tick_get() + BACK_MS;

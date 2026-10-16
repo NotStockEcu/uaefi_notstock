@@ -11,7 +11,8 @@
  *                (normal / high), ZVUK (beeps on or off, volume, a test),
  *                JAZYK (Czech / English)
  * Swipe down: night (dimmer), swipe up: day.
- * A regeneration (the filter's surface temperature over 400 degC) beeps
+ * A regeneration (the filter's surface temperature at 580 degC or over
+ * for a minute, regen_detect.h) beeps
  * three times, brings up STAV DPF and puts REGENERACE DPF on the dial; its
  * end beeps once and goes back to the gauges.
  * Platform-free (tools/sim).

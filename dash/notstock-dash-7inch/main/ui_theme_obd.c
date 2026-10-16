@@ -16,6 +16,7 @@
 #include "ui_theme.h"
 #include "obd2.h"
 #include "dtc_text.h"
+#include "regen_detect.h"
 #include "settings.h"
 
 #include <math.h>
@@ -64,7 +65,6 @@ static int diag_shown_seq = -1, diag_shown_busy = -1, diag_shown_armed = -1;
 /* DPF page */
 #define SOOT_MAX     40.0f     /* arc full scale, g */
 #define SOOT_WARN    24.0f     /* guess until a regeneration is seen */
-#define REGEN_TEMP   400.0f    /* filter hotter than this: regenerating */
 
 enum { T_MEAS, T_DP, T_DIST, T_TEMP, T_COUNT };
 static const struct { const char *label, *unit, *fmt; } TILE[T_COUNT] = {
@@ -263,7 +263,9 @@ static void update_dpf(const dash_data_t *d, bool live)
 
     float s = live ? g_obd.dpf.soot_g : NAN;
     float temp = live ? g_obd.dpf.temp_c : NAN;
-    int r = !isnan(temp) && temp >= REGEN_TEMP;
+    static regen_det_t det;   /* the filter held hot, regen_detect.h */
+    regen_step(&det, temp, lv_tick_get());
+    int r = det.on;
 
     if (isnan(s)) {
         ui_text(soot_val, "--");
@@ -317,8 +319,8 @@ static void update_dpf(const dash_data_t *d, bool live)
     else snprintf(rpm, sizeof rpm, "%.0f", d->rpm);
     snprintf(buf, sizeof buf,
              "EXHAUST %s   RPM %s   warn at %.0f g (a guess for now)   "
-             "REGENERATING above %.0f \xC2\xB0" "C filter",
-             egt, rpm, SOOT_WARN, REGEN_TEMP);
+             "REGENERATING: filter over %.0f \xC2\xB0" "C for %u s",
+             egt, rpm, SOOT_WARN, REGEN_ON_C, REGEN_ON_MS / 1000);
     ui_text(dpf_foot, buf);
 }
 

@@ -4,6 +4,7 @@
  * LVGL turns about its pivot), its hub, the value, the DPF lamp and the
  * page dots. The DPF page has no scale: its icon and digits. */
 #include "ui_a4.h"
+#include "regen_detect.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -36,8 +37,6 @@ LV_IMG_DECLARE(a4_dpf_icon);
 #define TX         (C + 104)
 #define TW         150
 
-#define REGEN_TEMP 400.0f            /* filter hotter: regenerating (as the round gauge) */
-#define REGEN_HYST 50.0f
 #define SWEEP_MS   1400
 #define DOUBLE_MS  400
 #define NIGHT_PCT  30
@@ -482,13 +481,12 @@ void ui_a4_sweep(void)
     s_sweep_t0 = lv_tick_get();
 }
 
-/* the regeneration: hotter than REGEN_TEMP, over below it - REGEN_HYST */
+/* the regeneration: the filter held hot (regen_detect.h) */
 static void regen_watch(const rnd_data_t *d)
 {
-    float t = d->link ? d->dpf.temp_c : NAN;
-    if (isnan(t)) return;                  /* no news: keep what we had */
-    bool now = s_regen ? t >= REGEN_TEMP - REGEN_HYST : t >= REGEN_TEMP;
-    if (now == s_regen) return;
+    static regen_det_t det;
+    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN, lv_tick_get())) return;
+    bool now = det.on;
     s_regen = now;
     a4_regen_sound(now);
     /* on the dials: the DPF page comes up for the regeneration, and the

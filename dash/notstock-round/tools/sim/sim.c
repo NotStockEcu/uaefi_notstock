@@ -3,8 +3,10 @@
  *   sim out.ppm [page=N] [water=V] [oil=V] [boost=V] [intake=V]
  *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right]
  *               [screen=menu|dpf|update] [soot=G] [filter=C]
- *               [regen=start|end]   filter temperature crosses the
+ *               [regen=start|end]   the filter temperature crosses the
  *                                   regeneration threshold half way through
+ *                                   (and is held there as long as it must be,
+ *                                   regen_detect.h, before the rest of t)
  *               [screen=settings|look|limits] [limit=N] [sound=0..4] [volume=10..100]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
@@ -26,6 +28,7 @@
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
  */
+#include "regen_detect.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -266,10 +269,15 @@ int main(int argc, char **argv)
     if (regen) {
         /* first half on one side of the threshold, then the other */
         bool start = strcmp(regen, "start") == 0;
-        d.dpf.temp_c = start ? 310 : 560;
+        if (!start) {                      /* regenerating already */
+            d.dpf.temp_c = 600;
+            run(REGEN_ON_MS / 1000.0f + 0.1f, &d);
+        }
+        d.dpf.temp_c = start ? 310 : 600;
         run(t_end / 2, &d);
-        d.dpf.temp_c = start ? 585 : 290;
+        d.dpf.temp_c = start ? 600 : 290;
         if (!start) d.dpf.soot_g = 3.4f;
+        run((start ? REGEN_ON_MS : REGEN_OFF_MS) / 1000.0f, &d);   /* held */
         run(t_end / 2, &d);
     } else if (dtcclear) {
         /* read on opening, then CLEAR twice, as a finger would */

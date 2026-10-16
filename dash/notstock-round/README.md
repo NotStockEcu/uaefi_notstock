@@ -84,8 +84,11 @@ already reads (UDS 114F / 114E / 14F5 / 1156 / 1044):
 - The pill at the bottom: how full against the warn level, or REGENERATING.
 - Swipe or long press to leave.
 
-**Regeneration**: once the simulated filter temperature passes 400 degC
-(`REGEN_TEMP`, ending 50 degC below), a popup comes up over whatever screen
+**Regeneration**: once the filter temperature (the ECU's model of it) has
+stayed at 580 degC or over for a minute, ending when it has stayed under
+500 degC for 30 s (`regen_detect.h` in `../notstock-dash-7inch/main`; a
+long pull uphill heats the filter over 400 degC without regenerating), a
+popup comes up over whatever screen
 is shown, with three beeps; when it ends, a green one with the soot before
 and after and one beep. Tap closes it, otherwise it goes after 10 s. While
 it lasts the gauges show DPF REGEN under the page dots, the DPF screen

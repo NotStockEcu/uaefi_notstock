@@ -105,7 +105,8 @@ or tap the TEST / DPF tabs at the top) shows them properly:
   shows where this ECU starts one; `SOOT_WARN` in `ui_theme_obd.c`).
 - Tiles: measured soot, differential pressure, distance since regeneration,
   filter temperature.
-- **Regenerating** (filter hotter than 400 degC): the whole filter glows
+- **Regenerating** (filter at 580 degC or over for a minute, over when
+  under 500 for 30 s, `regen_detect.h`): the whole filter glows
   orange and the bar below it says so.
 
 ![obd-dpf-regen](preview/obd-dpf-regen.png)

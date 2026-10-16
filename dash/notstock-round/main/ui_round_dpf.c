@@ -9,11 +9,12 @@
  * fills up, the measured soot, differential pressure, filter temperature and
  * distance since the last regeneration. Swipe or long press to leave.
  *
- * Regeneration (filter hotter than REGEN_TEMP, with some hysteresis): a
+ * Regeneration (regen_detect.h: the filter held hot, not just hot): a
  * popup over whatever screen is up, three beeps; one beep and a second popup
  * when it ends. Tap closes a popup, or it goes by itself.
  */
 #include "ui_round_int.h"
+#include "regen_detect.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -21,7 +22,6 @@
 
 #define SOOT_MAX      40.0f    /* arc full scale and the filter's full width */
 #define SOOT_WARN     (g_rnd_set.warn[RND_WARN_SOOT])
-#define REGEN_HYST    50.0f    /* regeneration over below REGEN_TEMP - this */
 #define POPUP_MS      10000
 
 #define C_AMBER       lv_color_hex(0xE0A020)
@@ -616,11 +616,9 @@ static void popup_show(bool started, float soot)
 
 void rnd_regen_watch(const rnd_data_t *d)
 {
-    float t = d->link ? d->dpf.temp_c : NAN;
-    if (isnan(t)) return;                 /* no news: keep what we had */
-    bool now = regen ? t >= REGEN_TEMP - REGEN_HYST : t >= REGEN_TEMP;
-    if (now == regen) return;
-    regen = now;
+    static regen_det_t det;
+    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN, lv_tick_get())) return;
+    regen = det.on;
     float s = d->dpf.soot_g;
     if (regen) soot_at_start = s;
     popup_show(regen, s);

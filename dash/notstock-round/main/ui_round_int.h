@@ -136,6 +136,5 @@ void rnd_backlight_apply(void);           /* from g_rnd_set */
 void rnd_night_toggle(void);
 
 /* regeneration: popup, beep, and the flag the gauges show */
-#define REGEN_TEMP 400.0f    /* filter hotter than this: regenerating */
 void rnd_regen_watch(const rnd_data_t *d);
 bool rnd_regen_active(void);
