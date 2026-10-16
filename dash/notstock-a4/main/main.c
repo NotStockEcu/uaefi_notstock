@@ -27,7 +27,7 @@ static const char *TAG = "a4";
 #define VOLUME      70          /* % */
 #define FW          "fw16"      /* the build handed out, in the log */
 
-/* the round gauge's settings, which its shared code (motion.c, sounds) may
+/* the round gauge's settings, which its shared code (sounds) may
  * read; this gauge keeps its own in NVS "a4" */
 rnd_settings_t g_rnd_set;
 

@@ -76,18 +76,6 @@ static esp_err_t i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
     return e;
 }
 
-/* for motion_amoled.c: the same bus, the same lock */
-esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n)
-{
-    return i2c_write(addr, d, n);
-}
-
-esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
-                            uint8_t *r, size_t rn)
-{
-    return i2c_write_read(addr, w, wn, r, rn);
-}
-
 /* Logs what answers: tells a wiring problem from a driver problem. On this
  * board: 0x18 ES8311, 0x20 TCA9554, 0x34 AXP2101, 0x40 ES7210, 0x51 RTC,
  * 0x5A touch, 0x6B IMU. */
@@ -876,5 +864,4 @@ void hw_init(void)
     touch_init();
     audio_init();
     lvgl_init();
-    motion_start();
 }

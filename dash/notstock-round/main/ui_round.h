@@ -68,13 +68,6 @@ typedef struct {
     } diag;
     rnd_dtc_status_t dtc;
     bool  link;
-    struct {                  /* accelerometer, in the car's frame */
-        bool  present;
-        bool  zeroed;         /* "up" from a zero, not assumed */
-        bool  learnt;         /* "forward" learnt while driving */
-        float lon_g;          /* + speeding up, - braking */
-        float lat_g;          /* + to the right */
-    } g;
 } rnd_data_t;
 
 /* Settings. The UI edits g_rnd_set in place; the platform loads it before
@@ -117,7 +110,6 @@ void rnd_settings_save(void);         /* store g_rnd_set */
 void rnd_backlight(uint8_t percent);  /* 0..100 */
 void rnd_dtc_read(void);              /* read the trouble codes (03, 07) */
 void rnd_dtc_clear(void);             /* clear them (04), then read again */
-void rnd_g_zero(void);                /* G-meter: the car stands, zero it */
 bool rnd_update_available(void);      /* the board has the Wi-Fi updater */
 void rnd_update_start(void);          /* restart into it (does not return) */
 

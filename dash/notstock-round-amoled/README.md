@@ -46,10 +46,9 @@ silkscreen labels are what counts.)
 VBUS is the USB 5 V rail: flash with the power box unplugged. 3V3 is an
 output, never feed it.
 
-## G-meter
+## GPS
 
-MENU -> G-METER, from the board's QMI8658 (see `../notstock-round`,
-"G-meter"). On the -G board the LC76G GPS is not used; its UART reaches
+On the -G board the LC76G GPS is not used; its UART reaches
 IO17/IO18 only through R15 / R16, which are not fitted (Waveshare's
 schematic: NC/0R), so the CAN stays on IO17/IO18. If they are fitted on a
 board, take them off, or the GPS talks into the CAN receiver.

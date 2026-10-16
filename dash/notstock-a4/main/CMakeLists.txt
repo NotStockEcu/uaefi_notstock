@@ -10,7 +10,7 @@ file(GLOB SRCS "*.c" "faces/*.c" "fonts/*.c")
 list(APPEND SRCS
     "${AMOLED}/hw_amoled.c"
     "${ROUND}/can_obd.c" "${ROUND}/boot_fb.c" "${ROUND}/splash.c"
-    "${ROUND}/sounds.c" "${ROUND}/motion.c" "${ROUND}/gmeter.c"
+    "${ROUND}/sounds.c"
     "${DASH7}/obd2.c" "${DASH7}/dtc_text.c")
 
 idf_component_register(

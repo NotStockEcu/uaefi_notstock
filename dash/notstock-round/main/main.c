@@ -107,11 +107,6 @@ void rnd_backlight(uint8_t percent)
     hw_backlight(percent);
 }
 
-void rnd_g_zero(void)
-{
-    hw_g_zero();
-}
-
 /* the Wi-Fi updater: none on most boards; the 1.85" has one
  * (../notstock-round-lcd185/main/ota_lcd185.c, RND_HAVE_UPDATER) */
 #ifndef RND_HAVE_UPDATER
@@ -131,7 +126,6 @@ static void update_cb(lv_timer_t *t)
     (void)t;
     static rnd_data_t d;          /* the trouble code list is kept between */
     can_obd_fill(&d);
-    hw_motion_fill(&d);
     ui_round_update(&d);
 }
 

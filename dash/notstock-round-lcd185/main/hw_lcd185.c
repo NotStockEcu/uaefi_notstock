@@ -674,21 +674,4 @@ void hw_init(void)
     touch_init();
     audio_init();
     lvgl_init();
-    motion_start();
-}
-
-/* ------------------------------------------------- I2C for the G-meter */
-esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n)
-{
-    return i2c_write(BUS_MAIN, addr, d, n);
-}
-
-esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
-                            uint8_t *r, size_t rn)
-{
-    xSemaphoreTake(s_i2c, portMAX_DELAY);
-    esp_err_t e = i2c_master_write_read_device(BUS_MAIN, addr, w, wn, r, rn,
-                                               pdMS_TO_TICKS(50));
-    xSemaphoreGive(s_i2c);
-    return e;
 }
