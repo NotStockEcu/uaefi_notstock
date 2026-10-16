@@ -110,6 +110,19 @@ void rnd_g_zero(void)
     hw_g_zero();
 }
 
+/* the Wi-Fi updater: none on most boards; the 1.85" has one
+ * (../notstock-round-lcd185/main/ota_lcd185.c, RND_HAVE_UPDATER) */
+#ifndef RND_HAVE_UPDATER
+bool rnd_update_available(void)
+{
+    return false;
+}
+
+void rnd_update_start(void)
+{
+}
+#endif
+
 /* ------------------------------------------------------------- feeding */
 static void update_cb(lv_timer_t *t)
 {

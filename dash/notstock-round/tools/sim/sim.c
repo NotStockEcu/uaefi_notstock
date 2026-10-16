@@ -2,7 +2,7 @@
  * the round panel. Usage:
  *   sim out.ppm [page=N] [water=V] [oil=V] [boost=V] [intake=V]
  *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right]
- *               [screen=menu|dpf] [soot=G] [filter=C]
+ *               [screen=menu|dpf|update] [soot=G] [filter=C]
  *               [regen=start|end]   filter temperature crosses the
  *                                   regeneration threshold half way through
  *               [screen=settings|look|limits] [limit=N] [sound=0..4] [volume=10..100]
@@ -75,6 +75,16 @@ void rnd_sim_settings(const char *which, int limit);
 void rnd_g_zero(void)
 {
     fprintf(stderr, "G-meter zeroed\n");
+}
+
+/* the menu as on the 1.85": with AKTUALIZACE */
+bool rnd_update_available(void)
+{
+    return true;
+}
+
+void rnd_update_start(void)
+{
 }
 
 /* ---------------------------------------------------- fake trouble codes */
@@ -251,6 +261,10 @@ int main(int argc, char **argv)
         extern void rnd_menu_open(void);
         if (strcmp(screen, "dpf") == 0)  lv_scr_load(rnd_dpf_screen());
         if (strcmp(screen, "menu") == 0) rnd_menu_open();
+        if (strcmp(screen, "update") == 0) {
+            extern void rnd_update_open(void);
+            rnd_update_open();
+        }
         if (strcmp(screen, "diag") == 0) {
             extern void rnd_diag_open(void);
             rnd_diag_open();

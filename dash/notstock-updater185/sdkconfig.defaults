@@ -1,0 +1,26 @@
+# ---- target ----------------------------------------------------------------
+CONFIG_IDF_TARGET="esp32s3"
+
+# ---- flash / PSRAM: as the gauge (../notstock-round-lcd185) ----------------
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+# the gauge's table: this app in "factory", the gauge in "ota_0"
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="../notstock-round-lcd185/partitions.csv"
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+
+# ---- small: it has to fit its 1.9 MB partition -----------------------------
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+CONFIG_BT_ENABLED=n
+
+# ---- console on the native USB, as the gauge --------------------------------
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+
+# ---- the web page: phones send long headers --------------------------------
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=2048
+CONFIG_HTTPD_MAX_URI_LEN=1024

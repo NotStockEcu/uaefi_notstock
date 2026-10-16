@@ -118,6 +118,8 @@ void rnd_dots_set(lv_obj_t *d[RND_PAGES], int page, lv_color_t on,
 lv_obj_t *rnd_gauge_screen(void);
 void rnd_menu_create(void);
 void rnd_menu_open(void);
+void rnd_update_create(void);         /* AKTUALIZACE, ui_round_upd.c */
+void rnd_update_open(void);
 void rnd_dpf_create(void);
 lv_obj_t *rnd_dpf_screen(void);
 void rnd_dpf_update(const rnd_data_t *d);

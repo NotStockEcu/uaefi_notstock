@@ -30,11 +30,27 @@ ESP-IDF 5.x, from this folder:
 
 ```
 idf.py set-target esp32s3
-idf.py build flash monitor
+idf.py build
 ```
 
-The board's USB-C is the ESP32-S3's own USB: flashing and the console go
-there. Unplug the CAN board's battery wires from the display first.
+The flash holds two apps (`partitions.csv`): this gauge in `ota_0` and,
+in `factory`, the Wi-Fi updater ([`../notstock-updater185`](../notstock-updater185)).
+The first time, over the board's USB-C (the ESP32-S3's own USB; unplug the
+CAN board's battery wires from the display first), both, with the
+updater built too:
+
+```
+esptool.py --chip esp32s3 -b 460800 write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m \
+  0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin \
+  0xf000 build/ota_data_initial.bin 0x20000 ../notstock-updater185/build/notstock_updater185.bin \
+  0x200000 build/notstock_round_lcd185.bin
+```
+
+Not `idf.py flash`: it would put the gauge at the first app partition,
+the updater's (the build's warning that one app partition is too small
+for it says the same). After that, over Wi-Fi: MENU -> AKTUALIZACE ->
+SPUSTIT, then on a phone the network NOTSTOCK-185 (password notstock),
+http://192.168.4.1, and `build/notstock_round_lcd185.bin` uploaded there.
 
 ## Pins
 

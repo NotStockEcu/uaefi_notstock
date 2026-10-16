@@ -72,6 +72,12 @@ static void go_menu(lv_event_t *e)
     rnd_menu_open();
 }
 
+static void go_update(lv_event_t *e)
+{
+    (void)e;
+    rnd_update_open();
+}
+
 static lv_obj_t *menu_item(const char *text, lv_coord_t y, lv_event_cb_t cb)
 {
     lv_obj_t *b = lv_obj_create(menu);
@@ -122,8 +128,17 @@ void rnd_menu_create(void)
     menu_item(TR("G-METER", "G-METR"), 276, go_g);
     menu_item(TR("SETTINGS", "NASTAVENÍ"), 340, go_settings);
 
-    lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 410);
-    lv_label_set_text(h, TR("LONG PRESS: BACK", "PODRŽ: ZPĚT"));
+    /* the updater, where the board has one, in place of the hint */
+    if (rnd_update_available()) {
+        lv_obj_t *u = menu_item(TR("UPDATE", "AKTUALIZACE"), 406, go_update);
+        lv_obj_set_size(u, 220, 40);
+        lv_obj_set_style_text_font(lv_obj_get_child(u, 0), &rnd_18, 0);
+        lv_obj_set_style_text_color(lv_obj_get_child(u, 0), C_GREY, 0);
+        rnd_update_create();
+    } else {
+        lv_obj_t *h = rnd_label(menu, &rnd_18, C_DIM, 410);
+        lv_label_set_text(h, TR("LONG PRESS: BACK", "PODRŽ: ZPĚT"));
+    }
 }
 
 /* ------------------------------------------------------ DPF status screen */
