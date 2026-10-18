@@ -114,7 +114,9 @@ diagnostics. Menu and settings stay the same in every look.
   limit), red ticks and a red band past the limit (finely broken at the
   limit, solid towards the end), a red needle on a black hub, and value,
   name and unit in the lower right. Exhaust and rpm are numbered in
-  hundreds and thousands. No maker's logo.
+  hundreds and thousands; MULTI in the same dress (`red_multi`: the big
+  scale over the top half, three small dials with red rings). No maker's
+  logo.
 - **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
   instrument of the VDO kind.
   Chrome bezel, black dial, white print, a glass sheen, all pre-rendered

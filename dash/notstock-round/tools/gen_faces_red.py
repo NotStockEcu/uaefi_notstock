@@ -126,6 +126,63 @@ def build(N):
     return faces, scales, nd, cp, geo
 
 
+MULTI = {480: (132, 92, 52), 466: (128, 90, 50)}   # faces.h: MULTI_MINI_DX, _Y, _R
+
+
+def build_multi(N):
+    """MULTI in the RED look: the face and rim as the dials, a scale of white
+    dashes over the top half for the big value (ui_round_multi.c draws its
+    needle, red zone and digits), and three small dials below, each with a
+    thin red lit ring and dashes over 270 degrees"""
+    k = N / 466.0
+    C = N / 2
+    R_RIM, R_TICK = 225 * k, 214 * k
+    DX, MY, MR = MULTI[N]
+
+    def P(x):
+        return int(round(x * SS))
+
+    im = Image.new("RGB", (N * SS, N * SS), (0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for r in range(int(232 * k), 0, -3):
+        q = max(0.0, (r - 140 * k) / (92 * k)) ** 2
+        g = int(2 + 10 * q)
+        d.ellipse([P(C - r), P(C - r), P(C + r), P(C + r)], fill=(g + 3, g, g))
+    glow = Image.new("RGB", im.size, (0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse([P(C - R_RIM), P(C - R_RIM), P(C + R_RIM), P(C + R_RIM)],
+               outline=(170, 14, 22), width=P(8 * k))
+    minis = [(C + (i - 1) * DX, C + MY) for i in range(3)]
+    for x, y in minis:
+        gd.ellipse([P(x - MR), P(y - MR), P(x + MR), P(y + MR)], outline=(150, 12, 20), width=P(5))
+    im = ImageChops.add(im, glow.filter(ImageFilter.GaussianBlur(P(5 * k))))
+    d = ImageDraw.Draw(im)
+    d.ellipse([P(C - R_RIM), P(C - R_RIM), P(C + R_RIM), P(C + R_RIM)],
+              outline=(235, 40, 44), width=P(2))
+    for x, y in minis:
+        d.ellipse([P(x - MR), P(y - MR), P(x + MR), P(y + MR)], fill=(4, 3, 3),
+                  outline=(225, 38, 42), width=P(1.5))
+
+    marks = Image.new("RGB", im.size, (0, 0, 0))
+    md = ImageDraw.Draw(marks)
+    for i in range(21):                      # big: 180 .. 360 deg, every 5 %
+        a = math.radians(180 + 180 * i / 20)
+        major = i % 5 == 0
+        ln, w = (20 * k, 7) if major else (12 * k, 4.5)
+        md.line([(P(C + (R_TICK - ln) * math.cos(a)), P(C + (R_TICK - ln) * math.sin(a))),
+                 (P(C + R_TICK * math.cos(a)), P(C + R_TICK * math.sin(a)))], fill=WHITE, width=P(w))
+    for x, y in minis:                       # small: 135 .. 405 deg
+        for i in range(11):
+            a = math.radians(135 + 270 * i / 10)
+            ro = MR - 5
+            ln, w = (9, 3.5) if i % 5 == 0 else (5, 2.5)
+            md.line([(P(x + (ro - ln) * math.cos(a)), P(y + (ro - ln) * math.sin(a))),
+                     (P(x + ro * math.cos(a)), P(y + ro * math.sin(a)))], fill=WHITE, width=P(w))
+    halo = Image.eval(marks.filter(ImageFilter.GaussianBlur(P(3))), lambda c: int(c * 0.45))
+    im = ImageChops.add(ImageChops.add(im, halo), marks)
+    return im.resize((N, N), Image.LANCZOS)
+
+
 def c_img(name, data, w, h, cf):
     s = ["static const uint8_t %s_px[%d] = {" % (name, len(data))]
     for i in range(0, len(data), 24):
@@ -164,6 +221,10 @@ for N in (480, 466):
         if N == 480:
             im.save(os.path.join(ROOT, "preview", "red-face-%s.png" % pid))
         body.append(rgb565("red_face_%s" % pid, im))
+    mm = build_multi(N)
+    if N == 480:
+        mm.save(os.path.join(ROOT, "preview", "red-face-multi.png"))
+    body.append(rgb565("red_multi", mm))
     body.append(rgb565("red_needle", nd, True))
     body.append(rgb565("red_cap", cp, True))
     body.append("const lv_img_dsc_t *const red_face[6] = {\n    %s,\n};\n"
@@ -180,7 +241,8 @@ for N in (480, 466):
          "#define RED_R_BAND0 %d" % round(geo["R_BAND0"]), "#define RED_R_BAND1 %d" % round(geo["R_BAND1"]),
          "#define RED_NEEDLE_PY %d    /* the pivot: left edge, this far down */" % geo["NEEDLE_PY"], "",
          "extern const lv_img_dsc_t *const red_face[6];   /* in page order */",
-         "extern const lv_img_dsc_t red_needle, red_cap;", ""]
+         "extern const lv_img_dsc_t red_needle, red_cap, red_multi;",
+         "#define RED_R_TICK %d" % round(geo["R_TICK"]), ""]
     names = []
     for pid, lo, hi, tk, nm in scales:
         u = pid.upper()

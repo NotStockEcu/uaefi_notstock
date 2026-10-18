@@ -12,6 +12,7 @@
  * the screen as on any other page.
  */
 #include "ui_round_int.h"
+#include "red.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -69,8 +70,10 @@ static float frac_of(int id, float v)
 /* How a slot is drawn depends on the look:
  *   NOTSTOCK  a white arc (the big one over the top, small ones 270 degrees)
  *   RETRO     needles on a pre-rendered dial (face_retro_multi): the big
- *             one over the top half, small ones on their own dials */
-enum { ST_NOTSTOCK, ST_RETRO };
+ *             one over the top half, small ones on their own dials
+ *   RED       the same in the A4 gauge's dress (red_multi): red lit rim
+ *             and rings, white dashes, red needles and zones */
+enum { ST_NOTSTOCK, ST_RETRO, ST_RED };
 
 typedef struct {
     lv_obj_t *box, *val, *name, *unit;
@@ -270,9 +273,65 @@ static void build_retro(void)
     disc(s->box, CX, CX, 40, lv_color_hex(0x111111), lv_color_hex(0x55575A));
 }
 
+/* -------------------------------------------------------------- RED */
+LV_FONT_DECLARE(red_fis_54);
+LV_FONT_DECLARE(red_txt_22);
+#define C_RED_LIT  lv_color_hex(0xF02A26)
+#define C_RED_VAL  lv_color_hex(0xEEEEEC)
+#define C_RED_DIM  lv_color_hex(0xA0A0A0)
+
+/* the A4 gauge's dials (ui_look_red.c): red_multi has the face, the big
+ * scale over the top half and the three small dials; live the red zones,
+ * the needles, name, value and unit */
+static void build_red(void)
+{
+    lv_obj_t *bg = lv_img_create(layer);
+    lv_img_set_src(bg, &red_multi);
+    lv_obj_set_pos(bg, 0, 0);
+    lv_obj_clear_flag(bg, LV_OBJ_FLAG_CLICKABLE);
+
+    slot_t *s = &slot[0];
+    s->box = box_in(layer);
+    s->start = 180;
+    s->sweep = 180;
+    s->zone = arc_at(s->box, 2 * RED_R_BAND1, RED_R_BAND1 - RED_R_BAND0, 180, 180,
+                     ARC_BAND, C_RED_LIT);
+    lv_obj_center(s->zone);
+    s->name = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 130, 300);
+    lv_obj_set_style_text_letter_space(s->name, 3, 0);
+    s->val = label_at(s->box, &red_fis_54, C_RED_VAL, CX, CX - 82, 260);
+    s->unit = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 40, 220);
+    s->cx = s->cy = CX;
+    s->r0 = -16;
+    s->r1 = RED_R_TICK - 26;
+
+    for (int i = 1; i < RND_MULTI_SLOTS; i++) {
+        s = &slot[i];
+        int x = CX + (i - 2) * MULTI_MINI_DX, y = CX + MULTI_MINI_Y;
+        s->box = box_in(layer);
+        s->start = 135;
+        s->sweep = 270;
+        int r = MULTI_MINI_R - 18;
+        s->zone = arc_at(s->box, 2 * r + 4, 4, 135, 270, ARC_BAND, C_RED_LIT);
+        lv_obj_set_pos(s->zone, x - r - 2, y - r - 2);
+        s->val = label_at(s->box, &red_txt_22, C_RED_VAL, x, y + 24, 90);
+        s->name = label_at(s->box, &red_txt_22, C_RED_DIM, x, y + MULTI_MINI_R + 14, 140);
+        s->cx = x;
+        s->cy = y;
+        s->r0 = -6;
+        s->r1 = MULTI_MINI_R - 10;
+        s->needle = line_in(s->box, 3, C_RED_LIT, LV_OPA_COVER);
+        disc(s->box, x, y, 12, lv_color_hex(0x060607), lv_color_hex(0xB0181C));
+    }
+    s = &slot[0];
+    s->needle = line_in(s->box, 6, C_RED_LIT, LV_OPA_COVER);
+    disc(s->box, CX, CX, 44, lv_color_hex(0x060607), lv_color_hex(0xB0181C));
+}
+
 void rnd_multi_build(lv_obj_t *gauge_scr)
 {
-    style = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO : ST_NOTSTOCK;
+    style = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO :
+            g_rnd_set.look == RND_LOOK_RED ? ST_RED : ST_NOTSTOCK;
     memset(slot, 0, sizeof slot);
     layer = lv_obj_create(gauge_scr);
     lv_obj_remove_style_all(layer);
@@ -281,8 +340,9 @@ void rnd_multi_build(lv_obj_t *gauge_scr)
     lv_obj_set_style_bg_opa(layer, LV_OPA_COVER, 0);
     lv_obj_clear_flag(layer, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
 
-    if (style == ST_RETRO) build_retro();
-    else                   build_notstock();
+    if (style == ST_RETRO)    build_retro();
+    else if (style == ST_RED) build_red();
+    else                      build_notstock();
 
     regen_lbl = rnd_label(layer, &rnd_18, C_REGEN,
                           style == ST_RETRO ? CX + 20 : CX + 10);
@@ -389,7 +449,7 @@ void rnd_multi_update(const rnd_data_t *d)
             s->warn = w;
             slot_warn(s, w);
         }
-        if (i == 0 && style != ST_RETRO) {
+        if (i == 0 && style == ST_NOTSTOCK) {
             /* four digits and more: the smaller font, like the gauges */
             int digits = 0;
             for (const char *c = buf; *c; c++) digits += *c != '.';
