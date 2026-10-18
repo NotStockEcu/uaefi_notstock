@@ -67,7 +67,7 @@ static void settings_load(void)
         tmp.lang < RND_LANG_COUNT &&
         tmp.sound < RND_SND_COUNT && tmp.volume >= 10 && tmp.volume <= 100) {
         g_rnd_set = tmp;
-        /* a look that is gone (FUTURO was 2): NOTSTOCK, the rest kept */
+        /* a look this build does not have: NOTSTOCK, the rest kept */
         if (g_rnd_set.look >= RND_LOOK_COUNT) g_rnd_set.look = RND_LOOK_NOTSTOCK;
         ESP_LOGI(TAG, "settings loaded");
     } else {

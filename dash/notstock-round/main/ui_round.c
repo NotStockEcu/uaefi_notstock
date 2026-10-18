@@ -38,6 +38,7 @@ static const struct {
 static const rnd_look_t *const LOOKS[RND_LOOK_COUNT] = {
     [RND_LOOK_NOTSTOCK] = &rnd_look_notstock,
     [RND_LOOK_RETRO]    = &rnd_look_retro,
+    [RND_LOOK_RED]      = &rnd_look_red,
 };
 
 /* value arc and its glow: width added, opacity */

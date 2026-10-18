@@ -104,9 +104,17 @@ the buzzer sits on the TCA9554 expander (EXIO8).
 SETTINGS -> LOOK, applies at once, to the gauges, MULTI, DPF status and
 diagnostics. Menu and settings stay the same in every look.
 
-![retro](preview/retro-boost.png)
+![retro](preview/retro-boost.png) ![red](preview/red-face-rpm.png)
 
 - **NOTSTOCK**: the faces above, glowing value arc.
+- **RED** (`ui_look_red.c`): the A4 gauge's dials (`../notstock-a4`,
+  after the A4 B8 cluster at night) for these pages: black face, red lit
+  rim, white dashes, pre-rendered per page (`tools/gen_faces_red.py`, 480
+  and 466 px, `main/faces*/red.c`); live the numerals (red from the
+  limit), red ticks and a red band past the limit (finely broken at the
+  limit, solid towards the end), a red needle on a black hub, and value,
+  name and unit in the lower right. Exhaust and rpm are numbered in
+  hundreds and thousands. No maker's logo.
 - **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
   instrument of the VDO kind.
   Chrome bezel, black dial, white print, a glass sheen, all pre-rendered
@@ -141,7 +149,7 @@ gone: nobody used it; a gauge that had it set shows NOTSTOCK.)
 Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
-- **LOOK**: NOTSTOCK, VDO STYLE (RETRO).
+- **LOOK**: NOTSTOCK, VDO STYLE (RETRO), RED.
 - **PAGES**: one gauge at a time in swipe order: SHOWN / HIDDEN, `<` and
   `>` move it earlier or later, swipe for the next. The gauges then swipe
   through the shown ones only, and their dots count those; the last shown

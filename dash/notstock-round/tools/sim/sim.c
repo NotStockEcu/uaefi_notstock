@@ -10,7 +10,7 @@
  *               [screen=settings|look|limits] [limit=N] [sound=0..4] [volume=10..100]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
- *               [look=N]            RND_LOOK_*: 0 NOTSTOCK, 1 RETRO
+ *               [look=N]            RND_LOOK_*: 0 NOTSTOCK, 1 RETRO, 2 RED
  *               [relook=N,M,...]    switch looks while running, as LOOK does
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]

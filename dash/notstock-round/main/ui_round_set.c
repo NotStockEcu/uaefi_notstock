@@ -116,6 +116,7 @@ static void night_step(lv_event_t *e)
 static const char *const LOOK_NAME[RND_LOOK_COUNT] = {
     [RND_LOOK_NOTSTOCK] = "NOTSTOCK",
     [RND_LOOK_RETRO]    = "VDO STYLE",
+    [RND_LOOK_RED]      = "RED",
 };
 
 static void show_sound(void)

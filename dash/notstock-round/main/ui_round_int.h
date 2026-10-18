@@ -78,7 +78,7 @@ typedef struct {
     void (*draw)(const rnd_view_t *v);      /* every frame */
 } rnd_look_t;
 
-extern const rnd_look_t rnd_look_notstock, rnd_look_retro;
+extern const rnd_look_t rnd_look_notstock, rnd_look_retro, rnd_look_red;
 void rnd_look_apply(void);                  /* g_rnd_set.look changed */
 
 /* page names (WATER, OIL, ...) and units, in the current language; the
