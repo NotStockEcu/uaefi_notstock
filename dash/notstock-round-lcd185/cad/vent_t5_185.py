@@ -167,24 +167,8 @@ out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the fron
 res = to_tm(out)
 res.export(f"{D}/vent185.stl")
 
-alone = to_tm(tube - box(-50, 50, -50, 50, 0, 10))   # printed face down
-alone.apply_transform(np.diag([1, -1, -1, 1]))
-alone.apply_translation([0, 0, -alone.bounds[0][2]])
-alone.export(f"{D}/tube185.stl")
-
-# the lid: plate, a skirt into the tube with six crush ribs, bosses down to
-# the board at the screws, the J1 window
-lid = cyl(R_OUT, W_LID - LID, W_LID, seg=180)
-lid += cyl(R_IN - 0.15, W_LID, W_LID + 3.0, seg=180) - cyl(R_IN - 1.4, W_LID - 1, W_LID + 4, seg=180)
-for k in range(6):
-    a = np.radians(30 + 60 * k)
-    lid += cyl(0.5, W_LID, W_LID + 3.0, (R_IN - 0.35) * np.cos(a), (R_IN - 0.35) * np.sin(a), 16)
-for u, v in HOLES:
-    lid += cyl(BOSS_R, W_LID - 0.5, W_BTOP, u, v, 48)
-    lid -= cyl(1.15, W_LID - LID - 1, W_BTOP + 1, u, v, 24)
-    lid -= cyl(BORE_R, W_LID - LID - 1, W_BTOP - FLOOR, u, v, 32)    # the head's way
-# sound holes under the speaker, and a ring to find its place by
 spk_d = np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)]) * (SPK_L - SPK_W) / 2
+spk_u = spk_d / max(np.linalg.norm(spk_d), 1e-9) if SPK_L > SPK_W else np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)])
 
 
 def oval(off):
@@ -193,24 +177,54 @@ def oval(off):
     return (c[0] + c[1]).hull()
 
 
-spk_u = spk_d / max(np.linalg.norm(spk_d), 1e-9) if SPK_L > SPK_W else np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)])
-for i in range(-9, 10):
-    for j in range(-8, 9):
-        p = np.array([SPK_AT[0] + 3.2 * (i + 0.5 * (j % 2)), SPK_AT[1] + 2.77 * j])
-        q = p - np.array(SPK_AT)
-        t = np.clip(np.dot(q, spk_d) / max(np.dot(spk_d, spk_d), 1e-9), -1, 1)
-        if np.linalg.norm(q - t * spk_d) <= SPK_W / 2 - 3.5:
-            lid -= cyl(0.8, W_LID - LID - 1, W_LID + 1, p[0], p[1], 16)
-ring = (oval(SPK_RING) - oval(0.3)).extrude(0.8).translate((0, 0, W_LID))
-gap = np.array(SPK_AT) + spk_u * (SPK_L / 2)               # open at the lug
-ring -= cyl(3.5, W_LID - 1, W_LID + 2, gap[0], gap[1], 32)
-lid += ring
-lid -= box(J1_WIN[0], J1_WIN[1], J1_WIN[2], J1_WIN[3], W_LID - LID - 1, W_LID + 5)
+def make_lid(r_out, r_in):
+        # the lid: plate, a skirt into the tube with six crush ribs, bosses down to
+    # the board at the screws, the J1 window
+    lid = cyl(r_out, W_LID - LID, W_LID, seg=180)
+    lid += cyl(r_in - 0.15, W_LID, W_LID + 3.0, seg=180) - cyl(r_in - 1.4, W_LID - 1, W_LID + 4, seg=180)
+    for k in range(6):
+        a = np.radians(30 + 60 * k)
+        lid += cyl(0.5, W_LID, W_LID + 3.0, (r_in - 0.35) * np.cos(a), (r_in - 0.35) * np.sin(a), 16)
+    for u, v in HOLES:
+        lid += cyl(BOSS_R, W_LID - 0.5, W_BTOP, u, v, 48)
+        lid -= cyl(1.15, W_LID - LID - 1, W_BTOP + 1, u, v, 24)
+        lid -= cyl(BORE_R, W_LID - LID - 1, W_BTOP - FLOOR, u, v, 32)    # the head's way
+    # sound holes under the speaker, and a ring to find its place by
+    for i in range(-9, 10):
+        for j in range(-8, 9):
+            p = np.array([SPK_AT[0] + 3.2 * (i + 0.5 * (j % 2)), SPK_AT[1] + 2.77 * j])
+            q = p - np.array(SPK_AT)
+            t = np.clip(np.dot(q, spk_d) / max(np.dot(spk_d, spk_d), 1e-9), -1, 1)
+            if np.linalg.norm(q - t * spk_d) <= SPK_W / 2 - 3.5:
+                lid -= cyl(0.8, W_LID - LID - 1, W_LID + 1, p[0], p[1], 16)
+    ring = (oval(SPK_RING) - oval(0.3)).extrude(0.8).translate((0, 0, W_LID))
+    gap = np.array(SPK_AT) + spk_u * (SPK_L / 2)               # open at the lug
+    ring -= cyl(3.5, W_LID - 1, W_LID + 2, gap[0], gap[1], 32)
+    lid += ring
+    lid -= box(J1_WIN[0], J1_WIN[1], J1_WIN[2], J1_WIN[3], W_LID - LID - 1, W_LID + 5)
+    return lid
+
+
+lid = make_lid(R_OUT, r_in=R_IN)
 lid_placed = place(lid)
 lt = to_tm(lid)                     # printed outside face down
 lt.apply_transform(np.diag([1, -1, -1, 1]))
 lt.apply_translation(-lt.bounds[0])
 lt.export(f"{D}/lid185.stl")
+
+# the tube alone, no vent round it and no lip: the gauge anywhere, the
+# display in from the front or the back (its edge parts as they come),
+# the glass flush with the face, the stack held by the lid on the tube's end
+T_IN, T_OUT = 28.0, 30.4
+plain = cyl(T_OUT, W_LID, 0, seg=180) - cyl(T_IN, W_LID - 1, 1, seg=180)
+pt = to_tm(plain)                   # printed face down
+pt.apply_transform(np.diag([1, -1, -1, 1]))
+pt.apply_translation([0, 0, -pt.bounds[0][2]])
+pt.export(f"{D}/tube185.stl")
+plid = to_tm(make_lid(T_OUT, T_IN))
+plid.apply_transform(np.diag([1, -1, -1, 1]))
+plid.apply_translation(-plid.bounds[0])
+plid.export(f"{D}/lid185_tube.stl")
 
 sleeve = cyl(2.0, 0, SLEEVE, seg=48) - cyl(1.2, -1, SLEEVE + 1, seg=24)
 sl = mf.Manifold()
@@ -231,7 +245,11 @@ dm.export(f"{D}/disp185_placed.stl")
 touch = (out ^ lid_placed).volume()
 with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
-    f.write(f"tube alone: watertight {alone.is_watertight}, {alone.extents.round(1)} mm\n")
+    pd = to_tm(plain)
+    pp = np.vstack([trimesh.sample.sample_surface(disp, 40000)[0], disp.vertices])[::4] + [0, 0, DZ]
+    pin = [k for k in np.arange(-32, 32.5, 0.5) if pd.contains(pp + [0, 0, k]).any()]
+    f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight} and {plid.is_watertight} (its lid), "
+            f"the display's way through it {'blocked at ' + str(pin) if pin else 'clear'}\n")
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
     f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
