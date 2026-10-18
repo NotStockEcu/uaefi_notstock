@@ -16,7 +16,9 @@ thing that shows at the back.
 
 DIR/disp185.stl: Waveshare's STEP of the display as STL (glass front at
 z = -0.5, standoffs ending at z = -9.0, x right and y up seen from the
-front). Writes DIR/vent185.stl, lid185.stl, sleeve185.stl, fit185.txt.
+front). Writes DIR/vent185.stl, lid185.stl, sleeve185.stl, fit185.txt, and
+tube185.stl: the tube alone, no vent round it, to put the gauge anywhere
+(the same lid).
 UP = -1 turns the display (and the lid's window) half round in the vent.
 
 The speaker (the display's, on its 2-pin socket) is glued inside the lid,
@@ -165,6 +167,11 @@ out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the fron
 res = to_tm(out)
 res.export(f"{D}/vent185.stl")
 
+alone = to_tm(tube - box(-50, 50, -50, 50, 0, 10))   # printed face down
+alone.apply_transform(np.diag([1, -1, -1, 1]))
+alone.apply_translation([0, 0, -alone.bounds[0][2]])
+alone.export(f"{D}/tube185.stl")
+
 # the lid: plate, a skirt into the tube with six crush ribs, bosses down to
 # the board at the screws, the J1 window
 lid = cyl(R_OUT, W_LID - LID, W_LID, seg=180)
@@ -224,6 +231,7 @@ dm.export(f"{D}/disp185_placed.stl")
 touch = (out ^ lid_placed).volume()
 with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
+    f.write(f"tube alone: watertight {alone.is_watertight}, {alone.extents.round(1)} mm\n")
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
     f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")

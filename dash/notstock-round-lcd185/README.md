@@ -97,7 +97,8 @@ AKTUALIZACE) or pull the lid out.
 
 `python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W]` with `holder.stl`
 and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes `vent185.stl`,
-`lid185.stl`, `sleeve185.stl` (three) and `fit185.txt`. UP = -1 turns the
+`lid185.stl`, `sleeve185.stl` (three), `fit185.txt` and `tube185.stl`: the tube alone
+(59.2 mm across, 24.3 deep, the same lid) to put the gauge anywhere. UP = -1 turns the
 display half round in the vent (J1 at the bottom); SPK_T, SPK_L and SPK_W
 are the speaker's thickness, length and width in mm (5, 30, 20). Needs trimesh and
 manifold3d.
