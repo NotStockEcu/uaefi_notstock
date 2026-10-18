@@ -81,17 +81,26 @@ behind it: a tube round the display, its face flush with the louvers', a
 lip round the glass (the display goes in from the back), and a lid at the
 back with a window for the board's 4-pin JST, nothing else showing.
 
-The stack is held by three M2 x 16 screws through the display's own three
-standoffs: lid (2.0 mm, its boss 3.5) | CAN board (1.6) | a printed sleeve
-(5.9; or a smooth 6 mm M2 spacer) | standoff (the screw 3 mm into its 4).
-Screw the stack together first, then push it into the tube from the back
-until the glass sits in the lip: the lid's skirt holds in the tube on six
-crush ribs. The display's USB-C is inside: to flash, pull the lid out.
+The stack is held by three M2 x 12 screws through the display's own three
+standoffs: lid boss floor (1.5) | CAN board (1.6) | a printed sleeve (5.9;
+or a smooth 6 mm M2 spacer) | standoff (the screw 3 mm into its 4). The
+bosses are 8.4 mm tall, the screws go in from the back down a 4.3 mm bore
+in each, so the lid stands off the board and leaves room for the
+display's speaker: glued inside the lid over its sound holes (a raised
+ring marks the place), its wire round the CAN board's edge to the
+display's 2-pin socket. Room for a speaker up to 5 mm thick and 28 mm
+wide (round, or 28 x 20). Screw the stack together first, then push it
+into the tube from the back until the glass sits in the lip: the lid's
+skirt holds in the tube on six crush ribs. 26.7 mm deep in all behind
+the face. The display's USB-C is inside: update over Wi-Fi (MENU >
+AKTUALIZACE) or pull the lid out.
 
-`python3 cad/vent_t5_185.py DIR [UP]` with `holder.stl` and `disp185.stl`
-(Waveshare's STEP as STL) in DIR; writes `vent185.stl`, `lid185.stl`,
-`sleeve185.stl` (three) and `fit185.txt`. UP = -1 turns the display half
-round in the vent (J1 at the bottom). Needs trimesh and manifold3d.
+`python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_D]` with `holder.stl`
+and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes `vent185.stl`,
+`lid185.stl`, `sleeve185.stl` (three) and `fit185.txt`. UP = -1 turns the
+display half round in the vent (J1 at the bottom); SPK_T and SPK_D are
+the speaker's thickness and width in mm (5, 28). Needs trimesh and
+manifold3d.
 
 ## If something is off
 

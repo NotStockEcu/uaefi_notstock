@@ -5,10 +5,10 @@ ESP32-S3-LCD-1.85 with the CAN 1.85 board (../../notstock-can185) behind it.
 The ring goes; in its place a tube round the display, its face in the
 louvers' front plane (flush, nothing standing out). A lip round the glass
 at the front hides the board's edge, so the display goes in from the back.
-The stack behind it is held by three M2 x 16 screws through the display's
-own three standoffs:
+The stack behind it is held by three M2 x 12 screws through the display's
+own three standoffs, their heads down in the lid's bosses on the board:
 
-    lid (2.0) | boss (3.5) | CAN board (1.6) | sleeve (5.9) | standoff (3 of 4 mm)
+    boss floor (1.5) | CAN board (1.6) | sleeve (5.9) | standoff (3 of 4 mm)
 
 The lid plugs into the tube's back end (crush ribs, no screws into the
 tube) and has a window for the CAN board's 4-pin JST PH (J1), the only
@@ -17,7 +17,14 @@ thing that shows at the back.
 DIR/disp185.stl: Waveshare's STEP of the display as STL (glass front at
 z = -0.5, standoffs ending at z = -9.0, x right and y up seen from the
 front). Writes DIR/vent185.stl, lid185.stl, sleeve185.stl, fit185.txt.
-UP = -1 turns the display (and the lid's window) half round in the vent."""
+UP = -1 turns the display (and the lid's window) half round in the vent.
+
+The speaker (the display's, on its 2-pin socket) is glued inside the lid,
+over sound holes, in the room between the lid and the CAN board: SPK_T is
+how thick it is (default 5 mm), SPK_D how wide (default 28 mm, round or up
+to 28 x 20 rectangular). The lid's bosses grow with it; the screws go in
+from the lid down a bore in each boss to its 1.5 mm floor on the board,
+so M2 x 12 does whatever the speaker."""
 import sys
 import numpy as np
 import trimesh
@@ -25,6 +32,8 @@ import manifold3d as mf
 
 D = sys.argv[1]
 UP = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+SPK_T = float(sys.argv[3]) if len(sys.argv) > 3 else 5.0
+SPK_D = float(sys.argv[4]) if len(sys.argv) > 4 else 28.0
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
@@ -55,8 +64,12 @@ W_LIP = -3.6 + DZ + 0.1      # the lip's back: just in front of the display's bo
 W_STAND = -9.0 + DZ          # the standoffs' ends
 SLEEVE = 5.9
 BOARD = 1.6
-GAP = 3.5                    # over the CAN board's parts (L1 2.6 mm the tallest)
+# over the CAN board's parts (L1 2.6 mm the tallest), and the speaker
+GAP = 3.0 + SPK_T + 0.4
 LID = 2.0
+FLOOR = 1.5                  # the bosses' floor on the board, under the heads
+BOSS_R, BORE_R = 3.3, 2.15   # the bosses, and their bore for an M2 head
+SPK_AT = (-2.0, -5.0)        # the speaker's middle: clear of J1 and the bosses
 W_BFRONT = W_STAND - SLEEVE
 W_BTOP = W_BFRONT - BOARD
 W_LID = W_BTOP - GAP         # the lid's inner face
@@ -124,8 +137,18 @@ for k in range(6):
     a = np.radians(30 + 60 * k)
     lid += cyl(0.5, W_LID, W_LID + 3.0, (R_IN - 0.35) * np.cos(a), (R_IN - 0.35) * np.sin(a), 16)
 for u, v in HOLES:
-    lid += cyl(2.3, W_LID - 0.5, W_BTOP, u, v, 48)
+    lid += cyl(BOSS_R, W_LID - 0.5, W_BTOP, u, v, 48)
     lid -= cyl(1.15, W_LID - LID - 1, W_BTOP + 1, u, v, 24)
+    lid -= cyl(BORE_R, W_LID - LID - 1, W_BTOP - FLOOR, u, v, 32)    # the head's way
+# sound holes under the speaker, and a ring to find its place by
+r_holes = SPK_D / 2 - 4
+for i in range(-6, 7):
+    for j in range(-6, 7):
+        hx = SPK_AT[0] + 3.2 * (i + 0.5 * (j % 2))
+        hy = SPK_AT[1] + 2.77 * j
+        if np.hypot(hx - SPK_AT[0], hy - SPK_AT[1]) <= r_holes:
+            lid -= cyl(0.8, W_LID - LID - 1, W_LID + 1, hx, hy, 16)
+lid += cyl(SPK_D / 2 + 1.2, W_LID, W_LID + 0.8, *SPK_AT) - cyl(SPK_D / 2 + 0.3, W_LID - 1, W_LID + 2, *SPK_AT)
 lid -= box(J1_WIN[0], J1_WIN[1], J1_WIN[2], J1_WIN[3], W_LID - LID - 1, W_LID + 5)
 lid_placed = place(lid)
 lt = to_tm(lid)                     # printed outside face down
@@ -145,13 +168,21 @@ dm.apply_translation([0, 0, DZ])
 dm.apply_transform(M)
 pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
 inside = res.contains(pts[::4])
+to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
+dm.export(f"{D}/disp185_placed.stl")
+touch = (out ^ lid_placed).volume()
 with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
     f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
-    f.write(f"screw: lid {LID} + boss {GAP} + board {BOARD} + sleeve {SLEEVE} = "
-            f"{LID + GAP + BOARD + SLEEVE:.1f}; M2 x 16 goes {16 - (LID + GAP + BOARD + SLEEVE):.1f} into the 4 mm standoff\n")
+    clear = min(np.hypot(u - SPK_AT[0], v - SPK_AT[1]) for u, v in HOLES) - BOSS_R - SPK_D / 2 - 1.2
+    f.write(f"speaker ring to the nearest boss: {clear:.1f} mm\n")
+    f.write(f"lid in the vent: {touch:.2f} mm3 (the crush ribs)\n")
+    grip = FLOOR + BOARD + SLEEVE
+    screw = min(L for L in (12, 14, 16, 18, 20, 22, 25) if L - grip >= 2.5)
+    f.write(f"speaker room {SPK_T} mm (boss {GAP:.1f}), screw: boss floor {FLOOR} + board {BOARD} + sleeve {SLEEVE} = "
+            f"{grip:.1f}; M2 x {screw} goes {screw - grip:.1f} into the 4 mm standoff\n")
 print(open(f"{D}/fit185.txt").read())
 dm.export(f"{D}/disp185_placed.stl")
 to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
