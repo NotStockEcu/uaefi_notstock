@@ -25,7 +25,7 @@ rnd_settings_t g_rnd_set;
 const rnd_limit_t RND_LIMIT[RND_WARN_COUNT] = {
     [RND_WATER]     = { 60,   130,  1,     105,  0 },
     [RND_OIL]       = { 80,   150,  1,     130,  0 },
-    [RND_BOOST]     = { 0.5f, 2.5f, 0.05f, 2.2f, 2 },
+    [RND_BOOST]     = { 0.5f, 2.0f, 0.05f, 1.8f, 2 },
     [RND_INTAKE]    = { 20,   100,  1,     60,   0 },
     [RND_EXHAUST]   = { 300,  1000, 10,    750,  0 },
     [RND_RPM]       = { 2000, 5000, 100,   4500, 0 },

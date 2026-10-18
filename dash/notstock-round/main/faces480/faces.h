@@ -48,7 +48,7 @@ typedef struct {
 static const face_page_t FACE_PAGE[FACE_COUNT] = {
     { "\xC2\xB0" "C", 40.0f, 140.0f, 105.0f },   /* WATER */
     { "\xC2\xB0" "C", 40.0f, 160.0f, 130.0f },   /* OIL */
-    { "bar", 0.0f, 2.5f, 2.2f },   /* BOOST */
+    { "bar", 0.0f, 2.0f, 1.8f },   /* BOOST */
     { "\xC2\xB0" "C", 0.0f, 100.0f, 60.0f },   /* INTAKE */
     { "\xC2\xB0" "C", 0.0f, 1000.0f, 750.0f },   /* EXHAUST */
     { "rpm", 0.0f, 5000.0f, 4500.0f },   /* RPM */

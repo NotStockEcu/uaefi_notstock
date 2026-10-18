@@ -28,6 +28,7 @@
 #include "hw.h"
 #include "sounds.h"
 #include "ui_round.h"
+#include "ui_round_int.h"
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -69,6 +70,13 @@ static void settings_load(void)
         g_rnd_set = tmp;
         /* a look this build does not have: NOTSTOCK, the rest kept */
         if (g_rnd_set.look >= RND_LOOK_COUNT) g_rnd_set.look = RND_LOOK_NOTSTOCK;
+        /* a limit outside what this build allows (a scale made shorter,
+         * as the boost's to 2 bar): its default */
+        for (int i = 0; i < RND_WARN_COUNT; i++) {
+            const rnd_limit_t *l = &RND_LIMIT[i];
+            float w = g_rnd_set.warn[i];
+            if (!(w >= l->lo - 1e-3f && w <= l->hi + 1e-3f)) g_rnd_set.warn[i] = l->def;
+        }
         ESP_LOGI(TAG, "settings loaded");
     } else {
         /* the struct changed with a firmware update: defaults, rather than

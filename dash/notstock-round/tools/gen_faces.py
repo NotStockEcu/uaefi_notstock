@@ -44,7 +44,7 @@ ARC_W = 0.062                # value arc width
 PAGES = [
     ("WATER",   "WATER",   "°C", 40, 140, 5,   20,  1,    105,  "water",   None),
     ("OIL",     "OIL",     "°C", 40, 160, 5,   20,  1,    130,  "oil",     None),
-    ("BOOST",   "BOOST",   "bar",     0,  2.5, 0.1, 0.5, 1,    2.2,  "turbo",   None),
+    ("BOOST",   "BOOST",   "bar",     0,  2.0, 0.1, 0.5, 1,    1.8,  "turbo",   None),
     ("INTAKE",  "INTAKE",  "°C", 0,  100, 5,   20,  1,    60,   "intake",  None),
     ("EXHAUST", "EXHAUST", "°C", 0, 1000, 50,  200, 100,  750,  "exhaust", "x100"),
     ("RPM",     "ENGINE",  "rpm",     0, 5000, 250, 1000, 1000, 4500, "rpm",    "x1000"),
