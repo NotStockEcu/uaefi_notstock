@@ -76,7 +76,7 @@ W_BFRONT = W_STAND - SLEEVE
 W_BTOP = W_BFRONT - BOARD
 W_LID = W_BTOP - GAP         # the lid's inner face
 W_TUBE_END = W_LID + 0.4     # the display meets the lip before the lid the tube
-R_IN, R_OUT = 26.6, 29.6     # the display's widest 26.28 (its board's corners)
+R_IN, R_OUT = 26.9, 29.6     # the display's board 26.28 at its widest (corners)
 
 # the display's standoffs (model, seen from the front) and the CAN board's
 # J1 body (+0.4) in the same coordinates: the board seen from the back is
@@ -147,15 +147,18 @@ for z in np.arange(-0.55, -3.6, -0.1):
         continue
     for e in s.discrete:          # every loop: the flex tail is one of its own
         outline += mf.CrossSection([e[:, :2].tolist()], mf.FillRule.NonZero)
-hole = outline.simplify(0.02).offset(0.2, mf.JoinType.Round, 2.0, 48).simplify(0.02)
+hole = outline.simplify(0.02).offset(0.35, mf.JoinType.Round, 2.0, 48).simplify(0.02)
 
 tube = cyl(R_OUT, W_TUBE_END, 0.5, seg=180) - cyl(R_IN, W_TUBE_END - 1, W_LIP, seg=180)
-tube -= hole.extrude(10).translate((0, 0, W_LIP - 1))
+# and the same outline all the way back: the glass's flex tail (r 27.4)
+# is wider than the bore and must get to the lip from the back
+tube -= hole.extrude(W_LIP + 9 - W_TUBE_END + 1).translate((0, 0, W_TUBE_END - 1))
 
 pod = to_mf(holder)
 pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
     (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
 pod -= place(cyl(R_IN, -60, 60, seg=180))
+pod -= place(hole.extrude(120).translate((0, 0, -60)))           # the tail's way too
 pod -= place(cyl(R_OUT + 0.4, -60, W_TUBE_END, seg=180))      # room for the lid
 out = pod + place(tube)
 out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the front
@@ -214,6 +217,8 @@ dm.apply_translation([0, 0, DZ])
 dm.apply_transform(M)
 pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
 inside = res.contains(pts[::4])
+# and on its way in from the back
+stuck = [k for k in np.arange(0.5, 32, 0.5) if res.contains(pts[::4] - M[:3, 2] * k).any()]
 to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
 dm.export(f"{D}/disp185_placed.stl")
 touch = (out ^ lid_placed).volume()
@@ -222,6 +227,7 @@ with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
     f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
+    f.write(f"display in from the back: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
     f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
             f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
             f"from the nearest boss, J1 or the skirt\n")
