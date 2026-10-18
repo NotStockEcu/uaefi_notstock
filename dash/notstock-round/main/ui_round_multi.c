@@ -280,6 +280,71 @@ LV_FONT_DECLARE(red_txt_22);
 #define C_RED_VAL  lv_color_hex(0xEEEEEC)
 #define C_RED_DIM  lv_color_hex(0xA0A0A0)
 
+/* the big one's red past the limit, as on the RED dials: red ticks over
+ * the white ones, and a band broken at the limit into short pieces that
+ * grow until it is solid towards the end */
+#define RB_MAX    80
+#define RB_TICKS  21
+static lv_obj_t *rb_piece[RB_MAX], *rb_end, *rb_tick[RB_TICKS];
+static lv_point_t rb_piece_pt[RB_MAX][2], rb_tick_pt[RB_TICKS][2];
+
+static lv_obj_t *red_line(lv_obj_t *par, int w)
+{
+    lv_obj_t *l = line_in(par, w, C_RED_LIT, LV_OPA_COVER);
+    lv_obj_set_style_line_rounded(l, false, 0);
+    lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
+    return l;
+}
+
+static void red_zone(float z)
+{
+    const float r = (RED_R_BAND0 + RED_R_BAND1) / 2.0f, k = RND_W / 466.0f;
+    int n = 0;
+    float solid = NAN;
+    for (int i = 0; i < RB_TICKS; i++) {
+        bool on = z < 1 && i / 20.0f >= z - 1e-4f;
+        if (!on) {
+            lv_obj_add_flag(rb_tick[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        float a = (180 + 9 * i) * (float)M_PI / 180.0f, ln = (i % 5 ? 12 : 20) * k;
+        rb_tick_pt[i][0].x = (lv_coord_t)lroundf(CX + (RED_R_TICK - ln) * cosf(a));
+        rb_tick_pt[i][0].y = (lv_coord_t)lroundf(CX + (RED_R_TICK - ln) * sinf(a));
+        rb_tick_pt[i][1].x = (lv_coord_t)lroundf(CX + RED_R_TICK * cosf(a));
+        rb_tick_pt[i][1].y = (lv_coord_t)lroundf(CX + RED_R_TICK * sinf(a));
+        lv_line_set_points(rb_tick[i], rb_tick_pt[i], 2);
+        lv_obj_clear_flag(rb_tick[i], LV_OBJ_FLAG_HIDDEN);
+    }
+    if (z < 1) {
+        float a0 = 180 + 180 * (z < 0 ? 0 : z), a1 = 360, span = a1 - a0;
+        for (float pos = a0; span > 0.3f && pos < a1 && n < RB_MAX;) {
+            float t = (pos - a0) / span;
+            float dash = 1.0f + 9.0f * powf(t, 1.3f);
+            float gap = 2.4f * (1.0f - t / 0.8f);
+            if (gap < 0.4f) {
+                solid = pos;
+                break;
+            }
+            float b0 = pos * (float)M_PI / 180.0f, b1 = fminf(pos + dash, a1) * (float)M_PI / 180.0f;
+            rb_piece_pt[n][0].x = (lv_coord_t)lroundf(CX + r * cosf(b0));
+            rb_piece_pt[n][0].y = (lv_coord_t)lroundf(CX + r * sinf(b0));
+            rb_piece_pt[n][1].x = (lv_coord_t)lroundf(CX + r * cosf(b1));
+            rb_piece_pt[n][1].y = (lv_coord_t)lroundf(CX + r * sinf(b1));
+            lv_line_set_points(rb_piece[n], rb_piece_pt[n], 2);
+            lv_obj_clear_flag(rb_piece[n], LV_OBJ_FLAG_HIDDEN);
+            n++;
+            pos += dash + gap;
+        }
+    }
+    for (int i = n; i < RB_MAX; i++) lv_obj_add_flag(rb_piece[i], LV_OBJ_FLAG_HIDDEN);
+    if (!isnan(solid) && 360 - solid >= 1.0f) {
+        lv_arc_set_angles(rb_end, (uint16_t)lroundf(solid) % 360, 0);
+        lv_obj_clear_flag(rb_end, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(rb_end, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 /* the A4 gauge's dials (ui_look_red.c): red_multi has the face, the big
  * scale over the top half and the three small dials; live the red zones,
  * the needles, name, value and unit */
@@ -294,9 +359,25 @@ static void build_red(void)
     s->box = box_in(layer);
     s->start = 180;
     s->sweep = 180;
+    /* the zone: red_zone() (s->zone stays for slot_setup, never shown) */
     s->zone = arc_at(s->box, 2 * RED_R_BAND1, RED_R_BAND1 - RED_R_BAND0, 180, 180,
                      ARC_BAND, C_RED_LIT);
-    lv_obj_center(s->zone);
+    lv_obj_add_flag(s->zone, LV_OBJ_FLAG_HIDDEN);
+    for (int i = 0; i < RB_MAX; i++) rb_piece[i] = red_line(s->box, RED_R_BAND1 - RED_R_BAND0);
+    rb_end = lv_arc_create(s->box);
+    lv_obj_remove_style_all(rb_end);
+    lv_obj_set_size(rb_end, 2 * RED_R_BAND1, 2 * RED_R_BAND1);
+    lv_obj_center(rb_end);
+    lv_arc_set_bg_angles(rb_end, 0, 0);
+    lv_obj_set_style_arc_width(rb_end, RED_R_BAND1 - RED_R_BAND0, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_color(rb_end, C_RED_LIT, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(rb_end, false, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_opa(rb_end, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(rb_end, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(rb_end, LV_OBJ_FLAG_HIDDEN);
+    for (int i = 0; i < RB_TICKS; i++) {
+        rb_tick[i] = red_line(s->box, (i % 5 ? 4.5f : 7.0f) + 1.5f);
+    }
     s->name = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 130, 300);
     lv_obj_set_style_text_letter_space(s->name, 3, 0);
     s->val = label_at(s->box, &red_fis_54, C_RED_VAL, CX, CX - 82, 260);
@@ -314,6 +395,7 @@ static void build_red(void)
         int r = MULTI_MINI_R - 18;
         s->zone = arc_at(s->box, 2 * r + 4, 4, 135, 270, ARC_BAND, C_RED_LIT);
         lv_obj_set_pos(s->zone, x - r - 2, y - r - 2);
+        lv_obj_set_style_arc_opa(s->zone, LV_OPA_40, LV_PART_MAIN);   /* a hint */
         s->val = label_at(s->box, &red_txt_22, C_RED_VAL, x, y + 24, 90);
         s->name = label_at(s->box, &red_txt_22, C_RED_DIM, x, y + MULTI_MINI_R + 14, 140);
         s->cx = x;
@@ -414,7 +496,9 @@ static void slot_setup(slot_t *s, int id)
     if (s->unit) lv_label_set_text(s->unit, rnd_unit(id));
     /* red zone from the warn limit to the end of the scale */
     float z = frac_of(id, g_rnd_set.warn[id]);
-    if (z < 1) {
+    if (style == ST_RED && s == &slot[0]) {
+        red_zone(z);
+    } else if (z < 1) {
         lv_obj_clear_flag(s->zone, LV_OBJ_FLAG_HIDDEN);
         lv_arc_set_bg_angles(s->zone, (uint16_t)lroundf(z * s->sweep),
                              (uint16_t)s->sweep);
