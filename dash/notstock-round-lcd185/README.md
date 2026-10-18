@@ -87,19 +87,19 @@ or a smooth 6 mm M2 spacer) | standoff (the screw 3 mm into its 4). The
 bosses are 8.4 mm tall, the screws go in from the back down a 4.3 mm bore
 in each, so the lid stands off the board and leaves room for the
 display's speaker: glued inside the lid over its sound holes (a raised
-ring marks the place), its wire round the CAN board's edge to the
-display's 2-pin socket. Room for a speaker up to 5 mm thick and 28 mm
-wide (round, or 28 x 20). Screw the stack together first, then push it
+ring, open at the wire lug, marks the place), its wire round the CAN
+board's edge to the display's 2-pin socket. Made for a 30 x 20 x 5 mm
+oval lying across. Screw the stack together first, then push it
 into the tube from the back until the glass sits in the lip: the lid's
 skirt holds in the tube on six crush ribs. 26.7 mm deep in all behind
 the face. The display's USB-C is inside: update over Wi-Fi (MENU >
 AKTUALIZACE) or pull the lid out.
 
-`python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_D]` with `holder.stl`
+`python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W]` with `holder.stl`
 and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes `vent185.stl`,
 `lid185.stl`, `sleeve185.stl` (three) and `fit185.txt`. UP = -1 turns the
-display half round in the vent (J1 at the bottom); SPK_T and SPK_D are
-the speaker's thickness and width in mm (5, 28). Needs trimesh and
+display half round in the vent (J1 at the bottom); SPK_T, SPK_L and SPK_W
+are the speaker's thickness, length and width in mm (5, 30, 20). Needs trimesh and
 manifold3d.
 
 ## If something is off

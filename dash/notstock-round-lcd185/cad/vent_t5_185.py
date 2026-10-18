@@ -21,8 +21,10 @@ UP = -1 turns the display (and the lid's window) half round in the vent.
 
 The speaker (the display's, on its 2-pin socket) is glued inside the lid,
 over sound holes, in the room between the lid and the CAN board: SPK_T is
-how thick it is (default 5 mm), SPK_D how wide (default 28 mm, round or up
-to 28 x 20 rectangular). The lid's bosses grow with it; the screws go in
+how thick it is, SPK_L x SPK_W its outline, an oval (default 5 mm, 30 x 20;
+SPK_W = SPK_L for a round one), lying across with its wire lug at one end.
+Where it goes in the lid is searched for: the most room to the bosses, J1
+and the lid's skirt. The ring that marks its place is open at the lug. The lid's bosses grow with it; the screws go in
 from the lid down a bore in each boss to its 1.5 mm floor on the board,
 so M2 x 12 does whatever the speaker."""
 import sys
@@ -33,7 +35,8 @@ import manifold3d as mf
 D = sys.argv[1]
 UP = int(sys.argv[2]) if len(sys.argv) > 2 else 1
 SPK_T = float(sys.argv[3]) if len(sys.argv) > 3 else 5.0
-SPK_D = float(sys.argv[4]) if len(sys.argv) > 4 else 28.0
+SPK_L = float(sys.argv[4]) if len(sys.argv) > 4 else 30.0
+SPK_W = float(sys.argv[5]) if len(sys.argv) > 5 else min(20.0, SPK_L)
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
@@ -69,7 +72,6 @@ GAP = 3.0 + SPK_T + 0.4
 LID = 2.0
 FLOOR = 1.5                  # the bosses' floor on the board, under the heads
 BOSS_R, BORE_R = 3.3, 2.15   # the bosses, and their bore for an M2 head
-SPK_AT = (-2.0, -5.0)        # the speaker's middle: clear of J1 and the bosses
 W_BFRONT = W_STAND - SLEEVE
 W_BTOP = W_BFRONT - BOARD
 W_LID = W_BTOP - GAP         # the lid's inner face
@@ -81,6 +83,37 @@ R_IN, R_OUT = 26.6, 29.6     # the display's widest 26.28 (its board's corners)
 # KiCad's top view, so (x, y) = (-x_kicad, -y_kicad)
 HOLES = [(15.73, 14.10), (15.73, -14.90), (-21.27, 0.0)]
 J1_WIN = (-7.975 - 0.4, 3.975 + 0.4, 14.75 - 0.4, 19.75 + 0.4)
+SPK_RING = 1.2               # the ring round the speaker, out from its outline
+SPK_TAB = 3.0                # the lug at one end the wires leave from
+
+
+def spk_room(at, ang):
+    """the least room (mm) from the speaker's ring to a boss, J1 or the skirt;
+    the oval as a segment (its middle line) and a radius"""
+    d = np.array([np.cos(ang), np.sin(ang)]) * (SPK_L - SPK_W) / 2
+    a, b = np.array(at) - d, np.array(at) + d
+    rad = SPK_W / 2 + SPK_RING
+
+    def seg(p):
+        p = np.asarray(p, float)
+        t = np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-9), 0, 1)
+        return np.linalg.norm(p - (a + t * (b - a)), axis=-1)
+    room = [seg(h) - rad - BOSS_R for h in HOLES]
+    u0, u1, v0, v1 = J1_WIN
+    edge = [(u, v) for u in np.linspace(u0, u1, 25) for v in (v0, v1)]
+    edge += [(u, v) for v in np.linspace(v0, v1, 9) for u in (u0, u1)]
+    room.append(min(seg(e) for e in edge) - rad)
+    far = max(np.linalg.norm(a), np.linalg.norm(b)) + rad
+    room.append(R_IN - 1.4 - far)
+    tab = np.array(at) + (b - a) / max(np.linalg.norm(b - a), 1e-9) * (SPK_L / 2 + SPK_TAB)
+    room += [np.linalg.norm(tab - h) - BOSS_R - 1.0 for h in HOLES]
+    room.append(R_IN - 1.4 - 1.0 - np.linalg.norm(tab))
+    return min(room)
+
+
+SPK_AT, SPK_ANG = max((((u, v), np.radians(k)) for u in np.arange(-6, 6.1, 0.5)
+                       for v in np.arange(-10, 4.1, 0.5) for k in (0, 180)),
+                      key=lambda c: spk_room(*c))
 
 
 def cyl(r, w0, w1, u=0.0, v=0.0, seg=96):
@@ -141,14 +174,27 @@ for u, v in HOLES:
     lid -= cyl(1.15, W_LID - LID - 1, W_BTOP + 1, u, v, 24)
     lid -= cyl(BORE_R, W_LID - LID - 1, W_BTOP - FLOOR, u, v, 32)    # the head's way
 # sound holes under the speaker, and a ring to find its place by
-r_holes = SPK_D / 2 - 4
-for i in range(-6, 7):
-    for j in range(-6, 7):
-        hx = SPK_AT[0] + 3.2 * (i + 0.5 * (j % 2))
-        hy = SPK_AT[1] + 2.77 * j
-        if np.hypot(hx - SPK_AT[0], hy - SPK_AT[1]) <= r_holes:
-            lid -= cyl(0.8, W_LID - LID - 1, W_LID + 1, hx, hy, 16)
-lid += cyl(SPK_D / 2 + 1.2, W_LID, W_LID + 0.8, *SPK_AT) - cyl(SPK_D / 2 + 0.3, W_LID - 1, W_LID + 2, *SPK_AT)
+spk_d = np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)]) * (SPK_L - SPK_W) / 2
+
+
+def oval(off):
+    c = [mf.CrossSection.circle(SPK_W / 2 + off, 64).translate(tuple(np.array(SPK_AT) + k * spk_d))
+         for k in (-1, 1)]
+    return (c[0] + c[1]).hull()
+
+
+spk_u = spk_d / max(np.linalg.norm(spk_d), 1e-9) if SPK_L > SPK_W else np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)])
+for i in range(-9, 10):
+    for j in range(-8, 9):
+        p = np.array([SPK_AT[0] + 3.2 * (i + 0.5 * (j % 2)), SPK_AT[1] + 2.77 * j])
+        q = p - np.array(SPK_AT)
+        t = np.clip(np.dot(q, spk_d) / max(np.dot(spk_d, spk_d), 1e-9), -1, 1)
+        if np.linalg.norm(q - t * spk_d) <= SPK_W / 2 - 3.5:
+            lid -= cyl(0.8, W_LID - LID - 1, W_LID + 1, p[0], p[1], 16)
+ring = (oval(SPK_RING) - oval(0.3)).extrude(0.8).translate((0, 0, W_LID))
+gap = np.array(SPK_AT) + spk_u * (SPK_L / 2)               # open at the lug
+ring -= cyl(3.5, W_LID - 1, W_LID + 2, gap[0], gap[1], 32)
+lid += ring
 lid -= box(J1_WIN[0], J1_WIN[1], J1_WIN[2], J1_WIN[3], W_LID - LID - 1, W_LID + 5)
 lid_placed = place(lid)
 lt = to_tm(lid)                     # printed outside face down
@@ -176,8 +222,9 @@ with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
     f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
-    clear = min(np.hypot(u - SPK_AT[0], v - SPK_AT[1]) for u, v in HOLES) - BOSS_R - SPK_D / 2 - 1.2
-    f.write(f"speaker ring to the nearest boss: {clear:.1f} mm\n")
+    f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
+            f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
+            f"from the nearest boss, J1 or the skirt\n")
     f.write(f"lid in the vent: {touch:.2f} mm3 (the crush ribs)\n")
     grip = FLOOR + BOARD + SLEEVE
     screw = min(L for L in (12, 14, 16, 18, 20, 22, 25) if L - grip >= 2.5)
