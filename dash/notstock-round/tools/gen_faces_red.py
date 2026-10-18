@@ -48,7 +48,7 @@ def build(N):
         return math.radians(START + SWEEP * (v - lo) / (hi - lo))
 
     faces, scales = [], []
-    for pid, lo, hi, labels, minor in PAGES:
+    for pid, lo, hi, labels, minor in PAGES + [("dpf", 0, 40, [], 0)]:
         im = Image.new("RGB", (N * SS, N * SS), (0, 0, 0))
         d = ImageDraw.Draw(im)
         for r in range(int(232 * k), 0, -3):
@@ -61,6 +61,9 @@ def build(N):
         im = ImageChops.add(im, glow.filter(ImageFilter.GaussianBlur(P(6 * k))))
         ImageDraw.Draw(im).ellipse([P(C - R_RIM), P(C - R_RIM), P(C + R_RIM), P(C + R_RIM)],
                                    outline=(235, 40, 44), width=P(2))
+        if not labels:                 # the DPF screen: the face and rim only
+            faces.append((pid, im.resize((N, N), Image.LANCZOS)))
+            continue
 
         vals = [v for v, _ in labels]
         ticks = []
@@ -228,7 +231,7 @@ for N in (480, 466):
     body.append(rgb565("red_needle", nd, True))
     body.append(rgb565("red_cap", cp, True))
     body.append("const lv_img_dsc_t *const red_face[6] = {\n    %s,\n};\n"
-                % ", ".join("&red_face_%s" % p for p, _ in faces))
+                % ", ".join("&red_face_%s" % p for p, _ in faces if p != "dpf"))
     open(os.path.join(out, "red.c"), "w").write("\n".join(body))
 
     h = ["/* made by tools/gen_faces_red.py: the RED look's dials, %d px */" % N,
@@ -241,7 +244,7 @@ for N in (480, 466):
          "#define RED_R_BAND0 %d" % round(geo["R_BAND0"]), "#define RED_R_BAND1 %d" % round(geo["R_BAND1"]),
          "#define RED_NEEDLE_PY %d    /* the pivot: left edge, this far down */" % geo["NEEDLE_PY"], "",
          "extern const lv_img_dsc_t *const red_face[6];   /* in page order */",
-         "extern const lv_img_dsc_t red_needle, red_cap, red_multi;",
+         "extern const lv_img_dsc_t red_needle, red_cap, red_multi, red_face_dpf;",
          "#define RED_R_TICK %d" % round(geo["R_TICK"]), ""]
     names = []
     for pid, lo, hi, tk, nm in scales:

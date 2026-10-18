@@ -81,6 +81,9 @@ typedef struct {
     lv_obj_t *arc, *zone;
     /* RETRO */
     lv_obj_t *needle;
+    lv_obj_t *nimg;              /* RED: the dials' needle image, turned */
+    lv_obj_t *glow;              /* RED small: a soft red line under the needle */
+    lv_point_t gp[2];
     lv_point_t np[2];
     int cx, cy, r0, r1;
     /* all */
@@ -345,6 +348,30 @@ static void red_zone(float z)
     }
 }
 
+/* the dials' needle (an image turned about its pivot, scaled to len) and
+ * hub (scaled to d) */
+static lv_obj_t *red_needle_at(lv_obj_t *par, int x, int y, int len)
+{
+    lv_obj_t *n = lv_img_create(par);
+    lv_img_set_src(n, &red_needle);
+    lv_obj_set_pos(n, x, y - RED_NEEDLE_PY);
+    lv_img_set_pivot(n, 0, RED_NEEDLE_PY);
+    lv_img_set_zoom(n, (uint16_t)(256 * len / red_needle.header.w));
+    lv_img_set_antialias(n, true);
+    lv_obj_clear_flag(n, LV_OBJ_FLAG_CLICKABLE);
+    return n;
+}
+
+static void red_hub_at(lv_obj_t *par, int x, int y, int d)
+{
+    lv_obj_t *h = lv_img_create(par);
+    lv_img_set_src(h, &red_cap);
+    lv_obj_set_pos(h, x - red_cap.header.w / 2, y - red_cap.header.h / 2);
+    lv_img_set_pivot(h, red_cap.header.w / 2, red_cap.header.h / 2);
+    lv_img_set_zoom(h, (uint16_t)(256 * d / red_cap.header.w));
+    lv_obj_clear_flag(h, LV_OBJ_FLAG_CLICKABLE);
+}
+
 /* the A4 gauge's dials (ui_look_red.c): red_multi has the face, the big
  * scale over the top half and the three small dials; live the red zones,
  * the needles, name, value and unit */
@@ -378,10 +405,10 @@ static void build_red(void)
     for (int i = 0; i < RB_TICKS; i++) {
         rb_tick[i] = red_line(s->box, (i % 5 ? 4.5f : 7.0f) + 1.5f);
     }
-    s->name = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 130, 300);
+    s->name = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 140, 300);
     lv_obj_set_style_text_letter_space(s->name, 3, 0);
-    s->val = label_at(s->box, &red_fis_54, C_RED_VAL, CX, CX - 82, 260);
-    s->unit = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 40, 220);
+    s->val = label_at(s->box, &red_fis_54, C_RED_VAL, CX, CX - 96, 260);
+    s->unit = label_at(s->box, &red_txt_22, C_RED_DIM, CX, CX - 56, 220);
     s->cx = s->cy = CX;
     s->r0 = -16;
     s->r1 = RED_R_TICK - 26;
@@ -400,14 +427,17 @@ static void build_red(void)
         s->name = label_at(s->box, &red_txt_22, C_RED_DIM, x, y + MULTI_MINI_R + 14, 140);
         s->cx = x;
         s->cy = y;
-        s->r0 = -6;
-        s->r1 = MULTI_MINI_R - 10;
-        s->needle = line_in(s->box, 3, C_RED_LIT, LV_OPA_COVER);
-        disc(s->box, x, y, 12, lv_color_hex(0x060607), lv_color_hex(0xB0181C));
+        /* small: the needle as a line with a glow, as the image would be
+         * too thin scaled down this far */
+        s->r0 = -4;
+        s->r1 = MULTI_MINI_R - 9;
+        s->glow = line_in(s->box, 8, C_RED_LIT, LV_OPA_30);
+        s->needle = line_in(s->box, 3, lv_color_hex(0xFF3A34), LV_OPA_COVER);
+        red_hub_at(s->box, x, y, 20);
     }
     s = &slot[0];
-    s->needle = line_in(s->box, 6, C_RED_LIT, LV_OPA_COVER);
-    disc(s->box, CX, CX, 44, lv_color_hex(0x060607), lv_color_hex(0xB0181C));
+    s->nimg = red_needle_at(s->box, CX, CX, red_needle.header.w);
+    red_hub_at(s->box, CX, CX, red_cap.header.w);
 }
 
 void rnd_multi_build(lv_obj_t *gauge_scr)
@@ -461,6 +491,9 @@ static void slot_frac(slot_t *s, float f)
         if (f < 0.001f) lv_obj_add_flag(s->arc, LV_OBJ_FLAG_HIDDEN);
         else            lv_obj_clear_flag(s->arc, LV_OBJ_FLAG_HIDDEN);
     }
+    if (s->nimg) {
+        lv_img_set_angle(s->nimg, (int16_t)lroundf((s->start + f * s->sweep) * 10.0f));
+    }
     if (s->needle) {
         float a = (s->start + f * s->sweep) * (float)M_PI / 180.0f;
         float c = cosf(a), sn = sinf(a);
@@ -469,6 +502,11 @@ static void slot_frac(slot_t *s, float f)
         s->np[1].x = (lv_coord_t)lroundf(s->cx + s->r1 * c);
         s->np[1].y = (lv_coord_t)lroundf(s->cy + s->r1 * sn);
         lv_line_set_points(s->needle, s->np, 2);
+        if (s->glow) {
+            s->gp[0] = s->np[0];
+            s->gp[1] = s->np[1];
+            lv_line_set_points(s->glow, s->gp, 2);
+        }
     }
 }
 

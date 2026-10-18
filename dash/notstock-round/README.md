@@ -115,8 +115,10 @@ diagnostics. Menu and settings stay the same in every look.
   limit, solid towards the end), a red needle on a black hub, and value,
   name and unit in the lower right. Exhaust and rpm are numbered in
   hundreds and thousands; MULTI in the same dress (`red_multi`: the big
-  scale over the top half, three small dials with red rings). No maker's
-  logo.
+  scale over the top half with the dials' needle and hub, three small
+  dials with red rings), and the DPF screen as the A4's (the lit rim, the
+  filter icon, the soot big, rows of pressure, temperatures, distance).
+  No maker's logo.
 - **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
   instrument of the VDO kind.
   Chrome bezel, black dial, white print, a glass sheen, all pre-rendered

@@ -14,6 +14,7 @@
  * when it ends. Tap closes a popup, or it goes by itself.
  */
 #include "ui_round_int.h"
+#include "red.h"
 #include "regen_detect.h"
 
 #include <math.h>
@@ -140,8 +141,11 @@ void rnd_menu_create(void)
  *   NOTSTOCK  the arc over the face's groove and a filter that fills up
  *   RETRO     a VDO-like dial 0..40 g (face_retro_dpf), red needle and band,
  *             readings in windows, a DPF tell-tale: amber over the limit,
- *             orange and glowing while it regenerates */
-enum { ST_NOTSTOCK, ST_RETRO };
+ *             orange and glowing while it regenerates
+ *   RED       the A4 gauge's DPF page: the red lit rim (red_face_dpf), the
+ *             filter icon (white, amber regenerating, red full), the soot
+ *             big, rows of pressure, temperatures and distance */
+enum { ST_NOTSTOCK, ST_RETRO, ST_RED };
 static int dstyle;
 
 static lv_obj_t *dpf, *dpf_arc[N_ARC], *dpf_zone, *body, *fill, *pipe[2];
@@ -351,6 +355,57 @@ static void build_retro(void)
     lv_obj_set_style_border_width(hub, 2, 0);
 }
 
+/* ------------------------------------------------------------- RED */
+LV_FONT_DECLARE(red_big_96);
+LV_FONT_DECLARE(red_num_40);
+LV_FONT_DECLARE(red_txt_22);
+#define C_RVAL  lv_color_hex(0xEEEEEC)
+#define C_RRED  lv_color_hex(0xF02A26)
+#define C_RDIM  lv_color_hex(0xA0A0A0)
+#define C_RICON lv_color_hex(0xD8D8D6)
+static lv_obj_t *red_after;           /* exhaust after the DPF */
+
+static void build_red(void)
+{
+    background(&red_face_dpf);
+    lamp = lv_img_create(dpf);
+    lv_img_set_src(lamp, &icon_dpf_120);
+    lv_obj_set_style_img_recolor_opa(lamp, LV_OPA_COVER, 0);
+    lv_obj_set_style_img_recolor(lamp, C_RICON, 0);
+    lv_obj_align(lamp, LV_ALIGN_CENTER, 0, -172);
+    lv_obj_t *t = lv_label_create(dpf);
+    lv_obj_set_style_text_font(t, &red_txt_22, 0);
+    lv_obj_set_style_text_color(t, C_RDIM, 0);
+    lv_label_set_text(t, TR("SOOT g", "SAZE g"));
+    lv_obj_align(t, LV_ALIGN_CENTER, 0, -116);
+    soot_lbl = label_mid(&red_big_96, C_RVAL, CX, CX - 40, 300);
+    meas_lbl = label_mid(&red_txt_22, C_RDIM, CX, CX + 20, 300);
+    /* four rows: the number right-aligned to the middle, what it is after
+     * it, as on the A4 */
+    static const char *const EN[4] = { "mbar dp", "\xC2\xB0" "C filter",
+                                       "\xC2\xB0" "C after", "km since reg." };
+    static const char *const CS[4] = { "mbar dp", "\xC2\xB0" "C povrch",
+                                       "\xC2\xB0" "C za DPF", "km od reg." };
+    lv_obj_t **row[4] = { &v_lbl[V_DP], &v_lbl[V_TEMP], &red_after, &v_lbl[V_DIST] };
+    for (int i = 0; i < 4; i++) {
+        lv_coord_t y = CX + 34 + i * 36;
+        lv_obj_t *v = lv_label_create(dpf);
+        lv_obj_set_style_text_font(v, &red_num_40, 0);
+        lv_obj_set_style_text_color(v, C_RVAL, 0);
+        lv_obj_set_style_text_align(v, LV_TEXT_ALIGN_RIGHT, 0);
+        lv_obj_set_width(v, 130);
+        lv_obj_set_pos(v, CX + 14 - 130, y);
+        lv_label_set_text(v, "");
+        *row[i] = v;
+        t = lv_label_create(dpf);
+        lv_obj_set_style_text_font(t, &red_txt_22, 0);
+        lv_obj_set_style_text_color(t, C_RDIM, 0);
+        lv_label_set_text_static(t, g_rnd_set.lang == RND_LANG_CS ? CS[i] : EN[i]);
+        lv_obj_set_pos(t, CX + 22, y + 14);
+    }
+    pill_lbl = label_mid(&red_txt_22, C_RDIM, CX, CX + 200, 240);
+}
+
 static void popup_drop(void);
 
 void rnd_dpf_create(void)
@@ -362,9 +417,10 @@ void rnd_dpf_create(void)
     zone_at = dpf_shown = NAN;
     dpf_level = -1;
     dpf_zone = body = fill = pipe[0] = pipe[1] = pill = NULL;
-    needle = lamp = glow = NULL;
+    needle = lamp = glow = red_after = NULL;
     memset(dpf_arc, 0, sizeof dpf_arc);
-    dstyle = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO : ST_NOTSTOCK;
+    dstyle = g_rnd_set.look == RND_LOOK_RETRO ? ST_RETRO :
+             g_rnd_set.look == RND_LOOK_RED ? ST_RED : ST_NOTSTOCK;
 
     dpf = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(dpf, lv_color_black(), 0);
@@ -374,8 +430,9 @@ void rnd_dpf_create(void)
     rnd_on_long(dpf, go_menu);
     lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
 
-    if (dstyle == ST_RETRO) build_retro();
-    else                    build_notstock();
+    if (dstyle == ST_RETRO)    build_retro();
+    else if (dstyle == ST_RED) build_red();
+    else                       build_notstock();
 }
 
 static void fmt_or_dash(lv_obj_t *l, const char *fmt, float v, bool live)
@@ -390,6 +447,7 @@ static void fmt_or_dash(lv_obj_t *l, const char *fmt, float v, bool live)
 
 static void zone_draw(float frac)
 {
+    if (dstyle == ST_RED) return;             /* no scale */
     if (dstyle == ST_NOTSTOCK) {
         rnd_zone_set(dpf_zone, frac);
     } else {
@@ -408,6 +466,7 @@ static void zone_draw(float frac)
 static void level_draw(float at, int lvl)
 {
     static const uint32_t COL[4] = { 0xFFFFFF, 0xE0A020, 0xFF3030, 0xFF9A1F };
+    if (dstyle == ST_RED) return;             /* the digits say it */
     if (dstyle == ST_NOTSTOCK) {
         rnd_arcs_set(dpf_arc, at, lv_color_hex(COL[lvl]));
         lv_obj_set_width(fill, (lv_coord_t)lroundf(at / ARC_MAX * FILL_W));
@@ -426,6 +485,12 @@ static void level_draw(float at, int lvl)
 static void state_draw(int lvl)
 {
     bool regen = lvl == 3;
+    if (dstyle == ST_RED) {
+        lv_obj_set_style_img_recolor(lamp, regen ? C_REGEN : lvl == 2 ? C_RRED : C_RICON, 0);
+        lv_obj_set_style_text_color(soot_lbl, lvl == 2 ? C_RRED : C_RVAL, 0);
+        lv_obj_set_style_text_color(pill_lbl, regen ? C_REGEN : lvl == 2 ? C_RRED : C_RDIM, 0);
+        return;
+    }
     if (dstyle == ST_NOTSTOCK) {
         static const uint32_t FIL[4] = { 0x8A9096, 0xE0A020, 0xFF3030,
                                          0xFF9A1F };
@@ -471,11 +536,11 @@ void rnd_dpf_update(const rnd_data_t *d)
 
     fmt_or_dash(soot_lbl, "%.1f", s, live);
     /* RETRO has the unit printed on the dial */
-    const char *g = dstyle == ST_RETRO ? "" : "g   ";
+    const char *g = dstyle == ST_NOTSTOCK ? "g   " : "";
     if (!live) {
         lv_label_set_text(meas_lbl, TR("NO DATA", "BEZ DAT"));
     } else if (isnan(d->dpf.soot_meas_g)) {
-        lv_label_set_text(meas_lbl, dstyle == ST_RETRO ? "" : "g");
+        lv_label_set_text(meas_lbl, dstyle == ST_NOTSTOCK ? "g" : "");
     } else {
         snprintf(buf, sizeof buf, "%s%s %.2f g", g, TR("MEASURED", "MĚŘENO"),
                  d->dpf.soot_meas_g);
@@ -484,6 +549,7 @@ void rnd_dpf_update(const rnd_data_t *d)
     fmt_or_dash(v_lbl[V_DP], "%.0f", d->dpf.dp_hpa, live);
     fmt_or_dash(v_lbl[V_TEMP], "%.0f", d->dpf.temp_c, live);
     fmt_or_dash(v_lbl[V_DIST], "%.0f", d->dpf.dist_km, live);
+    if (red_after) fmt_or_dash(red_after, "%.0f", d->diag.egt_dpf_c, live);
 
     float frac = isnan(s) ? 0 : s / SOOT_MAX;
     if (frac < 0) frac = 0;

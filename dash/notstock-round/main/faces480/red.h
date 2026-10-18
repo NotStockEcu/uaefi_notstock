@@ -14,7 +14,7 @@ typedef struct { float lo, hi; int n_ticks, n_nums;
 #define RED_NEEDLE_PY 15    /* the pivot: left edge, this far down */
 
 extern const lv_img_dsc_t *const red_face[6];   /* in page order */
-extern const lv_img_dsc_t red_needle, red_cap, red_multi;
+extern const lv_img_dsc_t red_needle, red_cap, red_multi, red_face_dpf;
 #define RED_R_TICK 220
 
 static const red_tick_t RED_TICKS_WATER[] = {
