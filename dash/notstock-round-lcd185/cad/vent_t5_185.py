@@ -3,22 +3,22 @@ exported to DIR/holder.stl) made into a housing for the Waveshare
 ESP32-S3-LCD-1.85 with the CAN 1.85 board (../../notstock-can185) behind it.
 
 The ring goes; in its place a tube round the display, its face in the
-louvers' front plane (flush, nothing standing out). A lip round the glass
-at the front hides the board's edge, so the display goes in from the back.
-The stack behind it is held by three M2 x 12 screws through the display's
+louvers' front plane (flush, nothing standing out), no lip: the display
+goes in from either side, past whatever stands out at its edge, its glass
+flush with the face. The stack behind it is held by three M2 x 12 screws through the display's
 own three standoffs, their heads down in the lid's bosses on the board:
 
     boss floor (1.5) | CAN board (1.6) | sleeve (5.9) | standoff (3 of 4 mm)
 
-The lid plugs into the tube's back end (crush ribs, no screws into the
-tube) and has a window for the CAN board's 4-pin JST PH (J1), the only
+The lid plugs into the tube's back end and sits on it (crush ribs, no
+screws into the tube): that is what holds the display where it is. It has a window for the CAN board's 4-pin JST PH (J1), the only
 thing that shows at the back.
 
 DIR/disp185.stl: Waveshare's STEP of the display as STL (glass front at
 z = -0.5, standoffs ending at z = -9.0, x right and y up seen from the
 front). Writes DIR/vent185.stl, lid185.stl, sleeve185.stl, fit185.txt, and
-tube185.stl: the tube alone, no vent round it, to put the gauge anywhere
-(the same lid).
+tube185.stl: the same tube alone, no vent round it, to put the gauge
+anywhere (the same lid).
 UP = -1 turns the display (and the lid's window) half round in the vent.
 
 The speaker (the display's, on its 2-pin socket) is glued inside the lid,
@@ -26,7 +26,8 @@ over sound holes, in the room between the lid and the CAN board: SPK_T is
 how thick it is, SPK_L x SPK_W its outline, an oval (default 5 mm, 30 x 20;
 SPK_W = SPK_L for a round one), lying across with its wire lug at one end.
 Where it goes in the lid is searched for: the most room to the bosses, J1
-and the lid's skirt. The ring that marks its place is open at the lug. The lid's bosses grow with it; the screws go in
+and the lid's skirt. The ring that marks its place is open at the lug.
+The lid's bosses grow with it; the screws go in
 from the lid down a bore in each boss to its 1.5 mm floor on the board,
 so M2 x 12 does whatever the speaker."""
 import sys
@@ -65,7 +66,6 @@ M = np.eye(4); M[:3, 0] = U; M[:3, 1] = V; M[:3, 2] = W; M[:3, 3] = F
 # along the axis (w, 0 = the front plane, + forward)
 GL = 0.3                     # glass front behind the face
 DZ = 0.5 - GL                # display model z -> w
-W_LIP = -3.6 + DZ + 0.1      # the lip's back: just in front of the display's board
 W_STAND = -9.0 + DZ          # the standoffs' ends
 SLEEVE = 5.9
 BOARD = 1.6
@@ -77,8 +77,7 @@ BOSS_R, BORE_R = 3.3, 2.15   # the bosses, and their bore for an M2 head
 W_BFRONT = W_STAND - SLEEVE
 W_BTOP = W_BFRONT - BOARD
 W_LID = W_BTOP - GAP         # the lid's inner face
-W_TUBE_END = W_LID + 0.4     # the display meets the lip before the lid the tube
-R_IN, R_OUT = 26.9, 29.6     # the display's board 26.28 at its widest (corners)
+R_IN, R_OUT = 28.0, 30.4     # the display's widest: its glass's flex tail, r 27.4
 
 # the display's standoffs (model, seen from the front) and the CAN board's
 # J1 body (+0.4) in the same coordinates: the board seen from the back is
@@ -140,28 +139,14 @@ def place(x):
     return x.transform(M[:3, :].tolist())
 
 
-# the lip's opening: the display's outline from its glass to its board
-# (glass with the flex tail at the bottom), every 0.1 mm, filled, + 0.2
-outline = mf.CrossSection()
-for z in np.arange(-0.55, -3.6, -0.1):
-    s = disp.section(plane_origin=[0, 0, z], plane_normal=[0, 0, 1])
-    if s is None:
-        continue
-    for e in s.discrete:          # every loop: the flex tail is one of its own
-        outline += mf.CrossSection([e[:, :2].tolist()], mf.FillRule.NonZero)
-hole = outline.simplify(0.02).offset(0.35, mf.JoinType.Round, 2.0, 48).simplify(0.02)
-
-tube = cyl(R_OUT, W_TUBE_END, 0.5, seg=180) - cyl(R_IN, W_TUBE_END - 1, W_LIP, seg=180)
-# and the same outline all the way back: the glass's flex tail (r 27.4)
-# is wider than the bore and must get to the lip from the back
-tube -= hole.extrude(W_LIP + 9 - W_TUBE_END + 1).translate((0, 0, W_TUBE_END - 1))
+# the tube, from the lid on its end to the face
+tube = cyl(R_OUT, W_LID, 0.5, seg=180) - cyl(R_IN, W_LID - 1, 1, seg=180)
 
 pod = to_mf(holder)
 pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
     (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
 pod -= place(cyl(R_IN, -60, 60, seg=180))
-pod -= place(hole.extrude(120).translate((0, 0, -60)))           # the tail's way too
-pod -= place(cyl(R_OUT + 0.4, -60, W_TUBE_END, seg=180))      # room for the lid
+pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
 out = pod + place(tube)
 out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the front
 res = to_tm(out)
@@ -212,19 +197,12 @@ lt.apply_transform(np.diag([1, -1, -1, 1]))
 lt.apply_translation(-lt.bounds[0])
 lt.export(f"{D}/lid185.stl")
 
-# the tube alone, no vent round it and no lip: the gauge anywhere, the
-# display in from the front or the back (its edge parts as they come),
-# the glass flush with the face, the stack held by the lid on the tube's end
-T_IN, T_OUT = 28.0, 30.4
-plain = cyl(T_OUT, W_LID, 0, seg=180) - cyl(T_IN, W_LID - 1, 1, seg=180)
+# the tube alone, no vent round it: the gauge anywhere
+plain = tube - box(-50, 50, -50, 50, 0, 10)
 pt = to_tm(plain)                   # printed face down
 pt.apply_transform(np.diag([1, -1, -1, 1]))
 pt.apply_translation([0, 0, -pt.bounds[0][2]])
 pt.export(f"{D}/tube185.stl")
-plid = to_tm(make_lid(T_OUT, T_IN))
-plid.apply_transform(np.diag([1, -1, -1, 1]))
-plid.apply_translation(-plid.bounds[0])
-plid.export(f"{D}/lid185_tube.stl")
 
 sleeve = cyl(2.0, 0, SLEEVE, seg=48) - cyl(1.2, -1, SLEEVE + 1, seg=24)
 sl = mf.Manifold()
@@ -238,22 +216,18 @@ dm.apply_translation([0, 0, DZ])
 dm.apply_transform(M)
 pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
 inside = res.contains(pts[::4])
-# and on its way in from the back
-stuck = [k for k in np.arange(0.5, 32, 0.5) if res.contains(pts[::4] - M[:3, 2] * k).any()]
+# and on its way in, from the back or the front
+stuck = [k for k in np.arange(-32, 32.5, 0.5) if k and res.contains(pts[::4] - M[:3, 2] * k).any()]
 to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
 dm.export(f"{D}/disp185_placed.stl")
 touch = (out ^ lid_placed).volume()
 with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
-    pd = to_tm(plain)
-    pp = np.vstack([trimesh.sample.sample_surface(disp, 40000)[0], disp.vertices])[::4] + [0, 0, DZ]
-    pin = [k for k in np.arange(-32, 32.5, 0.5) if pd.contains(pp + [0, 0, k]).any()]
-    f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight} and {plid.is_watertight} (its lid), "
-            f"the display's way through it {'blocked at ' + str(pin) if pin else 'clear'}\n")
+    f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight}\n")
     f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
-    f.write(f"tube depth {-W_TUBE_END:.1f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
+    f.write(f"tube depth {-W_LID:.1f} mm, bore {2 * R_IN:.0f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
-    f.write(f"display in from the back: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
+    f.write(f"display in from the back or the front: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
     f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
             f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
             f"from the nearest boss, J1 or the skirt\n")
@@ -263,5 +237,3 @@ with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"speaker room {SPK_T} mm (boss {GAP:.1f}), screw: boss floor {FLOOR} + board {BOARD} + sleeve {SLEEVE} = "
             f"{grip:.1f}; M2 x {screw} goes {screw - grip:.1f} into the 4 mm standoff\n")
 print(open(f"{D}/fit185.txt").read())
-dm.export(f"{D}/disp185_placed.stl")
-to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
