@@ -78,22 +78,23 @@ at start picks one, as Waveshare's demo does, and the log says which.
 `cad/vent_t5_185.py` turns the T5 vent gauge holder (52 mm ring, an STL
 from its 3MF) into a housing for this display with the CAN 1.85 board
 behind it: a tube round the display, its face flush with the louvers', no
-lip (bore 56 mm, the display goes in from either side, past what stands
-out at its edge, the glass flush with the face), and a lid at the back
+lip (bore 56 mm, the display goes in from the front, past what stands
+out at its edge, onto three sleeves on ribs inside the tube, the glass
+then flush with the face), and a lid at the back
 with a window for the board's 4-pin JST, nothing else showing.
 
 The stack is held by three M2 x 12 screws through the display's own three
-standoffs: lid boss floor (1.5) | CAN board (1.6) | a printed sleeve (5.9;
-or a smooth 6 mm M2 spacer) | standoff (the screw 3 mm into its 4). The
+standoffs: lid boss floor (1.5) | CAN board (1.6) | the tube's sleeve
+(5.9) | standoff (the screw 3 mm into its 4). The
 bosses are 8.4 mm tall, the screws go in from the back down a 4.3 mm bore
 in each, so the lid stands off the board and leaves room for the
 display's speaker: glued inside the lid over its sound holes (a raised
 ring, open at the wire lug, marks the place), its wire round the CAN
 board's edge to the display's 2-pin socket. Made for a 30 x 20 x 5 mm
-oval lying across. Screw the stack together first, then push it into the
-tube from the back until the lid sits on the tube's end: its skirt holds
-in the tube on six crush ribs, and the lid is what keeps the display in
-place. 26.7 mm deep in all behind the face. The display's USB-C is
+oval lying across. The display goes in from the front onto the sleeves, the
+CAN board and the lid from the back, the screws through all of it: the
+lid's skirt also holds in the tube on six crush ribs. Print the vent or
+the tube face down with support under the three sleeves. 26.7 mm deep in all behind the face. The display's USB-C is
 inside: update over Wi-Fi (MENU > AKTUALIZACE) or pull the lid out.
 
 `tube185.stl` is the same tube alone, no vent round it (60.8 mm across,
@@ -101,8 +102,7 @@ inside: update over Wi-Fi (MENU > AKTUALIZACE) or pull the lid out.
 
 `python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W]` with
 `holder.stl` and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes
-`vent185.stl`, `tube185.stl`, `lid185.stl`, `sleeve185.stl` (three) and
-`fit185.txt`. UP = -1 turns the display half round in the vent (J1 at
+`vent185.stl`, `tube185.stl`, `lid185.stl` and `fit185.txt`. UP = -1 turns the display half round in the vent (J1 at
 the bottom); SPK_T, SPK_L and SPK_W are the speaker's thickness, length
 and width in mm (5, 30, 20). Needs trimesh and manifold3d.
 

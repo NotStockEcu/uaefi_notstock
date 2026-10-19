@@ -4,19 +4,20 @@ ESP32-S3-LCD-1.85 with the CAN 1.85 board (../../notstock-can185) behind it.
 
 The ring goes; in its place a tube round the display, its face in the
 louvers' front plane (flush, nothing standing out), no lip: the display
-goes in from either side, past whatever stands out at its edge, its glass
-flush with the face. The stack behind it is held by three M2 x 12 screws through the display's
+goes in from the front, past whatever stands out at its edge, onto three
+sleeves on ribs from the tube's wall, its glass then flush with the face.
+The CAN board goes in from the back onto the same sleeves. The stack behind it is held by three M2 x 12 screws through the display's
 own three standoffs, their heads down in the lid's bosses on the board:
 
     boss floor (1.5) | CAN board (1.6) | sleeve (5.9) | standoff (3 of 4 mm)
 
 The lid plugs into the tube's back end and sits on it (crush ribs, no
-screws into the tube): that is what holds the display where it is. It has a window for the CAN board's 4-pin JST PH (J1), the only
+screws into the tube). It has a window for the CAN board's 4-pin JST PH (J1), the only
 thing that shows at the back.
 
 DIR/disp185.stl: Waveshare's STEP of the display as STL (glass front at
 z = -0.5, standoffs ending at z = -9.0, x right and y up seen from the
-front). Writes DIR/vent185.stl, lid185.stl, sleeve185.stl, fit185.txt, and
+front). Writes DIR/vent185.stl, lid185.stl, fit185.txt, and
 tube185.stl: the same tube alone, no vent round it, to put the gauge
 anywhere (the same lid).
 UP = -1 turns the display (and the lid's window) half round in the vent.
@@ -141,6 +142,15 @@ def place(x):
 
 # the tube, from the lid on its end to the face
 tube = cyl(R_OUT, W_LID, 0.5, seg=180) - cyl(R_IN, W_LID - 1, 1, seg=180)
+# the sleeves between the CAN board and the display's standoffs, each on a
+# rib from the wall (the board's front has no parts)
+SLEEVE_R, RIB = 2.2, 2.4
+for u, v in HOLES:
+    a = np.degrees(np.arctan2(v, u))
+    r = np.hypot(u, v)
+    tube += cyl(SLEEVE_R, W_BFRONT, W_STAND, u, v, 48)
+    tube += box(r, R_IN + 0.5, -RIB / 2, RIB / 2, W_BFRONT, W_STAND).rotate((0, 0, a))
+    tube -= cyl(1.2, W_BFRONT - 1, W_STAND + 1, u, v, 24)
 
 pod = to_mf(holder)
 pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
@@ -204,30 +214,24 @@ pt.apply_transform(np.diag([1, -1, -1, 1]))
 pt.apply_translation([0, 0, -pt.bounds[0][2]])
 pt.export(f"{D}/tube185.stl")
 
-sleeve = cyl(2.0, 0, SLEEVE, seg=48) - cyl(1.2, -1, SLEEVE + 1, seg=24)
-sl = mf.Manifold()
-for k in range(3):
-    sl += sleeve.translate((k * 6.0, 0, 0))
-to_tm(sl).export(f"{D}/sleeve185.stl")
-
 # checks: the display where it goes, inside the vent and the lid?
 dm = disp.copy()
 dm.apply_translation([0, 0, DZ])
 dm.apply_transform(M)
 pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
-inside = res.contains(pts[::4])
-# and on its way in, from the back or the front
-stuck = [k for k in np.arange(-32, 32.5, 0.5) if k and res.contains(pts[::4] - M[:3, 2] * k).any()]
+inside = res.contains(pts[::4] + M[:3, 2] * 0.05)    # its standoffs sit on the sleeves
+# and on its way in from the front
+stuck = [k for k in np.arange(0.5, 32.5, 0.5) if res.contains(pts[::4] + M[:3, 2] * k).any()]
 to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
 dm.export(f"{D}/disp185_placed.stl")
 touch = (out ^ lid_placed).volume()
 with open(f"{D}/fit185.txt", "w") as f:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
     f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight}\n")
-    f.write(f"lid watertight {lt.is_watertight}, sleeve {SLEEVE} mm x 3\n")
+    f.write(f"lid watertight {lt.is_watertight}, sleeves {SLEEVE} mm in the tube\n")
     f.write(f"tube depth {-W_LID:.1f} mm, bore {2 * R_IN:.0f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
-    f.write(f"display in from the back or the front: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
+    f.write(f"display in from the front: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
     f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
             f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
             f"from the nearest boss, J1 or the skirt\n")
