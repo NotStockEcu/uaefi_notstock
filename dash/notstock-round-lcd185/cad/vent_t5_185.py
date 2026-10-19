@@ -41,6 +41,10 @@ UP = int(sys.argv[2]) if len(sys.argv) > 2 else 1
 SPK_T = float(sys.argv[3]) if len(sys.argv) > 3 else 5.0
 SPK_L = float(sys.argv[4]) if len(sys.argv) > 4 else 30.0
 SPK_W = float(sys.argv[5]) if len(sys.argv) > 5 else min(20.0, SPK_L)
+# the display turned to the driver: YAW degrees to the right (seen from the
+# seats; the gauge in the left vent by the door), PITCH degrees down
+YAW = float(sys.argv[6]) if len(sys.argv) > 6 else 20.0
+PITCH = float(sys.argv[7]) if len(sys.argv) > 7 else 10.0
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
@@ -62,7 +66,11 @@ U = np.array([1.0, 0, 0]) * UP
 V = np.cross(W, U)
 t = (FRONT_Z0 + FRONT_DZDY * C0[1] - C0[2]) / (AX[2] - FRONT_DZDY * AX[1])
 F = C0 + t * AX
-M = np.eye(4); M[:3, 0] = U; M[:3, 1] = V; M[:3, 2] = W; M[:3, 3] = F
+M0 = np.eye(4); M0[:3, 0] = U; M0[:3, 1] = V; M0[:3, 2] = W; M0[:3, 3] = F
+ya, pa = np.radians(YAW) * UP, np.radians(PITCH) * UP
+RY = np.array([[np.cos(ya), 0, np.sin(ya), 0], [0, 1, 0, 0], [-np.sin(ya), 0, np.cos(ya), 0], [0, 0, 0, 1]])
+RX = np.array([[1, 0, 0, 0], [0, np.cos(pa), -np.sin(pa), 0], [0, np.sin(pa), np.cos(pa), 0], [0, 0, 0, 1]])
+M = M0 @ RY @ RX              # the display's frame, turned about its face's middle
 
 # along the axis (w, 0 = the front plane, + forward)
 GL = 0.3                     # glass front behind the face
@@ -140,6 +148,10 @@ def place(x):
     return x.transform(M[:3, :].tolist())
 
 
+def place0(x):                # in the louvers' frame
+    return x.transform(M0[:3, :].tolist())
+
+
 # the tube, from the lid on its end to the face
 tube = cyl(R_OUT, W_LID, 0.5, seg=180) - cyl(R_IN, W_LID - 1, 1, seg=180)
 # the sleeves between the CAN board and the display's standoffs, each on a
@@ -157,8 +169,9 @@ pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
     (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
 pod -= place(cyl(R_IN, -60, 60, seg=180))
 pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
-out = pod + place(tube)
-out -= place(box(-200, 200, -200, 200, 0, 100))                 # flat: the front
+pod -= place(cyl(R_OUT, 0, 80, seg=180))                       # nothing in front of it
+pod -= place0(box(-200, 200, -200, 200, 0, 100))                # the louvers' front
+out = pod + place(tube - box(-50, 50, -50, 50, 0, 10))         # the tube's own face
 res = to_tm(out)
 res.export(f"{D}/vent185.stl")
 
