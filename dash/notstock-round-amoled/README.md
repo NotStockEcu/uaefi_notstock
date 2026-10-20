@@ -82,3 +82,16 @@ The console logs the I2C devices found at start. On this board: 0x18
 ES8311, 0x20 TCA9554, 0x34 AXP2101, 0x40 ES7210, 0x51 RTC, 0x5A touch, 0x6B
 IMU. Then "CO5300 up", "CST9217 ready", "ES8311 ready". A missing one points
 at that part; send the log.
+
+## Update over Wi-Fi
+
+As the 1.85": the gauge runs from ota_0, the updater
+(`../notstock-updater175`) sits in factory (`partitions.csv`). MENU ->
+AKTUALIZACE -> SPUSTIT, then on the phone Wi-Fi NOTSTOCK-175 (password
+notstock), http://192.168.4.1, upload `notstock_round_amoled.bin`.
+
+The first time over USB, all of it (the partition table changed):
+
+    python -m esptool --chip esp32s3 -p COM7 -b 460800 write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m 0x0 bootloader.bin 0x8000 partition-table.bin 0xf000 ota_data_initial.bin 0x20000 notstock_updater175.bin 0x200000 notstock_round_amoled.bin
+
+The G-meter (MENU -> G-METER) is on this board only (`RND_HAVE_GMETER`).

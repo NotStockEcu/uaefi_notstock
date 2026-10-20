@@ -7,7 +7,9 @@ set(ROUND "${CMAKE_CURRENT_LIST_DIR}/../../notstock-round/main")
 set(DASH7 "${CMAKE_CURRENT_LIST_DIR}/../../notstock-dash-7inch/main")
 file(GLOB SRCS "${ROUND}/*.c" "${ROUND}/fonts/*.c" "${ROUND}/faces466/*.c")
 list(REMOVE_ITEM SRCS "${ROUND}/hw.c")
-list(APPEND SRCS "hw_amoled.c" "${DASH7}/obd2.c" "${DASH7}/dtc_text.c")
+# the way to the Wi-Fi updater (../../notstock-updater175), as the 1.85"'s
+list(APPEND SRCS "hw_amoled.c" "${CMAKE_CURRENT_LIST_DIR}/../../notstock-round-lcd185/main/ota_lcd185.c"
+     "${DASH7}/obd2.c" "${DASH7}/dtc_text.c")
 
 idf_component_register(
     SRCS ${SRCS}
@@ -17,4 +19,5 @@ idf_component_register(
 # font and image files pick their lvgl include path from the last one; the
 # G-meter from the board's QMI8658 (motion.c, gmeter.c, ui_round_g.c)
 target_compile_definitions(${COMPONENT_LIB} PRIVATE
-    RND_SIZE=466 BOARD_AMOLED LV_LVGL_H_INCLUDE_SIMPLE RND_HAVE_GMETER)
+    RND_SIZE=466 BOARD_AMOLED LV_LVGL_H_INCLUDE_SIMPLE RND_HAVE_GMETER
+    RND_HAVE_UPDATER RND_UPD_SSID="NOTSTOCK-175")

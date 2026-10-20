@@ -1,5 +1,6 @@
 /* Round gauge UI: AKTUALIZACE, from the menu where the board has the Wi-Fi
- * updater (rnd_update_available(); the 1.85" board: ../../notstock-updater185).
+ * updater (rnd_update_available(); the 1.85": ../../notstock-updater185, the
+ * 1.75" AMOLED: ../../notstock-updater175, RND_UPD_SSID its network).
  * What happens and what to do on the phone, and SPUSTIT, which restarts
  * the gauge into the updater. A long press goes back to the menu.
  */
@@ -43,7 +44,10 @@ void rnd_update_create(void)
     lv_label_set_text(l, TR("THE UPDATER. ON THE PHONE:", "AKTUALIZACE. V MOBILU:"));
 
     l = rnd_label(upd_scr, &rnd_26, C_REGEN, 168);
-    lv_label_set_text(l, "WIFI NOTSTOCK-185");
+#ifndef RND_UPD_SSID
+#define RND_UPD_SSID "NOTSTOCK-185"
+#endif
+    lv_label_set_text(l, "WIFI " RND_UPD_SSID);
     l = rnd_label(upd_scr, &rnd_26, C_W, 204);
     lv_label_set_text(l, TR("PASSWORD notstock", "HESLO notstock"));
     l = rnd_label(upd_scr, &rnd_26, C_W, 240);

@@ -1,4 +1,6 @@
-/* NOT STOCK updater for the round gauge on the ESP32-S3-Touch-LCD-1.85:
+/* NOT STOCK updater for the round gauge on the ESP32-S3-Touch-LCD-1.85
+ * (and, built by ../notstock-updater175 with its own lcd_text, the
+ * ESP32-S3-Touch-AMOLED-1.75; UPD_* below name the board):
  * a small app in the factory partition that puts a new gauge firmware
  * into ota_0 over Wi-Fi, so the gauge need not come out of the vent.
  *
@@ -40,10 +42,15 @@
 
 static const char *TAG = "upd";
 
-#define AP_SSID   "NOTSTOCK-185"
+#ifndef UPD_SSID                    /* the board: the 1.85" unless told */
+#define UPD_SSID  "NOTSTOCK-185"
+#define UPD_GAUGE "notstock_round_lcd185"   /* the gauge's project name */
+#define UPD_BOARD "1.85"
+#endif
+#define AP_SSID   UPD_SSID
 #define AP_PASS   "notstock"
 #define AP_IP     "192.168.4.1"
-#define GAUGE     "notstock_round_lcd185"   /* the gauge's project name */
+#define GAUGE     UPD_GAUGE
 #define IDLE_MIN  15
 
 static const esp_partition_t *s_ota0;
@@ -117,9 +124,9 @@ static const char PAGE[] =
     "h1{color:#ff9a1f;font-size:22px}input,button{font-size:18px;width:100%%;margin:8px 0;padding:10px}"
     "button{background:#ff9a1f;border:0;border-radius:8px;color:#111;font-weight:bold}"
     "#z{background:#333;color:#eee}progress{width:100%%;height:22px}"
-    "</style></head><body><h1>NOT STOCK 1.85: aktualizace</h1>"
+    "</style></head><body><h1>NOT STOCK " UPD_BOARD ": aktualizace</h1>"
     "<p>V budíku je: <b>%s</b></p>"
-    "<p>Vyber soubor <b>notstock_round_lcd185.bin</b> a nahraj ho.</p>"
+    "<p>Vyber soubor <b>" UPD_GAUGE ".bin</b> a nahraj ho.</p>"
     "<input type=file id=f accept='.bin'><button onclick='up()'>Nahrát</button>"
     "<progress id=p max=100 value=0></progress><p id=s></p>"
     "<button id=z onclick='zpet()'>Zrušit, zpět do budíku</button>"
@@ -180,7 +187,7 @@ static esp_err_t update_post(httpd_req_t *r)
     }
     if (strncmp(d->project_name, GAUGE, sizeof d->project_name) != 0) {
         static char msg[128];
-        snprintf(msg, sizeof msg, "Tohle je firmware %.32s, ne budíku 1.85.", d->project_name);
+        snprintf(msg, sizeof msg, "Tohle je firmware %.32s, ne budíku " UPD_BOARD ".", d->project_name);
         return answer(r, "400 Bad Request", msg);
     }
 

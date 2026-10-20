@@ -1,0 +1,1 @@
+/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/mbedtls/mbedtls/library/error.c
