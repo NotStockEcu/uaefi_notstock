@@ -96,8 +96,16 @@ static void build(lv_obj_t *scr)
     lv_obj_set_style_text_align(unit_l, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_pos(unit_l, TX - TW / 2, CX + 130);
     rnd_dots(scr, 0, dot);
-    /* the dots under the unit, as on the A4, clear of the bottom numeral */
-    lv_obj_align(lv_obj_get_parent(dot[0]), LV_ALIGN_TOP_LEFT, TX - 110, CX + 170);
+    /* the dots under the unit, as on the A4, smaller: the row ends where
+     * the rim leaves room and grows to the left, clear of the bottom
+     * numeral however many pages are shown */
+    lv_obj_t *row = lv_obj_get_parent(dot[0]);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER,
+                          LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(row, 6, 0);
+    lv_obj_update_layout(row);           /* its width, before the first frame */
+    lv_obj_align(row, LV_ALIGN_TOP_LEFT, CX + RND_W * 126 / 480 - lv_obj_get_width(row),
+                 CX + RND_W * 164 / 480);
 
     needle = lv_img_create(scr);
     lv_img_set_src(needle, &red_needle);
@@ -209,6 +217,9 @@ static void page(int pg)
     warn_at = needle_at = NAN;
     warn_on = line_on = -1;
     rnd_dots_set(dot, pg, lv_color_hex(0xD8D8D8), lv_color_hex(0x3A3A3E));
+    for (int i = 0; i < RND_PAGES; i++) {
+        lv_obj_set_size(dot[i], lv_obj_get_style_width(dot[i], 0) > 8 ? 16 : 6, 6);
+    }
 }
 
 static void draw(const rnd_view_t *v)
