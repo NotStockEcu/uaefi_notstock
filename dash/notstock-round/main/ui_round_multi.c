@@ -129,8 +129,8 @@ enum { ST_NOTSTOCK, ST_RETRO, ST_RED };
 
 typedef struct {
     lv_obj_t *box, *val, *name, *unit;
-    /* NOTSTOCK: arc and red zone; RETRO: the red band */
-    lv_obj_t *arc, *zone;
+    /* NOTSTOCK: the value arc and its glow, red zone; RETRO: the red band */
+    lv_obj_t *arcs[N_ARC], *zone;
     /* RETRO */
     lv_obj_t *needle;
     lv_obj_t *nimg;              /* RED: the dials' needle image, turned */
@@ -261,50 +261,56 @@ static void mini_build(slot_t *s, int x, int y, int r, int w,
 }
 
 /* the big scale's numbers at its start, middle and end: on radius r of
- * centre CX, CX, each moved in by dx (sideways, towards the middle) and dy */
+ * centre CX, CX, the end ones moved in by dx (sideways, towards the
+ * middle) and dy (down; up if < 0) */
 static void scale_nums(slot_t *s, int r, int dx, int dy, const lv_font_t *f,
                        lv_color_t c)
 {
     for (int i = 0; i < 3; i++) {
         float a = (s->start + s->sweep * i / 2.0f) * (float)M_PI / 180.0f;
         int x = CX + (int)lroundf(r * cosf(a)) + (i == 0 ? dx : i == 2 ? -dx : 0);
-        int y = CX + (int)lroundf(r * sinf(a)) + dy;
+        int y = CX + (int)lroundf(r * sinf(a)) + (i == 1 ? 0 : dy);
         s->num[i] = label_at(s->box, f, c, x, y, 90);
     }
 }
 
 /* -------------------------------------------------------- NOTSTOCK */
-#define NS_R      214
-#define NS_W      22
 #define NS_START  180             /* the top half, clear of the small ones */
 #define NS_SWEEP  180
 #define MINI_W    11
 
+/* as the NOTSTOCK gauges (ui_look_notstock.c): the face (face_ns_multi:
+ * background, groove, ticks, the small dials' recesses), the value arc
+ * with its glow and rounded ends in the groove, the rounded red zone, the
+ * title in their grey, the scale's numbers in their size */
 static void build_notstock(void)
 {
+    lv_obj_t *bg = lv_img_create(layer);
+    lv_img_set_src(bg, &face_ns_multi);
+    lv_obj_set_pos(bg, 0, 0);
+    lv_obj_clear_flag(bg, LV_OBJ_FLAG_CLICKABLE);
+
     slot_t *s = &slot[0];
     s->box = box_in(layer);
     s->start = NS_START;
     s->sweep = NS_SWEEP;
-    int d = 2 * NS_R + NS_W;
-    lv_obj_center(arc_at(s->box, d, NS_W, NS_START, NS_SWEEP, ARC_BAND,
-                         C_TRACK));
-    s->zone = arc_at(s->box, d, NS_W, NS_START, NS_SWEEP, ARC_BAND, C_ZONE);
+    s->zone = arc_at(s->box, 2 * FACE_ARC_R + FACE_GROOVE_W, FACE_GROOVE_W,
+                     NS_START, NS_SWEEP, ARC_BAND, C_ZONE);
+    lv_obj_set_style_arc_rounded(s->zone, true, LV_PART_MAIN);
     lv_obj_center(s->zone);
-    s->arc = arc_at(s->box, d, NS_W, NS_START, NS_SWEEP, ARC_VALUE, C_W);
-    lv_obj_center(s->arc);
-    s->name = rnd_label(s->box, &rnd_18, C_GREY, 86);
+    rnd_arcs_on(s->box, s->arcs, NS_START, NS_SWEEP);
+    s->name = rnd_label(s->box, &rnd_18, lv_color_hex(0x969CA4), 98);
     lv_obj_set_style_text_letter_space(s->name, 4, 0);
     s->val = rnd_label(s->box, &rnd_112, C_W, 0);
-    s->unit = rnd_label(s->box, &rnd_26, C_GREY, CX - 20);
+    s->unit = rnd_label(s->box, &rnd_26, C_GREY, CX - 12);
 
-    scale_nums(s, NS_R - 34, 0, -12, &rnd_18, C_GREY);
+    scale_nums(s, 166, 6, -26, &rnd_26, lv_color_hex(0xAAB0B8));
 
     for (int i = 1; i < RND_MULTI_SLOTS; i++) {
         s = &slot[i];
         s->box = box_in(layer);
         mini_build(s, CX + (i - 2) * MULTI_MINI_DX, CX + MULTI_MINI_Y,
-                   MULTI_MINI_R - 4, MINI_W, &rnd_32, C_W, &rnd_18, C_GREY);
+                   MULTI_MINI_R - 5, MINI_W, &rnd_32, C_W, &rnd_18, C_GREY);
     }
 }
 
@@ -509,7 +515,7 @@ void rnd_multi_build(lv_obj_t *gauge_scr)
     regen_lbl = rnd_label(layer, &rnd_18, C_REGEN,
                           style == ST_RETRO ? CX + 20 : CX + 10);
     lv_obj_set_style_text_letter_space(regen_lbl, 2, 0);
-    rnd_dots(layer, CX + 185, dot);
+    rnd_dots(layer, CX + 172, dot);         /* clear of the rims */
     for (int i = 0; i < RND_MULTI_SLOTS; i++) slot[i].id = -1;
     lv_obj_add_flag(layer, LV_OBJ_FLAG_HIDDEN);
 }
@@ -548,12 +554,7 @@ static void slot_frac(slot_t *s, float f)
         }
         return;
     }
-    if (s->arc && style == ST_NOTSTOCK) {
-        lv_arc_set_value(s->arc, (int16_t)lroundf(f * 1000));
-        /* nothing to show: no stub of an arc either */
-        if (f < 0.001f) lv_obj_add_flag(s->arc, LV_OBJ_FLAG_HIDDEN);
-        else            lv_obj_clear_flag(s->arc, LV_OBJ_FLAG_HIDDEN);
-    }
+    if (s->arcs[0]) rnd_arcs_set(s->arcs, f * ARC_MAX, s->warn > 0 ? C_RED : C_W);
     if (s->nimg) {
         lv_img_set_angle(s->nimg, (int16_t)lroundf((s->start + f * s->sweep) * 10.0f));
     }
@@ -577,9 +578,7 @@ static void slot_frac(slot_t *s, float f)
 static void slot_warn(slot_t *s, bool w)
 {
     lv_obj_set_style_text_color(s->val, w ? C_RED : C_W, 0);
-    if (s->arc && style == ST_NOTSTOCK) {
-        lv_obj_set_style_arc_color(s->arc, w ? C_RED : C_W, LV_PART_INDICATOR);
-    }
+    if (s->arcs[0]) rnd_arcs_set(s->arcs, s->shown * ARC_MAX, w ? C_RED : C_W);
 }
 
 /* a slot took a new value: name, unit, red zone */
@@ -676,7 +675,7 @@ void rnd_multi_update(const rnd_data_t *d)
                 s->big = big;
                 const lv_font_t *ft = big ? &rnd_112 : &rnd_84;
                 lv_obj_set_style_text_font(s->val, ft, 0);
-                lv_obj_set_y(s->val, CX - 78 - lv_font_get_line_height(ft) / 2);
+                lv_obj_set_y(s->val, CX - 72 - lv_font_get_line_height(ft) / 2);
             }
         }
     }

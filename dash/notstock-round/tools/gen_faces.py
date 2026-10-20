@@ -360,7 +360,8 @@ def draw_face_retro(p, size):
               (int(c - ipx / 2), int(c - 0.47 * R)), m)
     if p[10]:
         nf = ImageFont.truetype(FONT_BARLOW_S, int(0.075 * R))
-        d.text((c, c - 0.08 * R), p[10], font=nf, fill=C_INK_DIM,
+        # under the hub, over the window: clear of the hub and the needle
+        d.text((c, c + 0.215 * R), p[10], font=nf, fill=C_INK_DIM,
                anchor="mm")
 
     # readout window: black, a thin chrome frame
@@ -385,6 +386,64 @@ def draw_face_retro(p, size):
     img = Image.composite(Image.new("RGB", (size, size), (255, 255, 255)),
                           img, sheen)
 
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
+    out = Image.new("RGB", (size, size), (0, 0, 0))
+    out.paste(img, (0, 0), mask)
+    return out
+
+
+# --------------------------------------------------------- MULTI, NOTSTOCK
+def draw_multi_ns(size):
+    """NOTSTOCK's MULTI page in the dress of its gauges: the same radial
+    background, bezel line and groove (here over the top half, rounded at
+    both ends) with ticks every 5 %, long ones every 25 %; three small dark
+    recesses below, each with a bezel line, for the small dials' segment
+    rings. Numbers, arc, zone and text are the UI's (ui_round_multi.c)."""
+    S = size * SS
+    c = R = S / 2
+    img = Image.new("RGB", (S, S), C_BG_OUT)
+    d = ImageDraw.Draw(img)
+    steps = 48
+    for i in range(steps):
+        t = i / (steps - 1)
+        r = R * (1 - t)
+        k = t ** 1.6
+        col = tuple(int(C_BG_OUT[j] + (C_BG_IN[j] - C_BG_OUT[j]) * k)
+                    for j in range(3))
+        d.ellipse([c - r, c - r, c + r, c + r], fill=col)
+    for i in range(360):
+        lum = 0.5 + 0.5 * math.sin(math.radians(-(i + 0.5)))
+        col = tuple(int(30 + 60 * lum) for _ in range(3))
+        d.arc([c - R + 2 * SS, c - R + 2 * SS, c + R - 2 * SS, c + R - 2 * SS],
+              i, i + 1.5, fill=col, width=int(2 * SS))
+
+    gr, gw = GROOVE_R * R, GROOVE_W * R
+    d.arc([c - gr - gw / 2, c - gr - gw / 2, c + gr + gw / 2, c + gr + gw / 2],
+          180, 360, fill=C_GROOVE, width=int(gw))
+    for a in (180, 360):
+        x = c + gr * math.cos(math.radians(a))
+        y = c + gr * math.sin(math.radians(a))
+        d.ellipse([x - gw / 2, y - gw / 2, x + gw / 2, y + gw / 2], fill=C_GROOVE)
+    r_out = (GROOVE_R - GROOVE_W / 2 - 0.018) * R
+    for k in range(21):
+        a = math.radians(180 + 9 * k)
+        is_major = k % 5 == 0
+        ln = (0.075 if is_major else 0.035) * R
+        w = (0.017 if is_major else 0.009) * R
+        d.line([(c + r_out * math.cos(a), c + r_out * math.sin(a)),
+                (c + (r_out - ln) * math.cos(a), c + (r_out - ln) * math.sin(a))],
+               fill=C_MAJOR if is_major else C_MINOR, width=int(w))
+
+    for i in (-1, 0, 1):
+        x, y, r = c + i * MULTI_MINI_DX * R, c + MULTI_MINI_Y * R, MULTI_MINI_R * R
+        d.ellipse([x - r, y - r, x + r, y + r], fill=(5, 6, 8))
+        for j in range(0, 360, 2):
+            lum = 0.5 + 0.5 * math.sin(math.radians(-(j + 1)))
+            col = tuple(int(28 + 55 * lum) for _ in range(3))
+            d.arc([x - r, y - r, x + r, y + r], j, j + 3, fill=col, width=int(1.5 * SS))
+
+    img = img.resize((size, size), Image.LANCZOS)
     mask = Image.new("L", (size, size), 0)
     ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
     out = Image.new("RGB", (size, size), (0, 0, 0))
@@ -659,6 +718,9 @@ def main():
     mr = draw_multi_retro(size)
     mr.save(os.path.join(prev, "retro-multi.png"))
     emit_rgb(lines, "face_retro_multi", mr)
+    mn = draw_multi_ns(size)
+    mn.save(os.path.join(prev, "ns-multi.png"))
+    emit_rgb(lines, "face_ns_multi", mn)
     for name, px in UI_ICONS:
         emit_a8(lines, "icon_%s_%d" % (name, px), icon_mask(name, px))
     for arr, lst in (("face_img", names), ("face_retro_img", retro),
@@ -729,6 +791,7 @@ def main():
           "extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];",
           "extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */",
           "extern const lv_img_dsc_t face_retro_multi;",
+          "extern const lv_img_dsc_t face_ns_multi;",
           "extern const lv_img_dsc_t face_retro_plain;",
           "extern const lv_img_dsc_t face_retro_dpf;",
           "",

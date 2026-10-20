@@ -119,6 +119,11 @@ void rnd_spike_set(lv_obj_t *n, lv_obj_t *shadow, float deg)
 }
 void rnd_arcs(lv_obj_t *par, lv_obj_t *out[N_ARC])
 {
+    rnd_arcs_on(par, out, FACE_START, FACE_SWEEP);
+}
+
+void rnd_arcs_on(lv_obj_t *par, lv_obj_t *out[N_ARC], int start, int sweep)
+{
     for (int i = 0; i < N_ARC; i++) {
         int w = FACE_ARC_W + GLOW[i].extra;
         int d = 2 * FACE_ARC_R + w;
@@ -127,8 +132,8 @@ void rnd_arcs(lv_obj_t *par, lv_obj_t *out[N_ARC])
         lv_obj_set_size(a, d, d);
         lv_obj_center(a);
         lv_obj_clear_flag(a, LV_OBJ_FLAG_CLICKABLE);
-        lv_arc_set_rotation(a, FACE_START);
-        lv_arc_set_bg_angles(a, 0, FACE_SWEEP);
+        lv_arc_set_rotation(a, start);
+        lv_arc_set_bg_angles(a, 0, sweep);
         lv_arc_set_range(a, 0, ARC_MAX);
         lv_arc_set_value(a, 0);
         lv_obj_set_style_arc_opa(a, LV_OPA_TRANSP, LV_PART_MAIN);

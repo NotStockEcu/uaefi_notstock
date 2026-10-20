@@ -218,7 +218,9 @@ is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 A page with four values at once, like a CAN Checked MFD's multi view: a big
 one in the middle with its scale over the top half, numbered at its start,
 middle and end, and three small gauges in a row below (`ui_round_multi.c`),
-in the chosen look: a white arc (NOTSTOCK), a needle on a VDO-style dial
+in the chosen look: as the NOTSTOCK gauges (NOTSTOCK: `face_ns_multi` from
+`gen_faces.py` with their background, groove and ticks, the value arc with
+its glow and rounded ends, the rounded red zone), a needle on a VDO-style dial
 (RETRO, the dial is `face_retro_multi` from `gen_faces.py`) or the RED
 dials' (`red_multi`). The small ones have no needle, to be read at a glance
 while driving: a big number in a ring of 18 segments, white at the bottom

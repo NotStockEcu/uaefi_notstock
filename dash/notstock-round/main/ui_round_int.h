@@ -38,6 +38,8 @@ void rnd_lang_apply(void);        /* g_rnd_set.lang changed: rebuild */
 /* the value arc with its glow, on the faces' groove geometry */
 #define N_ARC 3
 void rnd_arcs(lv_obj_t *par, lv_obj_t *out[N_ARC]);
+/* the same over start .. start + sweep degrees (MULTI's top half) */
+void rnd_arcs_on(lv_obj_t *par, lv_obj_t *out[N_ARC], int start, int sweep);
 void rnd_arcs_set(lv_obj_t *a[N_ARC], float frac_1000, lv_color_t c);
 
 lv_obj_t *rnd_label(lv_obj_t *par, const lv_font_t *f, lv_color_t c,

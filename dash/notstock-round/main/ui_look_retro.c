@@ -70,7 +70,7 @@ static void build(lv_obj_t *scr)
     alert_lbl = rnd_label(scr, &rnd_18, C_RED, CX + 54);
     regen_lbl = rnd_label(scr, &rnd_18, C_REGEN, CX + 30);
     lv_obj_set_style_text_letter_space(regen_lbl, 2, 0);
-    rnd_dots(scr, CX + 192, dot);
+    rnd_dots(scr, CX + 178, dot);           /* clear of the chrome rim */
 
     /* tell-tale under the needle, the needle's shadow, the needle, hub */
     tell = line(scr, 3, C_TELL, LV_OPA_COVER);

@@ -58,6 +58,7 @@ extern const lv_img_dsc_t *const face_img[FACE_COUNT];
 extern const lv_img_dsc_t *const face_retro_img[FACE_COUNT];
 extern const lv_img_dsc_t *const page_icon[FACE_COUNT];   /* A8 */
 extern const lv_img_dsc_t face_retro_multi;
+extern const lv_img_dsc_t face_ns_multi;
 extern const lv_img_dsc_t face_retro_plain;
 extern const lv_img_dsc_t face_retro_dpf;
 
