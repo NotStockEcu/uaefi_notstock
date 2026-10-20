@@ -58,7 +58,7 @@ disp = trimesh.load(f"{D}/disp185.stl")
 # the old ring: axis fitted from sections (inner r 26.3, the wall to ~28.8)
 C0 = np.array([48.0, 25.76, 0.0])
 AX = np.array([0.0, 2.06, 15.0]); AX /= np.linalg.norm(AX)
-RING_CUT = 28.9
+RING_CUT = 33.5             # all of it: its back is wider than its front
 MR = np.eye(4); MR[:3, 0] = [1, 0, 0]; MR[:3, 1] = np.cross(AX, [1, 0, 0])
 MR[:3, 2] = AX; MR[:3, 3] = C0
 
@@ -172,6 +172,16 @@ for u, v in HOLES:
 pod = to_mf(holder)
 pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
     (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
+# the louvers between x 12 and 84 (the ring and what is near it) made
+# again from their own section at x 12 and 84, running on into the tube,
+# so they hold it whichever way it is turned
+TO_X = [[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0]]             # (y, z, x): x up
+FROM_X = [[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0]]
+side = to_mf(holder).transform(TO_X)
+pod -= box(12, 84, -100, 200, -100, 100)
+for x0, x1, xs in ((12, 48, 12.5), (48, 84, 83.5)):
+    prof = side.slice(xs)
+    pod += prof.extrude(x1 - x0).translate((0, 0, x0)).transform(FROM_X)
 pod -= place(cyl(R_IN, -60, 60, seg=180))
 pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
 pod -= place(mf.Manifold.cylinder(80, R_OUT, R_OUT + 80 * np.tan(np.radians(FLARE)), 180)
