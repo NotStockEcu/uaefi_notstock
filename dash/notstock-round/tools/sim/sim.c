@@ -14,6 +14,7 @@
  *               [relook=N,M,...]    switch looks while running, as LOOK does
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]
+ *               [hc=1]              HIGH CONTRAST (contrast.h, as the 1.85")
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
  *               [hold=x,y,ms;...]   finger down at x,y for ms, then lifted
  *               [page=7]            MULTI; [multi=a,b,c,d] its slots (page
@@ -28,6 +29,7 @@
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
  */
+#include "contrast.h"
 #include "regen_detect.h"
 #include <math.h>
 #include <stdio.h>
@@ -69,6 +71,13 @@ static int s_backlight = 100;
 void rnd_backlight(uint8_t percent)
 {
     s_backlight = percent;
+}
+
+static bool s_hc;
+void rnd_contrast(bool high)
+{
+    if (high) hc_init();
+    s_hc = high;
 }
 
 void rnd_sim_settings(const char *which, int limit);
@@ -210,6 +219,7 @@ int main(int argc, char **argv)
             used = true;
         }
         if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
+        if (strcmp(k, "hc") == 0) { g_rnd_set.hc = atoi(v) != 0; used = true; }
         if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "dtc") == 0)   { s_dtc_have = atoi(v); used = true; }
         if (strcmp(k, "dtcclear") == 0) { dtcclear = atoi(v); used = true; }
@@ -355,6 +365,7 @@ int main(int argc, char **argv)
                 rgb[0] = rgb[1] = rgb[2] = 0x2A;
             } else {
                 lv_color_t c = s_fb[y * W + x];
+                if (s_hc) c.full = hc565(c.full);
                 rgb[0] = (unsigned char)(c.ch.red << 3 | c.ch.red >> 2);
                 rgb[1] = (unsigned char)(c.ch.green << 2 | c.ch.green >> 4);
                 rgb[2] = (unsigned char)(c.ch.blue << 3 | c.ch.blue >> 2);

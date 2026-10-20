@@ -12,6 +12,7 @@
  * and cross-fades into the gauges, which sweep up as they come in.
  */
 #include "ui_round_int.h"
+#include "red.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -80,6 +81,42 @@ static float shown = NAN;          /* smoothed position, 0..1 */
 static float peak[RND_COUNT];
 
 /* ---------------------------------------------------------------- shared */
+static lv_obj_t *spike_img(lv_obj_t *par, int x, int y, int base, int len)
+{
+    /* zoomed so the body (RED_NEEDLE_X0 .. w in the image) runs base .. len,
+     * turned about the point base before the body's start */
+    const int w = red_needle.header.w, x0 = RED_NEEDLE_X0;
+    if (base < 0) base = x0 * len / w;
+    float z = (float)(len - base) / (float)(w - x0);
+    int px = (int)lroundf(x0 - base / z);
+    lv_obj_t *n = lv_img_create(par);
+    lv_img_set_src(n, &red_needle);
+    lv_obj_set_pos(n, x - px, y - RED_NEEDLE_PY);
+    lv_img_set_pivot(n, px, RED_NEEDLE_PY);
+    lv_img_set_zoom(n, (uint16_t)lroundf(256 * z));
+    lv_img_set_antialias(n, true);
+    lv_obj_clear_flag(n, LV_OBJ_FLAG_CLICKABLE);
+    return n;
+}
+
+lv_obj_t *rnd_spike(lv_obj_t *par, int x, int y, int base, int len,
+                    lv_obj_t **shadow)
+{
+    if (shadow) {
+        *shadow = spike_img(par, x + 3, y + 4, base, len);
+        lv_obj_set_style_img_recolor(*shadow, lv_color_black(), 0);
+        lv_obj_set_style_img_recolor_opa(*shadow, LV_OPA_COVER, 0);
+        lv_obj_set_style_img_opa(*shadow, LV_OPA_50, 0);
+    }
+    return spike_img(par, x, y, base, len);
+}
+
+void rnd_spike_set(lv_obj_t *n, lv_obj_t *shadow, float deg)
+{
+    int16_t a = (int16_t)lroundf(fmodf(deg, 360.0f) * 10.0f);
+    lv_img_set_angle(n, a);
+    if (shadow) lv_img_set_angle(shadow, a);
+}
 void rnd_arcs(lv_obj_t *par, lv_obj_t *out[N_ARC])
 {
     for (int i = 0; i < N_ARC; i++) {
@@ -462,6 +499,7 @@ void ui_round_create(bool boot_logo_on)
     rnd_on_long(scr, long_cb);
     lv_obj_add_event_cb(scr, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
     rnd_backlight_apply();
+    rnd_contrast(g_rnd_set.hc);
 
     /* start on the first page of the chosen order */
     page = rnd_page_valid(g_rnd_set.order[0]) ? g_rnd_set.order[0] : 0;

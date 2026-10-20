@@ -64,6 +64,8 @@ SCENES = {
     "multi": "page=7",
     "multi-rpm": "page=7 multi=5,2,6,3 rpm=1850",
     "retro-multi": "look=1 page=7",
+    "red-multi": "look=2 page=7",
+    "multi-hc": "page=7 hc=1",
     "cz-retro-multi-warn": "lang=1 look=1 page=7 boost=2.31 oil=134",
     "cz-multi-warn": "lang=1 page=7 boost=2.31 oil=134",
     "cz-multi-edit": "lang=1 screen=multiedit",

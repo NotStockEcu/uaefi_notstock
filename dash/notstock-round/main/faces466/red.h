@@ -12,6 +12,7 @@ typedef struct { float lo, hi; int n_ticks, n_nums;
 #define RED_R_BAND0 190
 #define RED_R_BAND1 197
 #define RED_NEEDLE_PY 15    /* the pivot: left edge, this far down */
+#define RED_NEEDLE_X0 30    /* where its body starts, from the pivot */
 
 extern const lv_img_dsc_t *const red_face[6];   /* in page order */
 extern const lv_img_dsc_t red_needle, red_cap, red_multi, red_face_dpf;

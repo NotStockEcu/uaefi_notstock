@@ -45,7 +45,8 @@ static const char *TAG = "round";
 /* ------------------------------------------------------------ settings */
 #define NS  "round"
 #define KEY "set"
-#define VER 5        /* bump whenever rnd_settings_t or its defaults change */
+#define VER 6        /* bump whenever rnd_settings_t or its defaults change */
+#define VER_NO_HC 5  /* the same, without hc at the end: still loads */
 
 static void settings_load(void)
 {
@@ -63,10 +64,12 @@ static void settings_load(void)
     uint8_t ver = 0;
     rnd_settings_t tmp;
     size_t len = sizeof tmp;
-    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && ver == VER &&
-        nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK && len == sizeof tmp &&
+    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && (ver == VER || ver == VER_NO_HC) &&
+        nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK &&
+        len == (ver == VER ? sizeof tmp : offsetof(rnd_settings_t, hc)) &&
         tmp.lang < RND_LANG_COUNT &&
         tmp.sound < RND_SND_COUNT && tmp.volume >= 10 && tmp.volume <= 100) {
+        if (ver == VER_NO_HC) tmp.hc = 0;
         g_rnd_set = tmp;
         /* a look this build does not have: NOTSTOCK, the rest kept */
         if (g_rnd_set.look >= RND_LOOK_COUNT) g_rnd_set.look = RND_LOOK_NOTSTOCK;
@@ -113,6 +116,11 @@ void rnd_sound(int event)
 void rnd_backlight(uint8_t percent)
 {
     hw_backlight(percent);
+}
+
+void rnd_contrast(bool high)
+{
+    hw_contrast(high);
 }
 
 /* the Wi-Fi updater: none on most boards; the 1.85" has one

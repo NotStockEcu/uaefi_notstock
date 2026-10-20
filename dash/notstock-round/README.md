@@ -120,7 +120,7 @@ diagnostics. Menu and settings stay the same in every look.
   filter icon, the soot big, rows of pressure, temperatures, distance).
   No maker's logo.
 - **VDO STYLE** (`ui_look_retro.c`, RETRO in the code): a mechanical
-  instrument of the VDO kind.
+  instrument of the VDO kind, with the RED look's pointed needle.
   Chrome bezel, black dial, white print, a glass sheen, all pre-rendered
   per page (`draw_face_retro` in `gen_faces.py`). Live: the red band from
   the warn limit, a red needle with a shadow over a black hub, a thin
@@ -153,7 +153,10 @@ gone: nobody used it; a gauge that had it set shows NOTSTOCK.)
 Menu -> SETTINGS (`ui_round_set.c`); a long press goes one level back and
 stores them (`rnd_settings_save()`, the platform's NVS).
 
-- **LOOK**: NOTSTOCK, VDO STYLE (RETRO), RED.
+- **LOOK**: NOTSTOCK, VDO STYLE (RETRO), RED; and CONTRAST ON / OFF (high
+  contrast for a panel in daylight, `main/contrast.h`: each pixel's
+  brightness lifted on a curve on its way to the panel, mid tones up, the
+  darkest to black, the colour kept; the 1.85" only, the AMOLEDs need none).
 - **PAGES**: one gauge at a time in swipe order: SHOWN / HIDDEN, `<` and
   `>` move it earlier or later, swipe for the next. The gauges then swipe
   through the shown ones only, and their dots count those; the last shown
@@ -210,12 +213,18 @@ is a Reserved Font Name), which `gen_fonts.sh` converts. Barlow has them.
 
 ![retro multi](preview/retro-multi.png)
 
+![red multi](preview/red-multi.png) ![high contrast](preview/multi-hc.png)
+
 A page with four values at once, like a CAN Checked MFD's multi view: a big
-one in the middle with its scale over the top, three small gauges in a row
-below (`ui_round_multi.c`), in the chosen look: white arcs (NOTSTOCK),
-needles on a VDO-style dial with three small dials (RETRO, the dial is
-`face_retro_multi` from `gen_faces.py`). Each has its red zone from its warn limit and
-goes red over it. It takes its place in the swipe order like the gauges
+one in the middle with its scale over the top half, numbered at its start,
+middle and end, and three small gauges in a row below (`ui_round_multi.c`),
+in the chosen look: a white arc (NOTSTOCK), a needle on a VDO-style dial
+(RETRO, the dial is `face_retro_multi` from `gen_faces.py`) or the RED
+dials' (`red_multi`). The small ones have no needle, to be read at a glance
+while driving: a big number in a ring of 18 segments, white at the bottom
+of the scale turning red towards the warn limit and red from it, lit up to
+the reading, the rest faint; a short name in the gap below (CLT, OIL, AIT,
+BOOST, EGT, RPM, DPF). Over the warn limit the number goes red. It takes its place in the swipe order like the gauges
 (last by default) and can be hidden. What it shows: SETTINGS -> PAGES ->
 MULTI -> EDIT, tap a slot for the next value (water, oil, boost, intake,
 exhaust, rpm, DPF soot; the small ones can be empty). Default: boost big,

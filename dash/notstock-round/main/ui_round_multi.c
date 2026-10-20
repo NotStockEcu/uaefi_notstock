@@ -1,8 +1,12 @@
 /* Round gauge UI: MULTI, several values on one page. See ui_round.h.
  *
- * One big value in the middle with its scale over the top, three small
- * gauges in a row below it, like a CAN Checked MFD's multi view, drawn in
- * the chosen look (see below). What goes where
+ * One big value in the middle with its scale over the top (its start, middle
+ * and end written on it), three small gauges in a row below it, like a CAN
+ * Checked MFD's multi view, drawn in the chosen look (see below). The small
+ * ones have no needle, to be read at a glance while driving: a big number
+ * in a ring of segments, white at the bottom of the scale turning red
+ * towards the warn limit (red from it on), lit up to the reading, and a
+ * short name (CLT, OIL, AIT ...) in the gap at the bottom. What goes where
  * is g_rnd_set.multi[], set on the editor screen (SETTINGS -> PAGES ->
  * MULTI -> EDIT): tap a slot for the next value.
  *
@@ -24,6 +28,12 @@
 
 #define C_TRACK     lv_color_hex(0x1A1D21)
 #define C_ZONE      lv_color_hex(0x5A1414)
+
+/* the small dials' ring: MINI_SEGS segments over 270 degrees, white to red */
+#define MINI_SEGS   18
+#define MINI_STEP   (270 / MINI_SEGS)
+#define MINI_GAP    3                /* degrees between segments */
+#define SEG_DIM     LV_OPA_20        /* a segment past the reading */
 
 /* the order a tap cycles through */
 static const uint8_t CHOICES[] = {
@@ -48,6 +58,48 @@ static void range_of(int id, float *lo, float *hi)
         *lo = FACE_PAGE[id].lo;
         *hi = FACE_PAGE[id].hi;
     }
+}
+
+/* the small dials' names: short, to stay clear of the ring */
+static const char *mini_name(int id)
+{
+    switch (id) {
+    case RND_WATER:     return "CLT";
+    case RND_OIL:       return "OIL";
+    case RND_BOOST:     return "BOOST";
+    case RND_INTAKE:    return "AIT";
+    case RND_EXHAUST:   return "EGT";
+    case RND_RPM:       return "RPM";
+    case RND_WARN_SOOT: return "DPF";
+    default:            return "";
+    }
+}
+
+/* the colour of a place on the scale: white at its start, warmer towards
+ * the warn limit, red from it on (u = 1) */
+static lv_color_t heat(float u)
+{
+    static const struct { float u; uint32_t c; } STOP[] = {
+        { 0.00f, 0xFFFFFF }, { 0.55f, 0xFFF0EA }, { 0.80f, 0xFFA08C },
+        { 0.93f, 0xFF5A44 }, { 1.00f, 0xFF2420 },
+    };
+    const int n = (int)(sizeof STOP / sizeof STOP[0]);
+    if (u <= 0) return lv_color_hex(STOP[0].c);
+    for (int i = 1; i < n; i++) {
+        if (u <= STOP[i].u) {
+            float t = (u - STOP[i - 1].u) / (STOP[i].u - STOP[i - 1].u);
+            return lv_color_mix(lv_color_hex(STOP[i].c), lv_color_hex(STOP[i - 1].c),
+                                (uint8_t)lroundf(t * 255));
+        }
+    }
+    return lv_color_hex(STOP[n - 1].c);
+}
+
+/* a scale number: no decimals from 10 up */
+static void fmt_scale(char *buf, size_t n, float v)
+{
+    if (fabsf(v) >= 10 || fabsf(v - roundf(v)) < 0.01f) snprintf(buf, n, "%d", (int)lroundf(v));
+    else snprintf(buf, n, "%.1f", v);
 }
 
 static void fmt(char *buf, size_t n, int id, float v)
@@ -86,6 +138,12 @@ typedef struct {
     lv_point_t gp[2];
     lv_point_t np[2];
     int cx, cy, r0, r1;
+    /* small: the ring's segments, how many lit */
+    lv_obj_t *seg[MINI_SEGS];
+    int lit;
+    const lv_font_t *vfont;
+    /* big: the scale's start, middle and end */
+    lv_obj_t *num[3];
     /* all */
     int start, sweep;            /* degrees the scale covers */
     float shown;
@@ -180,13 +238,47 @@ static lv_obj_t *disc(lv_obj_t *par, int x, int y, int d, lv_color_t c,
     return o;
 }
 
+/* a small dial at x, y: the segmented ring (outer radius r, w wide), the
+ * value in the middle in vf, the short name in the gap at the bottom */
+static void mini_build(slot_t *s, int x, int y, int r, int w,
+                       const lv_font_t *vf, lv_color_t vc,
+                       const lv_font_t *nf, lv_color_t nc)
+{
+    s->start = 135;
+    s->sweep = 270;
+    s->cx = x;
+    s->cy = y;
+    s->lit = -1;
+    s->vfont = vf;
+    for (int k = 0; k < MINI_SEGS; k++) {
+        lv_obj_t *a = arc_at(s->box, 2 * r, w, 135 + k * MINI_STEP,
+                             MINI_STEP - MINI_GAP, ARC_BAND, C_TRACK);
+        lv_obj_set_pos(a, x - r, y - r);
+        s->seg[k] = a;
+    }
+    s->val = label_at(s->box, vf, vc, x, y - 2, 2 * (r - w) - 4);
+    s->name = label_at(s->box, nf, nc, x, y + r - 10, 2 * r);
+}
+
+/* the big scale's numbers at its start, middle and end: on radius r of
+ * centre CX, CX, each moved in by dx (sideways, towards the middle) and dy */
+static void scale_nums(slot_t *s, int r, int dx, int dy, const lv_font_t *f,
+                       lv_color_t c)
+{
+    for (int i = 0; i < 3; i++) {
+        float a = (s->start + s->sweep * i / 2.0f) * (float)M_PI / 180.0f;
+        int x = CX + (int)lroundf(r * cosf(a)) + (i == 0 ? dx : i == 2 ? -dx : 0);
+        int y = CX + (int)lroundf(r * sinf(a)) + dy;
+        s->num[i] = label_at(s->box, f, c, x, y, 90);
+    }
+}
+
 /* -------------------------------------------------------- NOTSTOCK */
 #define NS_R      214
 #define NS_W      22
-#define NS_START  162
-#define NS_SWEEP  216
-#define MINI_D    (2 * MULTI_MINI_R)
-#define MINI_W    9
+#define NS_START  180             /* the top half, clear of the small ones */
+#define NS_SWEEP  180
+#define MINI_W    11
 
 static void build_notstock(void)
 {
@@ -206,22 +298,13 @@ static void build_notstock(void)
     s->val = rnd_label(s->box, &rnd_112, C_W, 0);
     s->unit = rnd_label(s->box, &rnd_26, C_GREY, CX - 20);
 
+    scale_nums(s, NS_R - 34, 0, -12, &rnd_18, C_GREY);
+
     for (int i = 1; i < RND_MULTI_SLOTS; i++) {
         s = &slot[i];
-        int x = CX + (i - 2) * MULTI_MINI_DX, y = CX + MULTI_MINI_Y;
         s->box = box_in(layer);
-        s->start = 135;
-        s->sweep = 270;
-        lv_obj_t *a = arc_at(s->box, MINI_D, MINI_W, 135, 270, ARC_BAND,
-                             C_TRACK);
-        lv_obj_set_pos(a, x - MULTI_MINI_R, y - MULTI_MINI_R);
-        s->zone = arc_at(s->box, MINI_D, MINI_W, 135, 270, ARC_BAND, C_ZONE);
-        lv_obj_set_pos(s->zone, x - MULTI_MINI_R, y - MULTI_MINI_R);
-        s->arc = arc_at(s->box, MINI_D, MINI_W, 135, 270, ARC_VALUE, C_W);
-        lv_obj_set_pos(s->arc, x - MULTI_MINI_R, y - MULTI_MINI_R);
-        s->val = label_at(s->box, &rnd_26, C_W, x, y, 120);
-        s->name = label_at(s->box, &rnd_18, C_GREY, x, y + MULTI_MINI_R - 8,
-                           140);
+        mini_build(s, CX + (i - 2) * MULTI_MINI_DX, CX + MULTI_MINI_Y,
+                   MULTI_MINI_R - 4, MINI_W, &rnd_32, C_W, &rnd_18, C_GREY);
     }
 }
 
@@ -251,34 +334,26 @@ static void build_retro(void)
     s->r0 = -14;
     s->r1 = RETRO_TICK_R - 8;
 
+    scale_nums(s, RETRO_TICK_R - 50, 4, 0, &rnd_barlow_23, lv_color_hex(0xF0F0EC));
+
     for (int i = 1; i < RND_MULTI_SLOTS; i++) {
         s = &slot[i];
-        int x = CX + (i - 2) * MULTI_MINI_DX, y = CX + MULTI_MINI_Y;
         s->box = box_in(layer);
-        s->start = 135;
-        s->sweep = 270;
-        int r = MULTI_MINI_R - 14;
-        s->zone = arc_at(s->box, 2 * r + 4, 4, 135, 270, ARC_BAND, C_BAND);
-        lv_obj_set_pos(s->zone, x - r - 2, y - r - 2);
-        s->val = label_at(s->box, &rnd_barlow_23, C_W, x, y + 22, 90);
-        s->name = label_at(s->box, &rnd_barlow_20, C_INK_DIM, x,
-                           y + MULTI_MINI_R + 12, 140);
+        /* inside the chrome rim */
+        mini_build(s, CX + (i - 2) * MULTI_MINI_DX, CX + MULTI_MINI_Y,
+                   MULTI_MINI_R - 12, 10, &rnd_barlow_46, C_W,
+                   &rnd_barlow_20, C_INK_DIM);
         lv_obj_set_style_text_letter_space(s->name, 2, 0);
-        s->cx = x;
-        s->cy = y;
-        s->r0 = -6;
-        s->r1 = MULTI_MINI_R - 12;
-        s->needle = line_in(s->box, 4, C_NEEDLE, LV_OPA_COVER);
-        disc(s->box, x, y, 12, lv_color_hex(0x111111), lv_color_hex(0x55575A));
     }
     s = &slot[0];
-    s->needle = line_in(s->box, 7, C_NEEDLE, LV_OPA_COVER);
+    s->nimg = rnd_spike(s->box, CX, CX, 4, RETRO_TICK_R - 8, NULL);   /* as RED's */
     disc(s->box, CX, CX, 40, lv_color_hex(0x111111), lv_color_hex(0x55575A));
 }
 
 /* -------------------------------------------------------------- RED */
 LV_FONT_DECLARE(red_fis_54);
 LV_FONT_DECLARE(red_txt_22);
+LV_FONT_DECLARE(red_num_40);
 #define C_RED_LIT  lv_color_hex(0xF02A26)
 #define C_RED_VAL  lv_color_hex(0xEEEEEC)
 #define C_RED_DIM  lv_color_hex(0xA0A0A0)
@@ -348,20 +423,7 @@ static void red_zone(float z)
     }
 }
 
-/* the dials' needle (an image turned about its pivot, scaled to len) and
- * hub (scaled to d) */
-static lv_obj_t *red_needle_at(lv_obj_t *par, int x, int y, int len)
-{
-    lv_obj_t *n = lv_img_create(par);
-    lv_img_set_src(n, &red_needle);
-    lv_obj_set_pos(n, x, y - RED_NEEDLE_PY);
-    lv_img_set_pivot(n, 0, RED_NEEDLE_PY);
-    lv_img_set_zoom(n, (uint16_t)(256 * len / red_needle.header.w));
-    lv_img_set_antialias(n, true);
-    lv_obj_clear_flag(n, LV_OBJ_FLAG_CLICKABLE);
-    return n;
-}
-
+/* the dials' hub (scaled to d) */
 static void red_hub_at(lv_obj_t *par, int x, int y, int d)
 {
     lv_obj_t *h = lv_img_create(par);
@@ -413,30 +475,18 @@ static void build_red(void)
     s->r0 = -16;
     s->r1 = RED_R_TICK - 26;
 
+    scale_nums(s, RED_R_TICK - 52, 4, 0, &red_txt_22, C_RED_VAL);
+
     for (int i = 1; i < RND_MULTI_SLOTS; i++) {
         s = &slot[i];
-        int x = CX + (i - 2) * MULTI_MINI_DX, y = CX + MULTI_MINI_Y;
         s->box = box_in(layer);
-        s->start = 135;
-        s->sweep = 270;
-        int r = MULTI_MINI_R - 18;
-        s->zone = arc_at(s->box, 2 * r + 4, 4, 135, 270, ARC_BAND, C_RED_LIT);
-        lv_obj_set_pos(s->zone, x - r - 2, y - r - 2);
-        lv_obj_set_style_arc_opa(s->zone, LV_OPA_40, LV_PART_MAIN);   /* a hint */
-        s->val = label_at(s->box, &red_txt_22, C_RED_VAL, x, y + 24, 90);
-        s->name = label_at(s->box, &red_txt_22, C_RED_DIM, x, y + MULTI_MINI_R + 14, 140);
-        s->cx = x;
-        s->cy = y;
-        /* small: the needle as a line with a glow, as the image would be
-         * too thin scaled down this far */
-        s->r0 = -4;
-        s->r1 = MULTI_MINI_R - 9;
-        s->glow = line_in(s->box, 8, C_RED_LIT, LV_OPA_30);
-        s->needle = line_in(s->box, 3, lv_color_hex(0xFF3A34), LV_OPA_COVER);
-        red_hub_at(s->box, x, y, 20);
+        /* inside the thin red ring */
+        mini_build(s, CX + (i - 2) * MULTI_MINI_DX, CX + MULTI_MINI_Y,
+                   MULTI_MINI_R - 6, 10, &red_num_40, C_RED_VAL,
+                   &red_txt_22, C_RED_DIM);
     }
     s = &slot[0];
-    s->nimg = red_needle_at(s->box, CX, CX, red_needle.header.w);
+    s->nimg = rnd_spike(s->box, CX, CX, -1, red_needle.header.w, NULL);
     red_hub_at(s->box, CX, CX, red_cap.header.w);
 }
 
@@ -485,6 +535,19 @@ void rnd_multi_show(bool on)
 /* where the reading stands, 0..1 */
 static void slot_frac(slot_t *s, float f)
 {
+    if (s->seg[0]) {
+        /* a segment is lit once the reading is past its middle */
+        int lit = (int)floorf(f * MINI_SEGS + 0.5f);
+        if (f > 0.001f && lit < 1) lit = 1;
+        if (lit != s->lit) {
+            s->lit = lit;
+            for (int k = 0; k < MINI_SEGS; k++) {
+                lv_obj_set_style_arc_opa(s->seg[k], k < lit ? LV_OPA_COVER : SEG_DIM,
+                                         LV_PART_MAIN);
+            }
+        }
+        return;
+    }
     if (s->arc && style == ST_NOTSTOCK) {
         lv_arc_set_value(s->arc, (int16_t)lroundf(f * 1000));
         /* nothing to show: no stub of an arc either */
@@ -530,10 +593,29 @@ static void slot_setup(slot_t *s, int id)
         return;
     }
     lv_obj_clear_flag(s->box, LV_OBJ_FLAG_HIDDEN);
-    lv_label_set_text(s->name, rnd_page_name(id));
+    lv_label_set_text(s->name, s->seg[0] ? mini_name(id) : rnd_page_name(id));
     if (s->unit) lv_label_set_text(s->unit, rnd_unit(id));
     /* red zone from the warn limit to the end of the scale */
     float z = frac_of(id, g_rnd_set.warn[id]);
+    if (s->seg[0]) {
+        /* the ring's colours: red from the warn limit, blue at the start */
+        float zz = z > 0.05f ? z : 1.0f;
+        for (int k = 0; k < MINI_SEGS; k++) {
+            float mid = (k + 0.5f) / MINI_SEGS;
+            lv_obj_set_style_arc_color(s->seg[k], heat(mid / zz), LV_PART_MAIN);
+        }
+        s->lit = -1;
+        return;
+    }
+    if (s->num[0]) {
+        float lo, hi;
+        range_of(id, &lo, &hi);
+        char b[12];
+        for (int i = 0; i < 3; i++) {
+            fmt_scale(b, sizeof b, lo + (hi - lo) * i / 2.0f);
+            lv_label_set_text(s->num[i], b);
+        }
+    }
     if (style == ST_RED && s == &slot[0]) {
         red_zone(z);
     } else if (z < 1) {
@@ -570,6 +652,20 @@ void rnd_multi_update(const rnd_data_t *d)
         if (w != s->warn) {
             s->warn = w;
             slot_warn(s, w);
+        }
+        if (i > 0) {
+            /* four digits and more do not fit the ring in its font */
+            int digits = 0;
+            for (const char *c = buf; *c; c++) digits += *c != '.';
+            int big = digits < 4;
+            if (big != s->big) {
+                s->big = big;
+                const lv_font_t *ft = big ? s->vfont :
+                                      style == ST_RETRO ? &rnd_barlow_23 :
+                                      style == ST_RED ? &red_txt_22 : &rnd_26;
+                lv_obj_set_style_text_font(s->val, ft, 0);
+                lv_obj_set_y(s->val, s->cy - 2 - lv_font_get_line_height(ft) / 2);
+            }
         }
         if (i == 0 && style == ST_NOTSTOCK) {
             /* four digits and more: the smaller font, like the gauges */

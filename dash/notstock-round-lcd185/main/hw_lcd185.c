@@ -11,6 +11,7 @@
  */
 #include "hw.h"
 #include "board_lcd185.h"
+#include "contrast.h"
 #include "boot_fb.h"
 #include "esp_lcd_st77916.h"
 
@@ -266,6 +267,16 @@ static void panel_init(void)
 }
 
 /* ---------------------------------------------------------- 480 -> 360 */
+static bool s_hc;                 /* HIGH CONTRAST: contrast.h on each pixel */
+
+void hw_contrast(bool high)
+{
+    if (high && !s_hc) hc_init();
+    s_hc = high;
+    /* the whole frame again, through the curve or not */
+    lv_obj_invalidate(lv_scr_act());
+}
+
 /* RGB565 spread to 0x07E0F81F leaves room above each field: 16 weighted
  * pixels add up without one field running into the next. */
 static inline uint32_t spread(uint16_t c)
@@ -277,6 +288,7 @@ static inline uint16_t pack16(uint32_t x)
 {
     x = ((x + 0x01004008u) >> 4) & 0x07E0F81Fu;      /* /16, rounded */
     uint16_t c = (uint16_t)(x | (x >> 16));
+    if (s_hc) c = hc565(c);
     return (uint16_t)((c << 8) | (c >> 8));          /* panel byte order */
 }
 

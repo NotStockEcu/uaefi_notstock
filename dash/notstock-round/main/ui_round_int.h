@@ -6,6 +6,7 @@
 LV_FONT_DECLARE(rnd_112);
 LV_FONT_DECLARE(rnd_84);
 LV_FONT_DECLARE(rnd_56);
+LV_FONT_DECLARE(rnd_32);
 LV_FONT_DECLARE(rnd_26);
 LV_FONT_DECLARE(rnd_18);
 LV_FONT_DECLARE(rnd_barlow_46);
@@ -52,6 +53,13 @@ extern const rnd_limit_t RND_LIMIT[RND_WARN_COUNT];
 /* the red zone above a warn limit, on the faces' groove */
 lv_obj_t *rnd_zone(lv_obj_t *par);
 lv_obj_t *rnd_zone_at(lv_obj_t *par, int r, int w, lv_color_t c);
+
+/* the RED look's pointed needle (red_needle), turned about x, y: its body
+ * from radius base (< 0: where the image has it, for RED's big hub) to len;
+ * shadow: a soft dark copy under it, offset down and right (NULL: none) */
+lv_obj_t *rnd_spike(lv_obj_t *par, int x, int y, int base, int len,
+                    lv_obj_t **shadow);
+void rnd_spike_set(lv_obj_t *n, lv_obj_t *shadow, float deg);
 void rnd_zone_set(lv_obj_t *zone, float frac);   /* 0..1 of the sweep */
 
 /* ---- looks: how the gauge pages are drawn (SETTINGS -> LOOK) ----------

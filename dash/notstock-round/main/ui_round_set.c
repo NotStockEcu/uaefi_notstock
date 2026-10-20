@@ -95,6 +95,7 @@ static lv_obj_t *pill(lv_obj_t *par, lv_coord_t y, lv_event_cb_t cb,
 /* -------------------------------------------------------------- screens */
 static lv_obj_t *set_scr, *look_scr, *lim_scr, *pg_scr;
 static lv_obj_t *sound_lbl, *vol_lbl, *night_lbl, *lang_lbl, *look_pill[RND_LOOK_COUNT];
+static lv_obj_t *hc_lbl;
 
 static void show_night(void)
 {
@@ -207,6 +208,24 @@ static void look_pick(lv_event_t *e)
     g_rnd_set.look = (uint8_t)(intptr_t)lv_event_get_user_data(e);
     rnd_look_apply();
     show_look();
+}
+
+/* HIGH CONTRAST on or off, at once (for a panel in daylight) */
+static void show_hc(void)
+{
+    char buf[48];
+    snprintf(buf, sizeof buf, "%s  %s", TR("CONTRAST", "KONTRAST"),
+             g_rnd_set.hc ? TR("ON", "ZAP") : TR("OFF", "VYP"));
+    lv_label_set_text(hc_lbl, buf);
+    lv_obj_set_style_text_color(hc_lbl, g_rnd_set.hc ? C_W : C_DIM, 0);
+}
+
+static void hc_toggle(lv_event_t *e)
+{
+    (void)e;
+    g_rnd_set.hc = !g_rnd_set.hc;
+    rnd_contrast(g_rnd_set.hc);
+    show_hc();
 }
 
 static void go_look(lv_event_t *e)
@@ -447,12 +466,15 @@ void rnd_set_create(void)
 
     look_scr = screen(sub_back, TR("LOOK", "VZHLED"));
     for (int i = 0; i < RND_LOOK_COUNT; i++) {
-        look_pill[i] = pill(look_scr, 110 + i * 90, look_pick, &l);
+        look_pill[i] = pill(look_scr, 100 + i * 72, look_pick, &l);
         lv_obj_remove_event_cb(look_pill[i], look_pick);
         lv_obj_add_event_cb(look_pill[i], look_pick, LV_EVENT_CLICKED,
                             (void *)(intptr_t)i);
         lv_label_set_text(l, LOOK_NAME[i]);
     }
+    pill(look_scr, 100 + RND_LOOK_COUNT * 72 + 16, hc_toggle, &hc_lbl);
+    lv_obj_set_style_text_letter_space(hc_lbl, 0, 0);
+    show_hc();
     l = rnd_label(look_scr, &rnd_18, C_DIM, 390);
     lv_label_set_text(l, back);
 

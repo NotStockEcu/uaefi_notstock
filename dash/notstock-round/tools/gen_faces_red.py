@@ -125,18 +125,19 @@ def build(N):
     ImageDraw.Draw(cp).ellipse([c - P(R - 1), c - P(R - 1), c + P(R - 1), c + P(R - 1)],
                                fill=(6, 6, 7, 255))
     cp = cp.resize((2 * R + 8, 2 * R + 8), Image.LANCZOS)
-    geo = dict(R_TICK=R_TICK, R_BAND0=R_BAND[0], R_BAND1=R_BAND[1], NEEDLE_PY=W // 2)
+    geo = dict(R_TICK=R_TICK, R_BAND0=R_BAND[0], R_BAND1=R_BAND[1], NEEDLE_PY=W // 2,
+               NEEDLE_X0=int(round(30 * k)))
     return faces, scales, nd, cp, geo
 
 
-MULTI = {480: (132, 92, 52), 466: (128, 90, 50)}   # faces.h: MULTI_MINI_DX, _Y, _R
+MULTI = {480: (132, 92, 62), 466: (128, 90, 61)}   # faces.h: MULTI_MINI_DX, _Y, _R
 
 
 def build_multi(N):
     """MULTI in the RED look: the face and rim as the dials, a scale of white
     dashes over the top half for the big value (ui_round_multi.c draws its
     needle, red zone and digits), and three small dials below, each with a
-    thin red lit ring and dashes over 270 degrees"""
+    thin red lit ring (the UI draws a ring of coloured segments in it)"""
     k = N / 466.0
     C = N / 2
     R_RIM, R_TICK = 225 * k, 214 * k
@@ -174,13 +175,6 @@ def build_multi(N):
         ln, w = (20 * k, 7) if major else (12 * k, 4.5)
         md.line([(P(C + (R_TICK - ln) * math.cos(a)), P(C + (R_TICK - ln) * math.sin(a))),
                  (P(C + R_TICK * math.cos(a)), P(C + R_TICK * math.sin(a)))], fill=WHITE, width=P(w))
-    for x, y in minis:                       # small: 135 .. 405 deg
-        for i in range(11):
-            a = math.radians(135 + 270 * i / 10)
-            ro = MR - 5
-            ln, w = (9, 3.5) if i % 5 == 0 else (5, 2.5)
-            md.line([(P(x + (ro - ln) * math.cos(a)), P(y + (ro - ln) * math.sin(a))),
-                     (P(x + ro * math.cos(a)), P(y + ro * math.sin(a)))], fill=WHITE, width=P(w))
     halo = Image.eval(marks.filter(ImageFilter.GaussianBlur(P(3))), lambda c: int(c * 0.45))
     im = ImageChops.add(ImageChops.add(im, halo), marks)
     return im.resize((N, N), Image.LANCZOS)
@@ -242,7 +236,8 @@ for N in (480, 466):
          "                 const red_tick_t *ticks; const red_num_t *nums; } red_scale_t;", "",
          "#define RED_START_DEG %.1ff" % START, "#define RED_SWEEP_DEG %.1ff" % SWEEP,
          "#define RED_R_BAND0 %d" % round(geo["R_BAND0"]), "#define RED_R_BAND1 %d" % round(geo["R_BAND1"]),
-         "#define RED_NEEDLE_PY %d    /* the pivot: left edge, this far down */" % geo["NEEDLE_PY"], "",
+         "#define RED_NEEDLE_PY %d    /* the pivot: left edge, this far down */" % geo["NEEDLE_PY"],
+         "#define RED_NEEDLE_X0 %d    /* where its body starts, from the pivot */" % geo["NEEDLE_X0"], "",
          "extern const lv_img_dsc_t *const red_face[6];   /* in page order */",
          "extern const lv_img_dsc_t red_needle, red_cap, red_multi, red_face_dpf;",
          "#define RED_R_TICK %d" % round(geo["R_TICK"]), ""]

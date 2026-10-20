@@ -26,6 +26,8 @@ conv() {
 conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 112 -o $O/rnd_112.c
 # four-digit values (rpm, exhaust)
 conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 84 -o $O/rnd_84.c
+# MULTI: the small dials' values
+conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 32 -o $O/rnd_32.c
 # trouble codes on the DIAGNOSTICS screen: P0401, U0100, P242F
 conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --symbols ABCDEFPU --size 56 -o $O/rnd_56.c
 # menus, units, toasts

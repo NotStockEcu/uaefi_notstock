@@ -98,6 +98,8 @@ typedef struct {
     float   warn[RND_WARN_COUNT];     /* red above this: pages, DPF soot g */
     uint8_t lang;                     /* RND_LANG_* */
     uint8_t multi[RND_MULTI_SLOTS];   /* what MULTI shows */
+    uint8_t hc;                       /* HIGH CONTRAST (contrast.h); last:
+                                         settings stored without it load */
 } rnd_settings_t;
 
 extern rnd_settings_t g_rnd_set;
@@ -108,6 +110,7 @@ void rnd_sound(int event);            /* RND_EV_*, in g_rnd_set.sound; must
                                          not block */
 void rnd_settings_save(void);         /* store g_rnd_set */
 void rnd_backlight(uint8_t percent);  /* 0..100 */
+void rnd_contrast(bool high);         /* HIGH CONTRAST on or off */
 void rnd_dtc_read(void);              /* read the trouble codes (03, 07) */
 void rnd_dtc_clear(void);             /* clear them (04), then read again */
 bool rnd_update_available(void);      /* the board has the Wi-Fi updater */

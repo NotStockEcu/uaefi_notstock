@@ -9,6 +9,8 @@
 
 void hw_init(void);                  /* I2C, expander, panel, touch, LVGL */
 void hw_backlight(uint8_t percent);  /* 0..100 */
+void hw_contrast(bool high);         /* contrast.h on the way out; only
+                                        the 1.85" has it, else nothing */
 void hw_beep(int n);                 /* n short beeps, does not block */
 /* PCM, 16 kHz mono 16 bit, on the speaker; does not block (the samples
  * must stay); false: no speaker, or it is busy */

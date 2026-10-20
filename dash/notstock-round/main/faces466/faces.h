@@ -24,7 +24,7 @@
 /* MULTI: the small gauges (from the centre), RETRO's readout window */
 #define MULTI_MINI_DX 128
 #define MULTI_MINI_Y  90
-#define MULTI_MINI_R  50
+#define MULTI_MINI_R  61
 #define RMULTI_WIN_TOP -103    /* from the centre, negative: above */
 #define RMULTI_WIN_BOT -61
 #define RMULTI_WIN_W  116

@@ -157,7 +157,6 @@ static float dpf_shown = NAN;
 static int dpf_level = -1;
 /* RETRO */
 static lv_obj_t *needle, *lamp, *glow;
-static lv_point_t np[2];
 
 #define R_SWEEP   180              /* RETRO: 0 g at 9 o'clock, 40 g at 3 */
 
@@ -342,12 +341,7 @@ static void build_retro(void)
     lv_obj_set_style_text_letter_space(pill_lbl, 2, 0);
 
     /* needle and hub over everything */
-    needle = lv_line_create(dpf);
-    lv_obj_set_pos(needle, 0, 0);
-    lv_obj_set_style_line_width(needle, 7, 0);
-    lv_obj_set_style_line_color(needle, C_NEEDLE, 0);
-    lv_obj_set_style_line_rounded(needle, true, 0);
-    lv_obj_clear_flag(needle, LV_OBJ_FLAG_CLICKABLE);
+    needle = rnd_spike(dpf, CX, CX, 4, RETRO_TICK_R - 8, NULL);   /* as RED's */
     lv_obj_t *hub = rect(dpf, CX - 20, CX - 20, 40, 40,
                          lv_color_hex(0x111111));
     lv_obj_set_style_radius(hub, LV_RADIUS_CIRCLE, 0);
@@ -471,13 +465,7 @@ static void level_draw(float at, int lvl)
         rnd_arcs_set(dpf_arc, at, lv_color_hex(COL[lvl]));
         lv_obj_set_width(fill, (lv_coord_t)lroundf(at / ARC_MAX * FILL_W));
     } else {
-        float a = (180 + at / ARC_MAX * R_SWEEP) * (float)M_PI / 180.0f;
-        float c = cosf(a), s = sinf(a);
-        np[0].x = (lv_coord_t)lroundf(CX - 14 * c);
-        np[0].y = (lv_coord_t)lroundf(CX - 14 * s);
-        np[1].x = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * c);
-        np[1].y = (lv_coord_t)lroundf(CX + (RETRO_TICK_R - 8) * s);
-        lv_line_set_points(needle, np, 2);
+        rnd_spike_set(needle, NULL, 180 + at / ARC_MAX * R_SWEEP);
     }
 }
 

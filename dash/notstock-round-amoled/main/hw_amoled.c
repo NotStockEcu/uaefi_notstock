@@ -283,6 +283,11 @@ static void bright_set(uint8_t v)
     lcd_cmd(0x51, &v, 1);
 }
 
+void hw_contrast(bool high)
+{
+    (void)high;                       /* not on this board (OLED) */
+}
+
 void hw_backlight(uint8_t percent)
 {
     if (percent > 100) percent = 100;

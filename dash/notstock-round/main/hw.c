@@ -264,6 +264,11 @@ static void backlight_init(void)
     ESP_ERROR_CHECK(ledc_channel_config(&c));
 }
 
+void hw_contrast(bool high)
+{
+    (void)high;                       /* not on this board */
+}
+
 void hw_backlight(uint8_t percent)
 {
     if (percent > 100) percent = 100;

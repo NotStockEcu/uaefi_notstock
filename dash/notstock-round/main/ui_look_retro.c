@@ -1,20 +1,20 @@
 /* RETRO look: a mechanical instrument of the VDO kind. Pre-rendered dial per
  * page (tools/gen_faces.py: chrome bezel, black dial, white print, glass
  * sheen, the readout window's frame); live: title and unit, the red band
- * from the warn limit, a red needle with its shadow and a black hub, a thin tell-tale
+ * from the warn limit, the RED look's pointed needle with its shadow and a
+ * black hub, a thin tell-tale
  * needle left at the peak, and the value in the window. */
 #include "ui_round_int.h"
 
 #include <math.h>
 
 #define NEEDLE_TIP   (RETRO_TICK_R - 8)
-#define NEEDLE_TAIL  (-RND_W * 7 / 100)
 #define TELL_IN      (RND_W * 29 / 100)
 #define C_TELL       lv_color_hex(0xC86A1E)
 
 static lv_obj_t *face, *zone, *needle, *shadow, *tell, *hub, *cap;
 static lv_obj_t *title, *unit_lbl, *win_lbl, *alert_lbl, *regen_lbl, *dot[RND_PAGES];
-static lv_point_t pn[2], ps[2], pt[2];
+static lv_point_t pt[2];
 static float zone_at, needle_at, tell_at;
 static int warn_on, regen_on;
 
@@ -74,8 +74,7 @@ static void build(lv_obj_t *scr)
 
     /* tell-tale under the needle, the needle's shadow, the needle, hub */
     tell = line(scr, 3, C_TELL, LV_OPA_COVER);
-    shadow = line(scr, 9, lv_color_black(), LV_OPA_50);
-    needle = line(scr, 7, C_NEEDLE, LV_OPA_COVER);
+    needle = rnd_spike(scr, CX, CX, 4, NEEDLE_TIP, &shadow);   /* from under the cap */
     hub = disc(scr, 46, lv_color_hex(0x111111), lv_color_hex(0x55575A), 3);
     cap = disc(scr, 18, lv_color_hex(0x2A2B2D), lv_color_hex(0x77797C), 1);
 }
@@ -110,8 +109,7 @@ static void draw(const rnd_view_t *v)
     }
     if (fabsf(v->frac - needle_at) > 0.0005f || isnan(needle_at)) {
         needle_at = v->frac;
-        set_line(needle, pn, v->frac, NEEDLE_TAIL, NEEDLE_TIP, 0, 0);
-        set_line(shadow, ps, v->frac, NEEDLE_TAIL, NEEDLE_TIP, 3, 4);
+        rnd_spike_set(needle, shadow, FACE_START + v->frac * FACE_SWEEP);
     }
     /* the tell-tale stays where the value peaked; none for rpm */
     if (v->peak_frac != tell_at) {

@@ -397,7 +397,7 @@ def draw_face_retro(p, size):
 # of the radius): the small gauges' centres and radius, the main readout
 MULTI_MINI_DX = 0.55        # small gauges: left / right of the centre
 MULTI_MINI_Y = 0.385        # small gauges: below the centre
-MULTI_MINI_R = 0.215        # small gauges: outer radius
+MULTI_MINI_R = 0.26         # small gauges: outer radius
 RMULTI_WIN = (-0.44, -0.26, 0.50)   # RETRO readout window: top, bottom, width
 
 
@@ -413,7 +413,7 @@ def draw_multi_retro(size):
     """RETRO's MULTI page: the same bezel and dial as the gauges, a scale
     without numbers over the top half for the big needle, three small
     chrome-rimmed dials below, and the window for the big readout. Numbers
-    are left off: the slots show whatever value is chosen."""
+    are left off: the UI writes the chosen value's own (ui_round_multi.c)."""
     S = size * SS
     c = R = S / 2
     img = Image.new("RGB", (S, S), (0, 0, 0))
@@ -444,7 +444,8 @@ def draw_multi_retro(size):
                 (c + (r_out - ln) * math.cos(a), c + (r_out - ln) * math.sin(a))],
                fill=C_INK, width=int(w))
 
-    # three small dials: chrome rim, dark face, ticks over 270 degrees
+    # three small dials: chrome rim and dark face; no ticks, the UI draws a
+    # ring of coloured segments in them
     for i in (-1, 0, 1):
         x, y, r = c + i * MULTI_MINI_DX * R, c + MULTI_MINI_Y * R, MULTI_MINI_R * R
         _chrome_ring(d, x, y, r, 0.035 * R)
@@ -455,15 +456,6 @@ def draw_multi_retro(size):
             col = tuple(int(C_DIAL_OUT[q] + (C_DIAL_IN[q] - C_DIAL_OUT[q]) * t)
                         for q in range(3))
             d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=col)
-        to = ri - 0.012 * R
-        for k in range(11):
-            a = math.radians(135 + k * 27)
-            major = k % 5 == 0
-            ln = (0.05 if major else 0.028) * R
-            w = (0.014 if major else 0.008) * R
-            d.line([(x + to * math.cos(a), y + to * math.sin(a)),
-                    (x + (to - ln) * math.cos(a), y + (to - ln) * math.sin(a))],
-                   fill=C_INK, width=int(w))
 
     # the big readout's window, above the hub
     top, bot, wid = RMULTI_WIN
