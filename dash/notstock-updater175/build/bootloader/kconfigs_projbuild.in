@@ -1,5 +1,0 @@
-source "/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/bootloader/Kconfig.projbuild"
-source "/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/esp_app_format/Kconfig.projbuild"
-source "/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/esp_rom/Kconfig.projbuild"
-source "/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/esptool_py/Kconfig.projbuild"
-source "/tmp/claude-0/-home-user-uaefi-notstock/2507f29d-757d-5082-b9e8-bbbd97507528/scratchpad/esp-idf/components/partition_table/Kconfig.projbuild"
