@@ -232,6 +232,27 @@ MULTI -> EDIT, tap a slot for the next value (water, oil, boost, intake,
 exhaust, rpm, DPF soot; the small ones can be empty). Default: boost big,
 air, oil and water small.
 
+## G-meter (the 1.75" AMOLED)
+
+MENU -> G-METER (`ui_round_g.c`), built only where `RND_HAVE_GMETER` is
+set (`../notstock-round-amoled`; the 1.85" and 2.1" have no menu item for
+it), in the look picked in SETTINGS: grey rings and a white dot
+(NOTSTOCK), printed rings and scale on the VDO dial with a red ball (VDO
+STYLE), red rings on the RED rim with a red dot (RED). The board's QMI8658
+(0x6B on its I2C) is read at 50 Hz by `motion.c`; without one the screen
+says NO SENSOR.
+
+- The dot is the force the driver feels: braking moves it up, speeding up
+  down, a right bend to the left. Over 1 g it turns red (RED: white).
+- The highest of each direction (BRAKE, ACCEL, LEFT, RIGHT) at the edges,
+  the total under the dot. Tap: the highest back to zero.
+- Double tap with the car standing: zero, which way is up, so the gauge may
+  sit at any angle. Until then a hint says so.
+- Forward is learnt while driving from the OBD speed (`gmeter.c`, ESP-free):
+  the horizontal acceleration that goes with speeding up and braking points
+  forward, so the mount may also face any way. Kept over power-off.
+- Long press: the menu. In the simulator: `make GMETER=1`, `screen=g`.
+
 ## Diagnostics
 
 ![diag](preview/cz-diag.png) ![cleared](preview/cz-diag-cleared.png)

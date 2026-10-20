@@ -28,6 +28,8 @@
  *                                   [dtcrefuse=1] the ECU refuses
  *               [hide=MASK] [order=a,b,c,d,e,f]   pages (screen=pages
  *                                   limit=N shows position N)
+ *               [screen=g]          G-METER, in the look (make GMETER=1)
+ *               [glon=G] [glat=G] [imu=0|1] [zeroed=0|1]
  */
 #include "contrast.h"
 #include "regen_detect.h"
@@ -81,6 +83,11 @@ void rnd_contrast(bool high)
 }
 
 void rnd_sim_settings(const char *which, int limit);
+
+void rnd_g_zero(void)
+{
+    fprintf(stderr, "G-meter zeroed\n");
+}
 
 /* the menu as on the 1.85": with AKTUALIZACE */
 bool rnd_update_available(void)
@@ -163,6 +170,7 @@ int main(int argc, char **argv)
         .v = { 86, 92, 1.12f, 31, 412, 2350 },
         .dpf = { 12.28f, -3.32f, 5, 274.5f, 90.5f },   /* the T5.1's log */
         .link = true,
+        .g = { true, true, true, -0.62f, 0.38f },
     };
     const char *screen = NULL, *regen = NULL;
     int limit = 0, boot = 0;
@@ -235,6 +243,10 @@ int main(int argc, char **argv)
         if (strcmp(k, "regen") == 0) { regen = v; used = true; }
         if (strcmp(k, "soot") == 0)  { d.dpf.soot_g = strtof(v, NULL); used = true; }
         if (strcmp(k, "filter") == 0) { d.dpf.temp_c = strtof(v, NULL); used = true; }
+        if (strcmp(k, "glon") == 0)  { d.g.lon_g = strtof(v, NULL); used = true; }
+        if (strcmp(k, "glat") == 0)  { d.g.lat_g = strtof(v, NULL); used = true; }
+        if (strcmp(k, "imu") == 0)   { d.g.present = atoi(v) != 0; used = true; }
+        if (strcmp(k, "zeroed") == 0) { d.g.zeroed = atoi(v) != 0; used = true; }
         if (!used) fprintf(stderr, "unknown input '%s'\n", argv[i]);
     }
 
@@ -270,6 +282,12 @@ int main(int argc, char **argv)
             extern void rnd_diag_open(void);
             rnd_diag_open();
         }
+#ifdef RND_HAVE_GMETER
+        if (strcmp(screen, "g") == 0) {
+            extern void rnd_g_open(void);
+            rnd_g_open();
+        }
+#endif
         if (strcmp(screen, "multiedit") == 0) {
             extern void rnd_multi_edit_open(void);
             rnd_multi_edit_open();

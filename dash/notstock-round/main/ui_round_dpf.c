@@ -2,8 +2,9 @@
  * popup. See ui_round.h.
  *
  * Menu: long press on any screen. GAUGES, DPF STATUS, DIAGNOSTICS
- * (ui_round_diag.c), SETTINGS (ui_round_set.c), and UPDATE where the board
- * has the Wi-Fi updater. A long press in the menu goes back to the gauges.
+ * (ui_round_diag.c), G-METER (ui_round_g.c, the boards with the
+ * accelerometer: RND_HAVE_GMETER), SETTINGS (ui_round_set.c), and UPDATE
+ * where the board has the Wi-Fi updater. A long press in the menu goes back to the gauges.
  *
  * DPF status: the soot mass on the outer arc and as a filter drawing that
  * fills up, the measured soot, differential pressure, filter temperature and
@@ -50,6 +51,14 @@ static void go_diag(lv_event_t *e)
     (void)e;
     rnd_diag_open();
 }
+
+#ifdef RND_HAVE_GMETER
+static void go_g(lv_event_t *e)
+{
+    (void)e;
+    rnd_g_open();
+}
+#endif
 
 static void go_dpf(lv_event_t *e)
 {
@@ -111,8 +120,15 @@ void rnd_menu_create(void)
     lv_obj_set_style_text_letter_space(t, 4, 0);
     lv_label_set_text(t, "MENU");
 
-    menu_item(TR("GAUGES", "BUDÍKY"), 96, go_gauges);
-    lv_obj_t *d = menu_item(TR("DPF STATUS", "STAV DPF"), 166, go_dpf);
+#ifdef RND_HAVE_GMETER
+    /* five items: closer together */
+    static const lv_coord_t Y[5] = { 84, 148, 212, 276, 340 };
+#else
+    static const lv_coord_t Y[4] = { 96, 166, 236, 306 };
+#endif
+    int k = 0;
+    menu_item(TR("GAUGES", "BUDÍKY"), Y[k++], go_gauges);
+    lv_obj_t *d = menu_item(TR("DPF STATUS", "STAV DPF"), Y[k++], go_dpf);
     lv_obj_align(lv_obj_get_child(d, 0), LV_ALIGN_CENTER, 26, 0);
     menu_dpf_icon = lv_img_create(d);
     lv_img_set_src(menu_dpf_icon, &icon_dpf_40);
@@ -120,8 +136,11 @@ void rnd_menu_create(void)
     lv_obj_set_style_img_recolor(menu_dpf_icon,
                                  rnd_regen_active() ? C_REGEN : C_GREY, 0);
     lv_obj_set_style_img_recolor_opa(menu_dpf_icon, LV_OPA_COVER, 0);
-    menu_item(TR("DIAGNOSTICS", "DIAGNOSTIKA"), 236, go_diag);
-    menu_item(TR("SETTINGS", "NASTAVENÍ"), 306, go_settings);
+    menu_item(TR("DIAGNOSTICS", "DIAGNOSTIKA"), Y[k++], go_diag);
+#ifdef RND_HAVE_GMETER
+    menu_item(TR("G-METER", "G-METR"), Y[k++], go_g);
+#endif
+    menu_item(TR("SETTINGS", "NASTAVENÍ"), Y[k++], go_settings);
 
     /* the updater, where the board has one, in place of the hint */
     if (rnd_update_available()) {

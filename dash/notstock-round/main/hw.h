@@ -23,4 +23,12 @@ void hw_flip_begin(void);
 void hw_flip_end(void);
 /* the boot logo fading in and into the gauge screen already loaded */
 void hw_boot(const lv_img_dsc_t *logo);
+/* the G-meter, motion.c (RND_HAVE_GMETER): started by the board's hw_init,
+ * on its I2C through these */
+void motion_start(void);
+void hw_motion_fill(rnd_data_t *d);
+void hw_g_zero(void);
+esp_err_t hw_i2c_write(uint8_t addr, const uint8_t *d, size_t n);
+esp_err_t hw_i2c_write_read(uint8_t addr, const uint8_t *w, size_t wn,
+                            uint8_t *r, size_t rn);
 

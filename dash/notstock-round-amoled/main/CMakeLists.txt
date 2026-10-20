@@ -14,6 +14,7 @@ idf_component_register(
     INCLUDE_DIRS "." "${ROUND}" "${ROUND}/faces466" "${DASH7}")
 
 # 466 x 466 panel; board_amoled.h instead of board_round.h; the generated
-# font and image files pick their lvgl include path from the last one
+# font and image files pick their lvgl include path from the last one; the
+# G-meter from the board's QMI8658 (motion.c, gmeter.c, ui_round_g.c)
 target_compile_definitions(${COMPONENT_LIB} PRIVATE
-    RND_SIZE=466 BOARD_AMOLED LV_LVGL_H_INCLUDE_SIMPLE)
+    RND_SIZE=466 BOARD_AMOLED LV_LVGL_H_INCLUDE_SIMPLE RND_HAVE_GMETER)
