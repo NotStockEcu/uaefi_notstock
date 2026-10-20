@@ -43,8 +43,12 @@ SPK_L = float(sys.argv[4]) if len(sys.argv) > 4 else 30.0
 SPK_W = float(sys.argv[5]) if len(sys.argv) > 5 else min(20.0, SPK_L)
 # the display turned to the driver: YAW degrees to the right (seen from the
 # seats; the gauge in the left vent by the door), PITCH degrees down
-YAW = float(sys.argv[6]) if len(sys.argv) > 6 else 20.0
+YAW = float(sys.argv[6]) if len(sys.argv) > 6 else 15.0
 PITCH = float(sys.argv[7]) if len(sys.argv) > 7 else 10.0
+# and moved out along its axis by PUSH mm; the louvers round it cut back in
+# a cone FLARE degrees wide of the axis, so they shade nothing from the side
+PUSH = float(sys.argv[8]) if len(sys.argv) > 8 else 6.0
+FLARE = 40.0
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
@@ -70,7 +74,8 @@ M0 = np.eye(4); M0[:3, 0] = U; M0[:3, 1] = V; M0[:3, 2] = W; M0[:3, 3] = F
 ya, pa = np.radians(YAW) * UP, np.radians(PITCH) * UP
 RY = np.array([[np.cos(ya), 0, np.sin(ya), 0], [0, 1, 0, 0], [-np.sin(ya), 0, np.cos(ya), 0], [0, 0, 0, 1]])
 RX = np.array([[1, 0, 0, 0], [0, np.cos(pa), -np.sin(pa), 0], [0, np.sin(pa), np.cos(pa), 0], [0, 0, 0, 1]])
-M = M0 @ RY @ RX              # the display's frame, turned about its face's middle
+TP = np.eye(4); TP[2, 3] = PUSH
+M = M0 @ RY @ RX @ TP         # the display's frame, turned about its face's middle
 
 # along the axis (w, 0 = the front plane, + forward)
 GL = 0.3                     # glass front behind the face
@@ -169,7 +174,8 @@ pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
     (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
 pod -= place(cyl(R_IN, -60, 60, seg=180))
 pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
-pod -= place(cyl(R_OUT, 0, 80, seg=180))                       # nothing in front of it
+pod -= place(mf.Manifold.cylinder(80, R_OUT, R_OUT + 80 * np.tan(np.radians(FLARE)), 180)
+             )                                                 # nothing in front of it
 pod -= place0(box(-200, 200, -200, 200, 0, 100))                # the louvers' front
 out = pod + place(tube - box(-50, 50, -50, 50, 0, 10))         # the tube's own face
 res = to_tm(out)

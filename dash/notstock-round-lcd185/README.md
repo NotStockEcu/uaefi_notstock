@@ -100,19 +100,21 @@ inside: update over Wi-Fi (MENU > AKTUALIZACE) or pull the lid out.
 `tube185.stl` is the same tube alone, no vent round it (60.8 mm across,
 24.7 deep), to put the gauge anywhere, with the same lid.
 
-In the vent the display is turned to the driver: 20 degrees to the right
+In the vent the display is turned to the driver: 15 degrees to the right
 (the gauge in the left vent by the door) and 10 degrees down, about the
-middle of its face. The tube stands out of the louvers by up to 12 mm at
-its top left and goes 1.8 mm deeper than the holder at the back; the
-louvers in front of its other side are cut back. The front is no longer
-flat: print the vent on its left side plate, with support in the tube.
+middle of its face, then moved out 6 mm along its axis. The tube stands
+out of the louvers by up to 15.5 mm at its top left, its other side 3.8 mm
+behind them; the louvers in front of it are cut back in a 40 degree cone,
+so they shade nothing. At the back it stays inside the holder. The front
+is no longer flat: print the vent on its left side plate, with support in
+the tube.
 
-`python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W] [YAW] [PITCH]` with
+`python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W] [YAW] [PITCH] [PUSH]` with
 `holder.stl` and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes
 `vent185.stl`, `tube185.stl`, `lid185.stl` and `fit185.txt`. UP = -1 turns the display half round in the vent (J1 at
 the bottom); SPK_T, SPK_L and SPK_W are the speaker's thickness, length
 and width in mm (5, 30, 20); YAW and PITCH the turn in degrees, to the
-right and down (20, 10; 0 0 for straight). Needs trimesh and manifold3d.
+right and down (15, 10; 0 0 for straight), PUSH how far out (6 mm). Needs trimesh and manifold3d.
 
 ## If something is off
 
