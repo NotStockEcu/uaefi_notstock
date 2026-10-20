@@ -237,7 +237,9 @@ static const char *cap_text(int i)
 #define BODY_H   96
 #define BODY_B   5
 #define FILL_W   (BODY_W - 2 * BODY_B)
-#define COL_W    (RND_W * 110 / 480)   /* the three readings' columns */
+#define COL_W    (RND_W * 112 / 480)   /* the three readings' columns, high
+                                         enough for their captions to be clear
+                                         of the arc's glow */
 
 static void build_notstock(void)
 {
@@ -271,17 +273,18 @@ static void build_notstock(void)
         }
     }
 
-    soot_lbl = rnd_label(dpf, &rnd_84, C_W, 196);
-    meas_lbl = rnd_label(dpf, &rnd_18, C_GREY, 290);
+    soot_lbl = rnd_label(dpf, &rnd_84, C_W, 184);
+    lv_label_set_text(rnd_label(dpf, &rnd_18, C_GREY, 252), "g");
+    meas_lbl = rnd_label(dpf, &rnd_18, C_GREY, 276);
 
     for (int i = 0; i < V_COUNT; i++) {
         lv_coord_t x = CX - COL_W * 3 / 2 + i * COL_W;
-        v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, CX + 82);
+        v_lbl[i] = rnd_label(dpf, &rnd_26, C_W, CX + 62);
         lv_obj_set_width(v_lbl[i], COL_W);
         lv_obj_set_x(v_lbl[i], x);
-        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, CX + 116);
-        lv_obj_set_width(c, COL_W + 20);  /* wider than the column: CS */
-        lv_obj_set_x(c, x - 10);
+        lv_obj_t *c = rnd_label(dpf, &rnd_18, C_DIM, CX + 92);
+        lv_obj_set_width(c, COL_W + 12);  /* wider than the column: CS */
+        lv_obj_set_x(c, x - 6);
         lv_label_set_text(c, cap_text(i));
     }
 
@@ -523,14 +526,12 @@ void rnd_dpf_update(const rnd_data_t *d)
     char buf[40];
 
     fmt_or_dash(soot_lbl, "%.1f", s, live);
-    /* RETRO has the unit printed on the dial */
-    const char *g = dstyle == ST_NOTSTOCK ? "g   " : "";
     if (!live) {
         lv_label_set_text(meas_lbl, TR("NO DATA", "BEZ DAT"));
     } else if (isnan(d->dpf.soot_meas_g)) {
-        lv_label_set_text(meas_lbl, dstyle == ST_NOTSTOCK ? "g" : "");
+        lv_label_set_text(meas_lbl, "");
     } else {
-        snprintf(buf, sizeof buf, "%s%s %.2f g", g, TR("MEASURED", "MĚŘENO"),
+        snprintf(buf, sizeof buf, "%s %.2f g", TR("MEASURED", "MĚŘENO"),
                  d->dpf.soot_meas_g);
         lv_label_set_text(meas_lbl, buf);
     }

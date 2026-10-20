@@ -90,14 +90,14 @@ static void build(lv_obj_t *scr)
     name_l = label(scr, &red_txt_22, C_VAL);
     lv_obj_set_width(name_l, TW);
     lv_obj_set_style_text_align(name_l, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_pos(name_l, TX - TW / 2, CX + 108);
+    lv_obj_set_pos(name_l, TX - TW / 2, CX + 104);
     unit_l = label(scr, &red_txt_22, C_SMALL);
     lv_obj_set_width(unit_l, TW);
     lv_obj_set_style_text_align(unit_l, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_pos(unit_l, TX - TW / 2, CX + 136);
+    lv_obj_set_pos(unit_l, TX - TW / 2, CX + 130);
     rnd_dots(scr, 0, dot);
     /* the dots under the unit, as on the A4, clear of the bottom numeral */
-    lv_obj_align(lv_obj_get_parent(dot[0]), LV_ALIGN_TOP_LEFT, TX - 110, CX + 166);
+    lv_obj_align(lv_obj_get_parent(dot[0]), LV_ALIGN_TOP_LEFT, TX - 110, CX + 170);
 
     needle = lv_img_create(scr);
     lv_img_set_src(needle, &red_needle);

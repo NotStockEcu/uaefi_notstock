@@ -266,7 +266,11 @@ def draw_face(p, size):
                fill=col, width=int(w))
         if is_major:
             txt = fmt_label(v, div)
-            rt = r_out - ln - 0.105 * R
+            # in from the tick by its own extent that way: the wide ones at
+            # the sides (100, 140, 1.5) clear of their ticks
+            x0, y0, x1, y1 = font.getbbox(txt)
+            ext = abs(math.cos(a)) * (x1 - x0) / 2 + abs(math.sin(a)) * (y1 - y0) / 2
+            rt = r_out - ln - max(0.105 * R, 0.06 * R + ext)
             x = c + rt * math.cos(a)
             y = c + rt * math.sin(a)
             d.text((x, y), txt, font=font, fill=C_NUM, anchor="mm")
