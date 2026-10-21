@@ -49,7 +49,7 @@ PITCH = float(sys.argv[7]) if len(sys.argv) > 7 else 10.0
 # a cone FLARE degrees wide of the axis, so they shade nothing from the side
 PUSH = float(sys.argv[8]) if len(sys.argv) > 8 else 6.0
 FLARE = 40.0
-CORNER_R = 3.0               # the outline's corners, rounded to the dash's opening
+CORNER_R = 6.0               # the outline's corners, rounded to the dash's opening
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
