@@ -23,10 +23,10 @@ rnd_settings_t g_rnd_set;
 
 /* names and units: rnd_page_name(), rnd_unit() */
 const rnd_limit_t RND_LIMIT[RND_WARN_COUNT] = {
-    [RND_WATER]     = { 60,   130,  1,     105,  0 },
-    [RND_OIL]       = { 80,   150,  1,     130,  0 },
-    [RND_BOOST]     = { 0.5f, 2.0f, 0.05f, 1.8f, 2 },
-    [RND_INTAKE]    = { 20,   100,  1,     60,   0 },
+    [RND_WATER]     = { 60,   130,  1,     103,  0 },
+    [RND_OIL]       = { 80,   150,  1,     110,  0 },
+    [RND_BOOST]     = { 0.5f, 2.0f, 0.05f, 1.45f, 2 },
+    [RND_INTAKE]    = { 20,   100,  1,     55,   0 },
     [RND_EXHAUST]   = { 300,  1000, 10,    750,  0 },
     [RND_RPM]       = { 2000, 5000, 100,   4500, 0 },
     [RND_WARN_SOOT] = { 5,    40,   1,     24,   0 },
@@ -36,19 +36,25 @@ void rnd_settings_defaults(void)
 {
     memset(&g_rnd_set, 0, sizeof g_rnd_set);
     g_rnd_set.look = RND_LOOK_NOTSTOCK;
+    g_rnd_set.hc = 1;                                /* high contrast */
     g_rnd_set.sound = RND_SND_BEEP;
     g_rnd_set.volume = 70;
     g_rnd_set.night = false;
     g_rnd_set.night_level = 30;
-    for (int i = 0; i < RND_COUNT; i++) g_rnd_set.order[i] = (uint8_t)i;
-    g_rnd_set.order[RND_COUNT] = RND_MULTI;          /* last, after rpm */
-    g_rnd_set.hidden = 0;
+    /* MULTI first, then boost, oil, water, intake, exhaust; rpm last and
+     * hidden */
+    static const uint8_t ORDER[RND_PAGES] = {
+        RND_MULTI, RND_BOOST, RND_OIL, RND_WATER, RND_INTAKE, RND_EXHAUST,
+        RND_RPM,
+    };
+    memcpy(g_rnd_set.order, ORDER, sizeof ORDER);
+    g_rnd_set.hidden = 1u << RND_RPM;
     /* MULTI: boost big, air, oil and water small */
     g_rnd_set.multi[0] = RND_BOOST;
     g_rnd_set.multi[1] = RND_INTAKE;
     g_rnd_set.multi[2] = RND_OIL;
     g_rnd_set.multi[3] = RND_WATER;
-    g_rnd_set.lang = RND_LANG_EN;
+    g_rnd_set.lang = RND_LANG_CS;
     for (int i = 0; i < RND_WARN_COUNT; i++) {
         g_rnd_set.warn[i] = RND_LIMIT[i].def;
     }

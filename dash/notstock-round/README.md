@@ -194,7 +194,12 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   the next: water, oil, boost, intake, exhaust, engine rpm, DPF soot. A
   gauge goes red over its limit and its red zone starts there; the DPF soot
   limit is what the DPF screen measures fullness against. Ranges, steps and
-  defaults: `RND_LIMIT[]` in `ui_round_set.c`.
+  defaults: `RND_LIMIT[]` in `ui_round_set.c` (water 103, oil 110, boost
+  1.45, intake 55).
+
+Factory settings (`rnd_settings_defaults()`): Czech, NOTSTOCK with high
+contrast; pages MULTI, boost, oil, water, intake, exhaust, rpm, rpm hidden.
+They apply on a gauge with nothing stored; one with settings keeps them.
 - **ENGLISH / ČEŠTINA**: the language, tap to switch. It shows in its own
   name, so it can be found either way. Every screen is built again in the
   new one at once (`rnd_lang_apply()`); kept over power-off.

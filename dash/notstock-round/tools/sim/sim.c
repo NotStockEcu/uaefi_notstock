@@ -18,6 +18,10 @@
  *               [dtap=N]            N double taps in the middle, then run t=
  *               [night=1] [nightlvl=P]
  *               [hc=1]              HIGH CONTRAST (contrast.h, as the 1.85")
+ *               [factory=1]         the factory settings as they are (Czech,
+ *                                   high contrast, rpm hidden); else, for
+ *                                   the previews: English, contrast off,
+ *                                   every page shown
  *               [tap=x,y;x,y;...]   single taps, after the screen is up
  *               [hold=x,y,ms;...]   finger down at x,y for ms, then lifted
  *               [page=7]            MULTI; [multi=a,b,c,d] its slots (page
@@ -181,6 +185,13 @@ int main(int argc, char **argv)
     int dtap = 0, dtcclear = 0;
     const char *taps = NULL, *holds = NULL;
     rnd_settings_defaults();
+    bool factory = false;
+    for (int i = 2; i < argc; i++) factory |= strcmp(argv[i], "factory=1") == 0;
+    if (!factory) {
+        g_rnd_set.lang = RND_LANG_EN;
+        g_rnd_set.hc = 0;
+        g_rnd_set.hidden = 0;
+    }
     int page = 0;
     float t_end = 1.5f;
     const char *swipe = NULL;
@@ -231,6 +242,7 @@ int main(int argc, char **argv)
         }
         if (strcmp(k, "night") == 0) { g_rnd_set.night = atoi(v) != 0; used = true; }
         if (strcmp(k, "hc") == 0) { g_rnd_set.hc = atoi(v) != 0; used = true; }
+        if (strcmp(k, "factory") == 0) used = true;
         if (strcmp(k, "nightlvl") == 0) { g_rnd_set.night_level = (uint8_t)atoi(v); used = true; }
         if (strcmp(k, "dtc") == 0)   { s_dtc_have = atoi(v); used = true; }
         if (strcmp(k, "dtcclear") == 0) { dtcclear = atoi(v); used = true; }
