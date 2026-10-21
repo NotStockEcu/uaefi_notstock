@@ -49,6 +49,7 @@ PITCH = float(sys.argv[7]) if len(sys.argv) > 7 else 10.0
 # a cone FLARE degrees wide of the axis, so they shade nothing from the side
 PUSH = float(sys.argv[8]) if len(sys.argv) > 8 else 6.0
 FLARE = 40.0
+CORNER_R = 3.0               # the outline's corners, rounded to the dash's opening
 
 holder = trimesh.load(f"{D}/holder.stl")
 trimesh.repair.fix_winding(holder)
@@ -188,6 +189,14 @@ pod -= place(mf.Manifold.cylinder(80, R_OUT, R_OUT + 80 * np.tan(np.radians(FLAR
              )                                                 # nothing in front of it
 pod -= place0(box(-200, 200, -200, 200, 0, 100))                # the louvers' front
 out = pod + place(tube - box(-50, 50, -50, 50, 0, 10))         # the tube's own face
+# the outline's four corners (seen from the front, the holder's x and y)
+# rounded, all the way along the way it slides into the dash
+hb = holder.bounds
+rr = mf.CrossSection.square((hb[1][0] - hb[0][0] - 2 * CORNER_R,
+                             hb[1][1] - hb[0][1] - 2 * CORNER_R))
+rr = rr.offset(CORNER_R, mf.JoinType.Round, 2.0, 48).translate(
+    (hb[0][0] + CORNER_R, hb[0][1] + CORNER_R))
+out ^= rr.extrude(300).translate((0, 0, -150))
 res = to_tm(out)
 res.export(f"{D}/vent185.stl")
 
