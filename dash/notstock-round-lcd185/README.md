@@ -107,8 +107,8 @@ out of the louvers by up to 15.5 mm at its top left, its other side 3.8 mm
 behind them; the louvers in front of it are cut back in a 40 degree cone,
 so they shade nothing. At the back it stays inside the holder. The front
 is no longer flat: print the vent on its left side plate, with support in
-the tube. The outline's corners are rounded (`CORNER_R`, 6 mm) to slide into
-the dash's opening.
+the tube. The side plates' corners are rounded in their own plane
+(`CORNER_R`, 5 mm), as the dash's opening.
 
 `python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W] [YAW] [PITCH] [PUSH]` with
 `holder.stl` and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes
