@@ -14,8 +14,11 @@ schematic joins pins by net labels (same name, same net): PDF in
 for reading: [docs/readable.png](docs/readable.png). Placement:
 [docs/assembly.png](docs/assembly.png).
 
-**State: rev 6, designed, DRC clean (0 errors, 0 unconnected), ready to
-order with assembly. Rev 4 built (JLCPCB, assembled): the regulator holds
+**State: rev 7, designed, DRC clean (0 errors, 0 unconnected), ready to
+order with assembly. Rev 6 built and in the car: the display's touch
+needed a hard press there (fine on USB at home), and the PH connector was
+hard to crimp. Rev 7: a second LC stage on the display's supply (L2, C9,
+C10, C11) and a JST XH 2.5 mm for J1. Rev 4 built (JLCPCB, assembled): the regulator holds
 3.8 V on J3 from about 4 V to 14.4 V in (bench, no load); with the display,
 the CAN side and in the car not tried yet.** Rev 4 feeds the display through its
 battery socket instead of its USB-C (no room for a USB cable). Rev 6
@@ -34,7 +37,7 @@ The display has no plug-on header. What it has, and what this board uses
 | UART socket, 4-pin 1.0 mm, bottom right (1 RXD/GPIO44, 2 TXD/GPIO43, 3 3V3, 4 GND) | the 4-wire cable that comes with the display, free ends cut to length | J2 pads, marked with the display's names: IO44, IO43, 3V3, GND (CAN, and the display's 3.3 V for the transceiver) |
 | three M2 holes (15.73 left, 14.10 up / 14.90 down; 21.27 right) | M2 spacers, 6 to 8 mm | H1..H3 |
 
-The car: J1, JST PH 4-pin, vertical (12V, GND, CAN-H, CAN-L, marked on the
+The car: J1, JST XH 4-pin, vertical, through hole (12V, GND, CAN-H, CAN-L, marked on the
 board).
 
 ## On and off with the key: OBD pin 1
@@ -50,8 +53,9 @@ regulator runs down to 4 V input, so the display rides through the dip.
 
 | Block | Parts |
 | --- | --- |
-| Input | J1 JST PH 4-pin SMD, vertical; F1 0.5 A resettable fuse; D1 SS34 against reverse polarity; D2 SMAJ26A against load dump |
+| Input | J1 JST XH 4-pin (2.5 mm) through hole, vertical; F1 0.5 A resettable fuse; D1 SS34 against reverse polarity; D2 SMAJ26A against load dump |
 | 12 V -> 3.75 V | U1 LMR16006YDDCR (60 V, 0.6 A, 2.1 MHz), L1 22 uH, D3 K16 (60 V 1 A Schottky), 2 x 22 uF out; 39 k / 10 k sets 3.75 V |
+| Filter | L2 1 uH, C9 C10 22 uF, C11 100 nF: the regulator's 2.1 MHz some 70 dB down before the display (corner about 30 kHz; the feedback stays before it) |
 | 3.75 V out | J3, two solder pads for the wires to the display's battery socket |
 | CAN | U2 SN65HVD230 (3.3 V from the display's UART socket, Rs to GND: full speed); D4 NUP2105L ESD; R4/R5/C8 split termination behind JP1, open, not assembled; R6 1 k in RXD |
 | Mechanics | Ø 48 mm like the display, the display's three M2 holes |
@@ -64,7 +68,9 @@ solder R4 and R5 (any 0805 56..62 R) and bridge JP1, C8 optional.
 
 ## Cable to the car
 
-JST PHR-4 housing with SPH-002T-P0.5S crimps on the board side; at the OBD
+JST XHP-4 housing with SXH-001T-P0.6 crimps on the board side (XH
+crimps are bigger than PH and easier by hand; ready-made "XH 2.54 4P"
+leads with the crimps on save the crimping); at the OBD
 plug: pin 1 +12 V (terminal 15, not pin 16), pin 4 or 5 GND, pin 6
 CAN-H, pin 14 CAN-L. CAN-H and
 CAN-L twisted.
@@ -96,7 +102,10 @@ Three files in `fab/`:
 | `bom.csv` | PCB Assembly, "Add BOM File" |
 | `cpl.csv` | PCB Assembly, "Add CPL File" |
 
-Assembly: top side only, all SMD. Every part has its LCSC number in
+Assembly: top side only, all SMD but J1, a through-hole part: JLCPCB
+fits it too (THT assembly, a small extra), or leave it out of the order
+and solder its 4 pins by hand. Its pins come out on the display's side:
+cut them short (about 1 mm). Every part has its LCSC number in
 `bom.csv` (also in the schematic and on the footprints, field "LCSC"):
 
 | Ref | Part | LCSC |
@@ -109,10 +118,11 @@ Assembly: top side only, all SMD. Every part has its LCSC number in
 | D3 | GOODWORK K16 (60 V 1 A, SOD-123FL) | C2943756 |
 | F1 | SMD1812P050TF/30 (RUILON) | C12559 |
 | L1 | Sunlord SWPA4026S220MT | C88254 |
-| J1 | JST B4B-PH-SM4-TB (vertical) | C160354 |
+| L2 | Sunlord SWPA4026S1R0NT (1 uH) | C96890 |
+| J1 | JST B4B-XH-A(LF)(SN) (vertical, through hole) | C144395 |
 | C1 | 4.7 uF 50 V 1206 (Murata) | C77096 |
-| C2, C3, C6, C7 | 100 nF 50 V 0603 (YAGEO) | C14663 |
-| C4, C5 | 22 uF 16 V 1206 (Samsung) | C90146 |
+| C2, C3, C6, C7, C11 | 100 nF 50 V 0603 (YAGEO) | C14663 |
+| C4, C5, C9, C10 | 22 uF 16 V 1206 (Samsung) | C90146 |
 | R1 | 100 k 0603 | C25803 |
 | R2 | 39 k 0603 | C23153 |
 | R3 | 10 k 0603 | C25804 |
@@ -126,12 +136,12 @@ without a terminator solder them by hand: R4, R5 any 0805 56..62 R 1 %, C8
 JP1 is a solder bridge, J2 and J3 pads for wires: not parts. Stock changes: JLCPCB marks a part out
 of stock in the BOM step; pick an equivalent there (same value, package,
 voltage). The passives and D1 (SS34, C8678) are JLCPCB basic parts, the rest
-extended (a small loading fee each). C4, C5 stay 1206 here (the built rev 4
+extended (a small loading fee each). C4, C5, C9, C10 stay 1206 here (the built rev 4
 layout); on the 1.32 board they are the basic 0805 C45783.
 
 In the placement preview, check the parts with a direction: U1 (pin 1 dot),
-U2 (pin 1 at the notch), D4, D1/D2/D3 (the band towards the "K" side of the
-footprint's silkscreen), J1 (opening upwards). KiCad and JLCPCB do not always agree on rotations; turn any
+U2 (pin 1 at the notch), D4, J1 (pin 1 square, 12V), D1/D2/D3 (the band towards the "K" side of the
+footprint's silkscreen). KiCad and JLCPCB do not always agree on rotations; turn any
 that are off in 90° steps there.
 
 ## Regenerate

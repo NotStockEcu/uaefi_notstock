@@ -12,7 +12,7 @@ own three standoffs, their heads down in the lid's bosses on the board:
     boss floor (1.5) | CAN board (1.6) | sleeve (5.9) | standoff (3 of 4 mm)
 
 The lid plugs into the tube's back end and sits on it (crush ribs, no
-screws into the tube). It has a window for the CAN board's 4-pin JST PH (J1), the only
+screws into the tube). It has a window for the CAN board's 4-pin JST XH (J1), the only
 thing that shows at the back.
 
 DIR/disp185.stl: Waveshare's STEP of the display as STL (glass front at
@@ -98,7 +98,7 @@ R_IN, R_OUT = 28.0, 30.4     # the display's widest: its glass's flex tail, r 27
 # J1 body (+0.4) in the same coordinates: the board seen from the back is
 # KiCad's top view, so (x, y) = (-x_kicad, -y_kicad)
 HOLES = [(15.73, 14.10), (15.73, -14.90), (-21.27, 0.0)]
-J1_WIN = (-7.975 - 0.4, 3.975 + 0.4, 14.75 - 0.4, 19.75 + 0.4)
+J1_WIN = (-8.2 - 0.4, 4.2 + 0.4, 12.6 - 0.4, 18.35 + 0.4)   # rev 7, XH
 SPK_RING = 1.2               # the ring round the speaker, out from its outline
 SPK_TAB = 3.0                # the lug at one end the wires leave from
 

@@ -75,6 +75,10 @@
       },
       {
         "netclass": "Power",
+        "pattern": "BAT_OUT"
+      },
+      {
+        "netclass": "Power",
         "pattern": "GND"
       },
       {

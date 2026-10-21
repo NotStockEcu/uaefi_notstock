@@ -127,17 +127,17 @@ def net(x, y, t, anchor="start"):
 
 
 # --------------------------------------------------------------- input
-text(30, 34, "NOT STOCK CAN 1.85: schematic with wires (rev 4 / rev 6)", 22, bold=True)
+text(30, 34, "NOT STOCK CAN 1.85: schematic with wires (rev 7)", 22, bold=True)
 text(30, 56, "Grey dashed: not assembled. Same parts and nets as the KiCad project.", 13, c="#555")
 
-box(30, 90, 80, 140, "J1", "PH 4", lab=(52, 225), pins=[(110, 110, "12V", "1", "R"), (110, 140, "GND", "2", "R"),
+box(30, 90, 80, 140, "J1", "XH 4", lab=(52, 225), pins=[(110, 110, "12V", "1", "R"), (110, 140, "GND", "2", "R"),
                                     (110, 170, "CANH", "3", "R"), (110, 200, "CANL", "4", "R")])
 text(70, 250, "to OBD: 1, 4, 6, 14", 11, "middle", "#555")
 line([(110, 140), (130, 140)]); gnd(130, 140)
 line([(110, 110), (150, 110)])
 res(150, 110, 230, 110, "F1", "0.5 A PTC", side=-1)
 net(150, 100, "VBAT")
-diode(230, 110, 300, 110, "D1", "SS16", side=-1)
+diode(230, 110, 300, 110, "D1", "SS34", side=-1)
 net(232, 100, "VBAT_F")
 line([(300, 110), (680, 110)])
 net(560, 100, "VIN")
@@ -164,10 +164,10 @@ cap(880, 150, 880, 200, "C3", "100n", side=1)
 line([(830, 200), (960, 200)]); dot(880, 200)
 net(860, 220, "SW")
 dot(930, 200)
-diode(930, 280, 930, 200, "D3", "PMEG6010", side=-1); gnd(930, 280)
+diode(930, 280, 930, 200, "D3", "K16", side=-1); gnd(930, 280)
 coil(960, 200, 1060, "L1", "22u")
-line([(1060, 200), (1400, 200)])
-net(1265, 194, "BAT_LCD 3.75 V")
+line([(1060, 200), (1270, 200)])
+net(1066, 194, "BAT_LCD")
 for x in (1110, 1160, 1230):
     dot(x, 200)
 cap(1110, 200, 1110, 280, "C4", "22u", side=-1); gnd(1110, 280)
@@ -179,10 +179,20 @@ res(1250, 80, 1340, 80, "R3", "10k")
 line([(1340, 80), (1360, 80)]); gnd(1360, 80)
 text(1190, 330, "0.765 V x (1 + 39k/10k) = 3.75 V", 12, "middle", "#555")
 
-box(1400, 180, 80, 80, "J3", "pads", [(1400, 200, "+", "1", "L"), (1400, 240, "-", "2", "L")])
-line([(1400, 240), (1380, 240)]); gnd(1380, 240)
-text(1440, 285, "to display", 11, "middle", "#555")
-text(1440, 299, "battery socket", 11, "middle", "#555")
+# second LC stage: the 2.1 MHz ripple kept off the display
+coil(1270, 200, 1370, "L2", "1u")
+line([(1370, 200), (1600, 200)])
+net(1460, 194, "BAT_OUT 3.75 V")
+for x in (1390, 1450, 1510):
+    dot(x, 200)
+cap(1390, 200, 1390, 280, "C9", "22u", side=-1); gnd(1390, 280)
+cap(1450, 200, 1450, 280, "C10", "22u"); gnd(1450, 280)
+cap(1510, 200, 1510, 280, "C11", "100n"); gnd(1510, 280)
+
+box(1600, 180, 80, 80, "J3", "pads", [(1600, 200, "+", "1", "L"), (1600, 240, "-", "2", "L")])
+line([(1600, 240), (1580, 240)]); gnd(1580, 240)
+text(1640, 285, "to display", 11, "middle", "#555")
+text(1640, 299, "battery socket", 11, "middle", "#555")
 
 # --------------------------------------------------------------- CAN
 line([(110, 170), (170, 170), (170, 520), (600, 520)])
@@ -250,7 +260,9 @@ WANT = {  # what this drawing connects, by ref.pin
     "C3": {"1": "CB", "2": "SW"}, "D3": {"1": "SW", "2": "GND"},
     "L1": {"1": "SW", "2": "BAT_LCD"}, "R2": {"1": "BAT_LCD", "2": "FB"},
     "R3": {"1": "FB", "2": "GND"}, "C4": {"1": "BAT_LCD", "2": "GND"},
-    "C5": {"1": "BAT_LCD", "2": "GND"}, "J3": {"1": "BAT_LCD", "2": "GND"},
+    "C5": {"1": "BAT_LCD", "2": "GND"}, "J3": {"1": "BAT_OUT", "2": "GND"},
+    "L2": {"1": "BAT_LCD", "2": "BAT_OUT"}, "C9": {"1": "BAT_OUT", "2": "GND"},
+    "C10": {"1": "BAT_OUT", "2": "GND"}, "C11": {"1": "BAT_OUT", "2": "GND"},
     "U2": {"1": "TXD", "2": "GND", "3": "+3V3", "4": "RXD_T", "6": "CANL",
            "7": "CANH", "8": "GND"},
     "C6": {"1": "+3V3", "2": "GND"}, "C7": {"1": "+3V3", "2": "GND"},
@@ -264,9 +276,9 @@ have = {r: p["pins"] for r, p in P.items() if not r.startswith("H")}
 assert have == WANT, "drawing and design.py disagree"
 
 with open(OUT, "w") as f:
-    f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 730" '
+    f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 730" '
             'font-family="DejaVu Sans, Arial, sans-serif">\n'
-            '<rect width="1520" height="730" fill="#fff"/>\n')
+            '<rect width="1720" height="730" fill="#fff"/>\n')
     f.write("\n".join(S))
     f.write("\n</svg>\n")
 print("wrote", OUT)

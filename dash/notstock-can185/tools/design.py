@@ -42,13 +42,14 @@ C1206 = "Capacitor_SMD:C_1206_3216Metric"
 
 # car side: 12 V, GND, CAN-H, CAN-L. The 12 V is OBD pin 1, terminal 15 on
 # VW (+12 V switched by the key, as the CANcheck display takes it): the
-# board is on with the key and off without it. SMD, vertical: the cable
-# plugs in straight from behind. Mating housing JST PHR-4 with
-# SPH-002T-P0.5S crimps.
+# board is on with the key and off without it. JST XH (2.5 mm), through
+# hole, vertical: the cable plugs in straight from behind. Mating housing
+# XHP-4 with SXH-001T-P0.6 crimps, or a ready-made XH 4-pin lead (rev 6
+# had the PH 2.0 mm, hard to crimp). Pin 1 is the footprint's origin.
 part("J1", "Connector_Generic:Conn_01x04", "OBD 12V GND H L",
-     "Connector_JST:JST_PH_B4B-PH-SM4-TB_1x04-1MP_P2.00mm_Vertical",
+     "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical",
      {"1": "VBAT", "2": "GND", "3": "CANH", "4": "CANL"},
-     (2.0, -15.5, 0), mpn="JST B4B-PH-SM4-TB(LF)(SN)", lcsc="C160354")
+     (-1.75, -16.0, 0), mpn="JST B4B-XH-A(LF)(SN)", lcsc="C144395")
 
 # input: resettable fuse, reverse polarity diode, TVS against load dump
 part("F1", "Device:Polyfuse", "0.5A 30V", "Fuse:Fuse_1812_4532Metric",
@@ -92,11 +93,29 @@ part("C4", "Device:C", "22u 16V", C1206, {"1": "BAT_LCD", "2": "GND"},
 part("C5", "Device:C", "22u 16V", C1206, {"1": "BAT_LCD", "2": "GND"},
      (-4.0, 7.1, 90), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
 
+# a second LC stage after the regulator's output: its 2.1 MHz ripple kept
+# off the display (rev 6 in the car: the touch needed a hard press). 1 uH
+# and 44 uF corner at about 30 kHz (the 22 uF at 3.75 V nearer 12 uF
+# each), so 2.1 MHz comes out some 70 dB lower; the feedback stays before
+# it (R2 at C4/C5), so the regulator's loop does not see it. Its peak, the
+# display's input a constant-power load (about 12 R at 1.1 W), 1 R at
+# most, damped by L2's and the caps' resistance: stable. L2 some 12 mm
+# from L1, so L1's field does not get round it.
+part("L2", "Device:L", "1u", "Inductor_SMD:L_Sunlord_SWPA4026S",
+     {"1": "BAT_LCD", "2": "BAT_OUT"}, (0.5, 12.4, 90),
+     mpn="Sunlord SWPA4026S1R0NT (1 uH 3 A)", lcsc="C96890")
+part("C9", "Device:C", "22u 16V", C1206, {"1": "BAT_OUT", "2": "GND"},
+     (-5.6, 16.0, 0), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
+part("C10", "Device:C", "22u 16V", C1206, {"1": "BAT_OUT", "2": "GND"},
+     (-0.9, 15.9, 180), mpn="Samsung CL31A226KOHNNNE (22 uF 16 V X5R 1206)", lcsc="C90146")
+part("C11", "Device:C", "100n", C0603, {"1": "BAT_OUT", "2": "GND"},
+     (3.0, 16.2, 0), mpn="YAGEO CC0603KRX7R9BB104 (100 nF 50 V)", lcsc="C14663")
+
 # 3.75 V out to the display's battery socket: two wires, soldered here,
 # with an MX1.25 2-pin plug at the display. Not assembled (pads only).
 part("J3", "Connector_Generic:Conn_01x02", "BAT to display",
      "Connector_Wire:SolderWire-0.25sqmm_1x02_P4.2mm_D0.65mm_OD1.7mm",
-     {"1": "BAT_LCD", "2": "GND"}, (-2.1, 19.0, 0), mpn="(wires)", dnp=True)
+     {"1": "BAT_OUT", "2": "GND"}, (-2.1, 19.0, 0), mpn="(wires)", dnp=True)
 
 # CAN: SN65HVD230 on the display's 3.3 V (UART socket pin 3); Rs to GND:
 # full speed, no slope control
@@ -142,4 +161,4 @@ for i, (x, y) in enumerate(HOLES, 1):
          "MountingHole:MountingHole_2.2mm_M2", {}, (x, y, 0), mpn="")
 
 # nets that carry current, for the wider tracks
-POWER = {"VBAT", "VBAT_F", "VIN", "SW", "BAT_LCD", "GND"}
+POWER = {"VBAT", "VBAT_F", "VIN", "SW", "BAT_LCD", "BAT_OUT", "GND"}

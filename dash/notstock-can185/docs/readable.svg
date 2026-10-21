@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 730" font-family="DejaVu Sans, Arial, sans-serif">
-<rect width="1520" height="730" fill="#fff"/>
-<text x="30" y="34" font-size="22" text-anchor="start" fill="#111" font-weight="bold">NOT STOCK CAN 1.85: schematic with wires (rev 4 / rev 6)</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 730" font-family="DejaVu Sans, Arial, sans-serif">
+<rect width="1720" height="730" fill="#fff"/>
+<text x="30" y="34" font-size="22" text-anchor="start" fill="#111" font-weight="bold">NOT STOCK CAN 1.85: schematic with wires (rev 7)</text>
 <text x="30" y="56" font-size="13" text-anchor="start" fill="#555">Grey dashed: not assembled. Same parts and nets as the KiCad project.</text>
 <rect x="30" y="90" width="80" height="140" fill="#fff8e1" stroke="#111" stroke-width="2"/>
 <text x="52" y="223" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J1</text>
-<text x="52" y="240" font-size="11" text-anchor="middle" fill="#111">PH 4</text>
+<text x="52" y="240" font-size="11" text-anchor="middle" fill="#111">XH 4</text>
 <text x="104" y="114" font-size="11" text-anchor="end" fill="#111">12V</text>
 <text x="114" y="106" font-size="10" text-anchor="start" fill="#666">1</text>
 <text x="104" y="144" font-size="11" text-anchor="end" fill="#111">GND</text>
@@ -29,7 +29,7 @@
 <path d="M275,110 L300,110" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M255,120 L255,100 L275,110 Z" fill="#fff" stroke="#111" stroke-width="2"/>
 <path d="M275,120 L275,100" fill="none" stroke="#111" stroke-width="2"/>
-<text x="265" y="136" font-size="12" text-anchor="middle" fill="#111">D1  SS16</text>
+<text x="265" y="136" font-size="12" text-anchor="middle" fill="#111">D1  SS34</text>
 <text x="232" y="100" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">VBAT_F</text>
 <path d="M300,110 L680,110" fill="none" stroke="#111" stroke-width="2"/>
 <text x="560" y="100" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">VIN</text>
@@ -114,7 +114,7 @@
 <path d="M940,250 L920,250 L930,230 Z" fill="#fff" stroke="#111" stroke-width="2"/>
 <path d="M940,230 L920,230" fill="none" stroke="#111" stroke-width="2"/>
 <text x="916" y="237" font-size="13" text-anchor="end" fill="#111" font-weight="bold">D3</text>
-<text x="916" y="253" font-size="12" text-anchor="end" fill="#111">PMEG6010</text>
+<text x="916" y="253" font-size="12" text-anchor="end" fill="#111">K16</text>
 <path d="M930,280 L930,292" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M918,292 L942,292" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M922,296 L938,296" fill="none" stroke="#111" stroke-width="2"/>
@@ -123,8 +123,8 @@
 <path d="M1050,200 L1060,200" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M970,200 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0" fill="none" stroke="#111" stroke-width="2"/>
 <text x="1010" y="182" font-size="12" text-anchor="middle" fill="#111">L1  22u</text>
-<path d="M1060,200 L1400,200" fill="none" stroke="#111" stroke-width="2"/>
-<text x="1265" y="194" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">BAT_LCD 3.75 V</text>
+<path d="M1060,200 L1270,200" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1066" y="194" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">BAT_LCD</text>
 <circle cx="1110" cy="200" r="4" fill="#111"/>
 <circle cx="1160" cy="200" r="4" fill="#111"/>
 <circle cx="1230" cy="200" r="4" fill="#111"/>
@@ -165,20 +165,59 @@
 <path d="M1352,96 L1368,96" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M1356,100 L1364,100" fill="none" stroke="#111" stroke-width="2"/>
 <text x="1190" y="330" font-size="12" text-anchor="middle" fill="#555">0.765 V x (1 + 39k/10k) = 3.75 V</text>
-<rect x="1400" y="180" width="80" height="80" fill="#fff8e1" stroke="#111" stroke-width="2"/>
-<text x="1440" y="218" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J3</text>
-<text x="1440" y="235" font-size="11" text-anchor="middle" fill="#111">pads</text>
-<text x="1406" y="204" font-size="11" text-anchor="start" fill="#111">+</text>
-<text x="1396" y="196" font-size="10" text-anchor="end" fill="#666">1</text>
-<text x="1406" y="244" font-size="11" text-anchor="start" fill="#111">-</text>
-<text x="1396" y="236" font-size="10" text-anchor="end" fill="#666">2</text>
-<path d="M1400,240 L1380,240" fill="none" stroke="#111" stroke-width="2"/>
-<path d="M1380,240 L1380,252" fill="none" stroke="#111" stroke-width="2"/>
-<path d="M1368,252 L1392,252" fill="none" stroke="#111" stroke-width="2"/>
-<path d="M1372,256 L1388,256" fill="none" stroke="#111" stroke-width="2"/>
-<path d="M1376,260 L1384,260" fill="none" stroke="#111" stroke-width="2"/>
-<text x="1440" y="285" font-size="11" text-anchor="middle" fill="#555">to display</text>
-<text x="1440" y="299" font-size="11" text-anchor="middle" fill="#555">battery socket</text>
+<path d="M1270,200 L1280,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1360,200 L1370,200" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1280,200 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1320" y="182" font-size="12" text-anchor="middle" fill="#111">L2  1u</text>
+<path d="M1370,200 L1600,200" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1460" y="194" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">BAT_OUT 3.75 V</text>
+<circle cx="1390" cy="200" r="4" fill="#111"/>
+<circle cx="1450" cy="200" r="4" fill="#111"/>
+<circle cx="1510" cy="200" r="4" fill="#111"/>
+<path d="M1390,200 L1390,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1390,244 L1390,280" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1402,236 L1378,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1402,244 L1378,244" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1376" y="237" font-size="13" text-anchor="end" fill="#111" font-weight="bold">C9</text>
+<text x="1376" y="253" font-size="12" text-anchor="end" fill="#111">22u</text>
+<path d="M1390,280 L1390,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1378,292 L1402,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1382,296 L1398,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1386,300 L1394,300" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1450,200 L1450,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1450,244 L1450,280" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1462,236 L1438,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1462,244 L1438,244" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1464" y="237" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C10</text>
+<text x="1464" y="253" font-size="12" text-anchor="start" fill="#111">22u</text>
+<path d="M1450,280 L1450,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1438,292 L1462,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1442,296 L1458,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1446,300 L1454,300" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1510,200 L1510,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1510,244 L1510,280" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1522,236 L1498,236" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1522,244 L1498,244" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1524" y="237" font-size="13" text-anchor="start" fill="#111" font-weight="bold">C11</text>
+<text x="1524" y="253" font-size="12" text-anchor="start" fill="#111">100n</text>
+<path d="M1510,280 L1510,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1498,292 L1522,292" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1502,296 L1518,296" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1506,300 L1514,300" fill="none" stroke="#111" stroke-width="2"/>
+<rect x="1600" y="180" width="80" height="80" fill="#fff8e1" stroke="#111" stroke-width="2"/>
+<text x="1640" y="218" font-size="14" text-anchor="middle" fill="#111" font-weight="bold">J3</text>
+<text x="1640" y="235" font-size="11" text-anchor="middle" fill="#111">pads</text>
+<text x="1606" y="204" font-size="11" text-anchor="start" fill="#111">+</text>
+<text x="1596" y="196" font-size="10" text-anchor="end" fill="#666">1</text>
+<text x="1606" y="244" font-size="11" text-anchor="start" fill="#111">-</text>
+<text x="1596" y="236" font-size="10" text-anchor="end" fill="#666">2</text>
+<path d="M1600,240 L1580,240" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1580,240 L1580,252" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1568,252 L1592,252" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1572,256 L1588,256" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M1576,260 L1584,260" fill="none" stroke="#111" stroke-width="2"/>
+<text x="1640" y="285" font-size="11" text-anchor="middle" fill="#555">to display</text>
+<text x="1640" y="299" font-size="11" text-anchor="middle" fill="#555">battery socket</text>
 <path d="M110,170 L170,170 L170,520 L600,520" fill="none" stroke="#111" stroke-width="2"/>
 <path d="M110,200 L150,200 L150,560 L600,560" fill="none" stroke="#111" stroke-width="2"/>
 <text x="200" y="514" font-size="12" text-anchor="start" fill="#1565c0" font-style="italic">CANH</text>
