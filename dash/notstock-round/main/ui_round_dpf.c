@@ -690,8 +690,9 @@ static void popup_show(bool started, float soot)
 
 void rnd_regen_watch(const rnd_data_t *d)
 {
-    static regen_det_t det;
-    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN, lv_tick_get())) return;
+    static regen_det_t det = REGEN_DET_INIT;
+    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN,
+                    d->link ? d->dpf.dist_km : NAN, lv_tick_get())) return;
     regen = det.on;
     float s = d->dpf.soot_g;
     if (regen) soot_at_start = s;

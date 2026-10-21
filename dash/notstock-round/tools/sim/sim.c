@@ -7,6 +7,9 @@
  *                                   regeneration threshold half way through
  *                                   (and is held there as long as it must be,
  *                                   regen_detect.h, before the rest of t)
+ *               [regen=reset]       regenerating, then half way through the
+ *                                   ECU sets the distance back to 0 (the
+ *                                   filter still hot): the end at once
  *               [screen=settings|look|limits] [limit=N] [sound=0..4] [volume=10..100]
  *               [warnN=V]           warn limit N (page order, 6 = DPF soot)
  *               [boot=1]            start with the logo; t= picks the moment
@@ -294,7 +297,14 @@ int main(int argc, char **argv)
         }
         rnd_sim_settings(screen, limit);
     }
-    if (regen) {
+    if (regen && strcmp(regen, "reset") == 0) {
+        d.dpf.temp_c = 600;
+        run(REGEN_ON_MS / 1000.0f + 0.1f, &d);
+        run(t_end / 2, &d);
+        d.dpf.dist_km = 0.1f;               /* set back: finished */
+        d.dpf.soot_g = 3.4f;
+        run(t_end / 2, &d);
+    } else if (regen) {
         /* first half on one side of the threshold, then the other */
         bool start = strcmp(regen, "start") == 0;
         if (!start) {                      /* regenerating already */

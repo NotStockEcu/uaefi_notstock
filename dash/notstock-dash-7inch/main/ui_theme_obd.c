@@ -263,8 +263,8 @@ static void update_dpf(const dash_data_t *d, bool live)
 
     float s = live ? g_obd.dpf.soot_g : NAN;
     float temp = live ? g_obd.dpf.temp_c : NAN;
-    static regen_det_t det;   /* the filter held hot, regen_detect.h */
-    regen_step(&det, temp, lv_tick_get());
+    static regen_det_t det = REGEN_DET_INIT;   /* regen_detect.h */
+    regen_step(&det, temp, live ? g_obd.dpf.dist_km : NAN, lv_tick_get());
     int r = det.on;
 
     if (isnan(s)) {

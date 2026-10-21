@@ -85,9 +85,13 @@ already reads (UDS 114F / 114E / 14F5 / 1156 / 1044):
 - Swipe or long press to leave.
 
 **Regeneration**: once the filter temperature (the ECU's model of it) has
-stayed at 580 degC or over for a minute, ending when it has stayed under
-500 degC for 30 s (`regen_detect.h` in `../notstock-dash-7inch/main`; a
-long pull uphill heats the filter over 400 degC without regenerating), a
+stayed at 560 degC or over for 30 s; ending the moment the ECU sets the
+distance since the last regeneration back to 0 (the filter stays hot for
+kilometres after), or when it has stayed under 500 degC for 30 s (one
+broken off), and none again until it has cooled under 500
+(`regen_detect.h` in `../notstock-dash-7inch/main`, tested by
+`tools/test/test_regen.c`; a long pull uphill heats the filter over 400
+degC without regenerating), a
 popup comes up over whatever screen
 is shown, with three beeps; when it ends, a green one with the soot before
 and after and one beep. Tap closes it, otherwise it goes after 10 s. While

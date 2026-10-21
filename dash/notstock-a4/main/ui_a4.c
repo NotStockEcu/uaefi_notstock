@@ -484,8 +484,9 @@ void ui_a4_sweep(void)
 /* the regeneration: the filter held hot (regen_detect.h) */
 static void regen_watch(const rnd_data_t *d)
 {
-    static regen_det_t det;
-    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN, lv_tick_get())) return;
+    static regen_det_t det = REGEN_DET_INIT;
+    if (!regen_step(&det, d->link ? d->dpf.temp_c : NAN,
+                    d->link ? d->dpf.dist_km : NAN, lv_tick_get())) return;
     bool now = det.on;
     s_regen = now;
     a4_regen_sound(now);

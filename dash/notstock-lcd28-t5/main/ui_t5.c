@@ -1151,8 +1151,8 @@ static uint32_t s_back_at;
 
 static void regen_watch(const t5_view_t *v)
 {
-    static regen_det_t det;                   /* regen_detect.h */
-    if (regen_step(&det, v->x[T5_DPF_T], lv_tick_get())) {
+    static regen_det_t det = REGEN_DET_INIT;  /* regen_detect.h */
+    if (regen_step(&det, v->x[T5_DPF_T], v->x[T5_KM], lv_tick_get())) {
         if (det.on) {
             s_regen = true;
             s_back_at = 0;

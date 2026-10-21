@@ -46,9 +46,10 @@ the differential pressure in mbar, the filter's surface temperature
 the last regeneration, REGENERACE / PLNY. Its limit: 22.29 g soot
 (5 .. 40, by 0.1). A swipe on it goes back to the dials.
 
-A regeneration (the filter at 580 degC or over for a minute, over when
-under 500 for 30 s: `regen_detect.h` in `../notstock-dash-7inch/main`, as
-on every gauge; hot alone is not enough, a pull uphill gets it over 400)
+A regeneration (the filter at 560 degC or over for 30 s; over when the
+distance since the last one is set back to 0, or under 500 for 30 s:
+`regen_detect.h` in `../notstock-dash-7inch/main`, as on every gauge; hot
+alone is not enough, a pull uphill gets it over 400)
 beeps three times on the speaker and brings up the DPF
 page; at its end one beep, and the dial it covered comes back (unless you
 swiped elsewhere meanwhile). On the dials the amber DPF lamp left of the
