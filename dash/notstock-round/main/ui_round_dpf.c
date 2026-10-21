@@ -10,9 +10,11 @@
  * fills up, the measured soot, differential pressure, filter temperature and
  * distance since the last regeneration. Swipe or long press to leave.
  *
- * Regeneration (regen_detect.h: the filter held hot, not just hot): a
- * popup over whatever screen is up, three beeps; one beep and a second popup
- * when it ends. Tap closes a popup, or it goes by itself.
+ * Regeneration (regen_detect.h: the filter held hot, not just hot): from
+ * the gauges, DPF STATUS comes up and stays for as long as it lasts (a swipe
+ * leaves it, as always), with a popup over it, three beeps; when it ends,
+ * the gauges again (if DPF STATUS is still up), one beep and a second popup.
+ * Tap or swipe closes a popup, or it goes by itself.
  */
 #include "ui_round_int.h"
 #include "red.h"
@@ -184,9 +186,12 @@ lv_obj_t *rnd_dpf_screen(void)
     return dpf;
 }
 
+static bool s_auto_dpf;          /* DPF STATUS up for a regeneration */
+
 static void dpf_gesture(lv_event_t *e)
 {
     rnd_swiped();                 /* a swipe: no tap */
+    s_auto_dpf = false;           /* left by hand: stays left */
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) go_gauges(NULL);
 }
@@ -616,6 +621,13 @@ static void popup_click(lv_event_t *e)
     popup_close();
 }
 
+static void popup_gesture(lv_event_t *e)
+{
+    (void)e;
+    rnd_swiped();
+    popup_close();
+}
+
 static void popup_timeout(lv_timer_t *t)
 {
     (void)t;
@@ -635,6 +647,7 @@ static void popup_build(void)
     lv_obj_clear_flag(popup, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(popup, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(popup, popup_click, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(popup, popup_gesture, LV_EVENT_GESTURE, NULL);
 
     pop_icon = lv_img_create(popup);
     lv_img_set_src(pop_icon, &icon_dpf_120);
@@ -696,6 +709,16 @@ void rnd_regen_watch(const rnd_data_t *d)
     regen = det.on;
     float s = d->dpf.soot_g;
     if (regen) soot_at_start = s;
+    /* DPF STATUS for the regeneration: from the gauges only (not out of the
+     * menu or settings), back to them at its end if still there */
+    lv_obj_t *act = lv_scr_act();
+    if (regen && act == rnd_gauge_screen()) {
+        lv_scr_load(dpf);
+        s_auto_dpf = true;
+    } else if (!regen) {
+        if (s_auto_dpf && act == dpf) lv_scr_load(rnd_gauge_screen());
+        s_auto_dpf = false;
+    }
     popup_show(regen, s);
     rnd_sound(regen ? RND_EV_REGEN_START : RND_EV_REGEN_END);
     lv_obj_set_style_img_recolor(menu_dpf_icon, regen ? C_REGEN : C_GREY, 0);

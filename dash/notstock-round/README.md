@@ -91,10 +91,12 @@ kilometres after), or when it has stayed under 500 degC for 30 s (one
 broken off), and none again until it has cooled under 500
 (`regen_detect.h` in `../notstock-dash-7inch/main`, tested by
 `tools/test/test_regen.c`; a long pull uphill heats the filter over 400
-degC without regenerating), a
-popup comes up over whatever screen
-is shown, with three beeps; when it ends, a green one with the soot before
-and after and one beep. Tap closes it, otherwise it goes after 10 s. While
+degC without regenerating), DPF STATUS comes up (from the gauges; not
+out of the menu or settings) and stays for as long as it lasts, unless
+swiped away, with a popup over it and three beeps; when it ends, the gauges
+again (if DPF STATUS is still up), a green popup with the soot before and
+after and one beep. Tap or swipe closes a popup, otherwise it goes after
+10 s. While
 it lasts the gauges show DPF REGEN under the page dots, the DPF screen
 glows orange, and the menu's DPF icon is orange.
 
