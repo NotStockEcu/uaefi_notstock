@@ -457,10 +457,14 @@ void rnd_lang_apply(void)
     lv_async_call(lang_rebuild, NULL);
 }
 
+/* LVGL keeps counting a long press after a gesture: a swipe held a moment
+ * at its end opened the menu. A swipe ends the touch for everything else. */
 void rnd_swiped(void)
 {
     last_swipe = lv_tick_get();
     last_tap = 0;
+    lv_indev_t *in = lv_indev_get_act();
+    if (in) lv_indev_wait_release(in);
 }
 
 void rnd_tap_cb(lv_event_t *e)
@@ -501,8 +505,32 @@ static void hold_cb(lv_event_t *e)
     if (in) lv_indev_wait_release(in);
 }
 
+/* A slow drag is no gesture but no long press either: a finger that went
+ * further than LONG_SLOP from where it came down holds nothing. */
+#define LONG_SLOP 40
+static lv_point_t press_at;
+
+static void press_cb(lv_event_t *e)
+{
+    lv_indev_t *in = lv_event_get_indev(e);
+    if (in) lv_indev_get_point(in, &press_at);
+}
+
+static void long_guard(lv_event_t *e)
+{
+    lv_indev_t *in = lv_event_get_indev(e);
+    if (!in) return;
+    lv_point_t p;
+    lv_indev_get_point(in, &p);
+    if (LV_ABS(p.x - press_at.x) > LONG_SLOP ||
+        LV_ABS(p.y - press_at.y) > LONG_SLOP)
+        lv_event_stop_processing(e);
+}
+
 void rnd_on_long(lv_obj_t *obj, lv_event_cb_t cb)
 {
+    lv_obj_add_event_cb(obj, press_cb, LV_EVENT_PRESSED, NULL);
+    lv_obj_add_event_cb(obj, long_guard, LV_EVENT_LONG_PRESSED, NULL);
     lv_obj_add_event_cb(obj, cb, LV_EVENT_LONG_PRESSED, NULL);
     lv_obj_add_event_cb(obj, hold_cb, LV_EVENT_LONG_PRESSED, NULL);
 }

@@ -2,6 +2,10 @@
  * the round panel. Usage:
  *   sim out.ppm [page=N] [water=V] [oil=V] [boost=V] [intake=V]
  *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right]
+ *               [swipe_ms=MS]       how long the finger takes across
+ *               [hold=MS]           the finger stays this long at the
+ *                                   swipe's end before it lifts
+ *               [press=MS]          a finger held still in the middle
  *               [screen=menu|dpf|update] [soot=G] [filter=C]
  *               [regen=start|end]   the filter temperature crosses the
  *                                   regeneration threshold half way through
@@ -195,6 +199,7 @@ int main(int argc, char **argv)
     int page = 0;
     float t_end = 1.5f;
     const char *swipe = NULL;
+    int swipe_ms = 8 * STEP_MS, hold_ms = 0, press_ms = 0;
     for (int i = 2; i < argc; i++) {
         char k[32];
         const char *eq = strchr(argv[i], '=');
@@ -213,6 +218,9 @@ int main(int argc, char **argv)
         if (strcmp(k, "link") == 0)  { d.link = atoi(v) != 0; used = true; }
         if (strcmp(k, "t") == 0)     { t_end = strtof(v, NULL); used = true; }
         if (strcmp(k, "swipe") == 0) { swipe = v; used = true; }
+        if (strcmp(k, "swipe_ms") == 0) { swipe_ms = atoi(v); used = true; }
+        if (strcmp(k, "hold") == 0)  { hold_ms = atoi(v); used = true; }
+        if (strcmp(k, "press") == 0) { press_ms = atoi(v); used = true; }
         if (strcmp(k, "screen") == 0) { screen = v; used = true; }
         if (strcmp(k, "limit") == 0) { limit = atoi(v); used = true; }
         if (strcmp(k, "boot") == 0)  { boot = atoi(v); used = true; }
@@ -380,14 +388,24 @@ int main(int argc, char **argv)
         }
         run(0.6f, &d);
     }
+    if (press_ms > 0) {
+        s_tx = W / 2;
+        s_ty = H / 2;
+        run(press_ms / 1000.0f, &d);
+        s_tx = s_ty = -1;
+        run(t_end, &d);
+    }
     if (swipe) {
         /* a finger across the middle, then let the new page settle */
         int dir = strcmp(swipe, "left") == 0 ? -1 : 1;
-        for (int i = 0; i <= 8; i++) {
-            s_tx = W / 2 - dir * 150 + dir * 300 * i / 8;
+        int n = swipe_ms / STEP_MS;
+        if (n < 1) n = 1;
+        for (int i = 0; i <= n; i++) {
+            s_tx = W / 2 - dir * 150 + dir * 300 * i / n;
             s_ty = H / 2;
             run(STEP_MS / 1000.0f, &d);
         }
+        if (hold_ms > 0) run(hold_ms / 1000.0f, &d);
         s_tx = s_ty = -1;
         run(t_end, &d);
     }
