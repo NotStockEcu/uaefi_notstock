@@ -31,6 +31,7 @@ and the lid's skirt. The ring that marks its place is open at the lug.
 The lid's bosses grow with it; the screws go in
 from the lid down a bore in each boss to its 1.5 mm floor on the board,
 so M2 x 12 does whatever the speaker."""
+import os
 import sys
 import numpy as np
 import trimesh
@@ -51,10 +52,16 @@ PUSH = float(sys.argv[8]) if len(sys.argv) > 8 else 6.0
 FLARE = 40.0
 CORNER_R = 5.0               # the side plates' corners, rounded as the dash's opening
 
-holder = trimesh.load(f"{D}/holder.stl")
-trimesh.repair.fix_winding(holder)
-trimesh.repair.fix_normals(holder)
-disp = trimesh.load(f"{D}/disp185.stl")
+# without holder.stl only the tube and the lid (they do not need it);
+# without disp185.stl no checks of the display's fit
+HAVE_VENT = os.path.exists(f"{D}/holder.stl")
+HAVE_DISP = os.path.exists(f"{D}/disp185.stl")
+if HAVE_VENT:
+    holder = trimesh.load(f"{D}/holder.stl")
+    trimesh.repair.fix_winding(holder)
+    trimesh.repair.fix_normals(holder)
+if HAVE_DISP:
+    disp = trimesh.load(f"{D}/disp185.stl")
 
 # the old ring: axis fitted from sections (inner r 26.3, the wall to ~28.8)
 C0 = np.array([48.0, 25.76, 0.0])
@@ -170,36 +177,42 @@ for u, v in HOLES:
     tube += box(r, R_IN + 0.5, -RIB / 2, RIB / 2, W_BFRONT, W_STAND).rotate((0, 0, a))
     tube -= cyl(1.2, W_BFRONT - 1, W_STAND + 1, u, v, 24)
 
-pod = to_mf(holder)
-pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
-    (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
-# the louvers between x 12 and 84 (the ring and what is near it) made
-# again from their own section at x 12 and 84, running on into the tube,
-# so they hold it whichever way it is turned
-TO_X = [[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0]]             # (y, z, x): x up
-FROM_X = [[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0]]
-side = to_mf(holder).transform(TO_X)
-pod -= box(12, 84, -100, 200, -100, 100)
-for x0, x1, xs in ((12, 48, 12.5), (48, 84, 83.5)):
-    prof = side.slice(xs)
-    pod += prof.extrude(x1 - x0).translate((0, 0, x0)).transform(FROM_X)
-pod -= place(cyl(R_IN, -60, 60, seg=180))
-pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
-pod -= place(mf.Manifold.cylinder(80, R_OUT, R_OUT + 80 * np.tan(np.radians(FLARE)), 180)
-             )                                                 # nothing in front of it
-pod -= place0(box(-200, 200, -200, 200, 0, 100))                # the louvers' front
-out = pod + place(tube - box(-50, 50, -50, 50, 0, 10))         # the tube's own face
-# the side plates' corners rounded in their own plane (as seen from the
-# side): their outline at x 1, opened by CORNER_R, what that takes off
-# (the corners only) cut away across the whole width
-plate = side.slice(1.0).hull()                                 # its outline only
-rounded = plate.offset(-CORNER_R, mf.JoinType.Round, 2.0, 48).offset(
-    CORNER_R, mf.JoinType.Round, 2.0, 48)
-corners = plate - rounded
-out -= corners.extrude(120).translate((0, 0, -10)).transform(FROM_X)
-out = max(out.decompose(), key=lambda p: p.volume())       # no slivers left
-res = to_tm(out)
-res.export(f"{D}/vent185.stl")
+def make_vent():
+    pod = to_mf(holder)
+    pod -= mf.Manifold.cylinder(160, RING_CUT, RING_CUT, 180).translate(
+        (0, 0, -80)).transform(MR[:3, :].tolist())                  # the ring out
+    # the louvers between x 12 and 84 (the ring and what is near it) made
+    # again from their own section at x 12 and 84, running on into the tube,
+    # so they hold it whichever way it is turned
+    TO_X = [[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0]]             # (y, z, x): x up
+    FROM_X = [[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0]]
+    side = to_mf(holder).transform(TO_X)
+    pod -= box(12, 84, -100, 200, -100, 100)
+    for x0, x1, xs in ((12, 48, 12.5), (48, 84, 83.5)):
+        prof = side.slice(xs)
+        pod += prof.extrude(x1 - x0).translate((0, 0, x0)).transform(FROM_X)
+    pod -= place(cyl(R_IN, -60, 60, seg=180))
+    pod -= place(cyl(R_OUT + 0.4, -60, W_LID, seg=180))           # room for the lid
+    pod -= place(mf.Manifold.cylinder(80, R_OUT, R_OUT + 80 * np.tan(np.radians(FLARE)), 180)
+                 )                                                 # nothing in front of it
+    pod -= place0(box(-200, 200, -200, 200, 0, 100))                # the louvers' front
+    out = pod + place(tube - box(-50, 50, -50, 50, 0, 10))         # the tube's own face
+    # the side plates' corners rounded in their own plane (as seen from the
+    # side): their outline at x 1, opened by CORNER_R, what that takes off
+    # (the corners only) cut away across the whole width
+    plate = side.slice(1.0).hull()                                 # its outline only
+    rounded = plate.offset(-CORNER_R, mf.JoinType.Round, 2.0, 48).offset(
+        CORNER_R, mf.JoinType.Round, 2.0, 48)
+    corners = plate - rounded
+    out -= corners.extrude(120).translate((0, 0, -10)).transform(FROM_X)
+    out = max(out.decompose(), key=lambda p: p.volume())       # no slivers left
+    res = to_tm(out)
+    res.export(f"{D}/vent185.stl")
+    return out, res
+
+
+if HAVE_VENT:
+    out, res = make_vent()
 
 spk_d = np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)]) * (SPK_L - SPK_W) / 2
 spk_u = spk_d / max(np.linalg.norm(spk_d), 1e-9) if SPK_L > SPK_W else np.array([np.cos(SPK_ANG), np.sin(SPK_ANG)])
@@ -253,30 +266,37 @@ pt.apply_transform(np.diag([1, -1, -1, 1]))
 pt.apply_translation([0, 0, -pt.bounds[0][2]])
 pt.export(f"{D}/tube185.stl")
 
-# checks: the display where it goes, inside the vent and the lid?
-dm = disp.copy()
-dm.apply_translation([0, 0, DZ])
-dm.apply_transform(M)
-pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
-inside = res.contains(pts[::4] + M[:3, 2] * 0.05)    # its standoffs sit on the sleeves
-# and on its way in from the front
-stuck = [k for k in np.arange(0.5, 32.5, 0.5) if res.contains(pts[::4] + M[:3, 2] * k).any()]
 to_tm(lid_placed).export(f"{D}/lid185_placed.stl")
-dm.export(f"{D}/disp185_placed.stl")
-touch = (out ^ lid_placed).volume()
-with open(f"{D}/fit185.txt", "w") as f:
+f = open(f"{D}/fit185.txt", "w")
+f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight}\n")
+f.write(f"lid watertight {lt.is_watertight}, sleeves {SLEEVE} mm in the tube\n")
+f.write(f"tube depth {-W_LID:.1f} mm, bore {2 * R_IN:.0f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
+f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
+        f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
+        f"from the nearest boss, J1 or the skirt\n")
+grip = FLOOR + BOARD + SLEEVE
+screw = min(L for L in (12, 14, 16, 18, 20, 22, 25) if L - grip >= 2.5)
+f.write(f"speaker room {SPK_T} mm (boss {GAP:.1f}), screw: boss floor {FLOOR} + board {BOARD} + sleeve {SLEEVE} = "
+        f"{grip:.1f}; M2 x {screw} goes {screw - grip:.1f} into the 4 mm standoff\n")
+if HAVE_VENT:
     f.write(f"vent watertight {res.is_watertight}, parts {[round(p.volume(), 1) for p in out.decompose()]}\n")
-    f.write(f"tube alone: {pt.extents.round(1)} mm, watertight {pt.is_watertight}\n")
-    f.write(f"lid watertight {lt.is_watertight}, sleeves {SLEEVE} mm in the tube\n")
-    f.write(f"tube depth {-W_LID:.1f} mm, bore {2 * R_IN:.0f} mm, lid's back at {-(W_LID - LID):.1f} mm behind the face\n")
+    f.write(f"lid in the vent: {(out ^ lid_placed).volume():.2f} mm3 (the crush ribs)\n")
+else:
+    f.write("no holder.stl: no vent, the tube and the lid only\n")
+if not HAVE_DISP:
+    f.write("no disp185.stl: the display's fit not checked\n")
+
+# checks: the display where it goes, inside the vent and the lid?
+if HAVE_VENT and HAVE_DISP:
+    dm = disp.copy()
+    dm.apply_translation([0, 0, DZ])
+    dm.apply_transform(M)
+    pts = np.vstack([trimesh.sample.sample_surface(dm, 40000)[0], dm.vertices])
+    inside = res.contains(pts[::4] + M[:3, 2] * 0.05)    # its standoffs sit on the sleeves
+    # and on its way in from the front
+    stuck = [k for k in np.arange(0.5, 32.5, 0.5) if res.contains(pts[::4] + M[:3, 2] * k).any()]
+    dm.export(f"{D}/disp185_placed.stl")
     f.write(f"display points inside the vent: {int(inside.sum())} of {len(inside)}\n")
     f.write(f"display in from the front: {'stuck at ' + str(stuck) + ' mm' if stuck else 'clear'}\n")
-    f.write(f"speaker {SPK_L:g} x {SPK_W:g} x {SPK_T:g} at ({SPK_AT[0]:g}, {SPK_AT[1]:g}), "
-            f"turned {np.degrees(SPK_ANG):.0f} deg; its ring {spk_room(SPK_AT, SPK_ANG):.1f} mm "
-            f"from the nearest boss, J1 or the skirt\n")
-    f.write(f"lid in the vent: {touch:.2f} mm3 (the crush ribs)\n")
-    grip = FLOOR + BOARD + SLEEVE
-    screw = min(L for L in (12, 14, 16, 18, 20, 22, 25) if L - grip >= 2.5)
-    f.write(f"speaker room {SPK_T} mm (boss {GAP:.1f}), screw: boss floor {FLOOR} + board {BOARD} + sleeve {SLEEVE} = "
-            f"{grip:.1f}; M2 x {screw} goes {screw - grip:.1f} into the 4 mm standoff\n")
+f.close()
 print(open(f"{D}/fit185.txt").read())

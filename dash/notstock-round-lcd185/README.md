@@ -112,7 +112,11 @@ the tube. The side plates' corners are rounded in their own plane
 
 `python3 cad/vent_t5_185.py DIR [UP] [SPK_T] [SPK_L] [SPK_W] [YAW] [PITCH] [PUSH]` with
 `holder.stl` and `disp185.stl` (Waveshare's STEP as STL) in DIR; writes
-`vent185.stl`, `tube185.stl`, `lid185.stl` and `fit185.txt`. UP = -1 turns the display half round in the vent (J1 at
+`vent185.stl`, `tube185.stl`, `lid185.stl` and `fit185.txt`. Without
+`holder.stl` it makes the tube and the lid only (they do not need it),
+without `disp185.stl` it skips the display's fit checks. The tube and the
+lid as made, STL and STEP (`cad/stl2step.py`), are in `cad/out/`; the vent
+needs the holder's 3MF, which is not in the repository. UP = -1 turns the display half round in the vent (J1 at
 the bottom); SPK_T, SPK_L and SPK_W are the speaker's thickness, length
 and width in mm (5, 30, 20); YAW and PITCH the turn in degrees, to the
 right and down (15, 10; 0 0 for straight), PUSH how far out (6 mm). Needs trimesh and manifold3d.
