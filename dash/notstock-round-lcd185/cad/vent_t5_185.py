@@ -254,9 +254,8 @@ def make_lid(r_out, r_in):
 
 lid = make_lid(R_OUT, r_in=R_IN)
 lid_placed = place(lid)
-lt = to_tm(lid)                     # printed outside face down
-lt.apply_transform(np.diag([1, -1, -1, 1]))
-lt.apply_translation(-lt.bounds[0])
+lt = to_tm(lid)                     # printed outside face down: as it is
+lt.apply_translation(-lt.bounds[0])  # (its outside the lowest w), bosses up
 lt.export(f"{D}/lid185.stl")
 
 # the tube alone, no vent round it: the gauge anywhere
