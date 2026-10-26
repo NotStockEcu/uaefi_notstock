@@ -1,0 +1,9 @@
+# Name,   Type, SubType, Offset,   Size
+# 16 MB flash. The gauge (about 12.6 MB, the faces most of it) in ota_0; in
+# factory the updater (../notstock-updater175), which puts a new gauge
+# into ota_0 over Wi-Fi. nvs where it always was.
+nvs,      data, nvs,     0x9000,   0x6000
+otadata,  data, ota,     0xf000,   0x2000
+phy_init, data, phy,     0x11000,  0x1000
+factory,  app,  factory, 0x20000,  0x1E0000
+ota_0,    app,  ota_0,   0x200000, 0xE00000

@@ -1,0 +1,44 @@
+#!/bin/sh
+# Orbitron fonts for the speed readout, the rev counter readout and its labels.
+# Source: assets/fonts/Orbitron-*.ttf, static instances of Google Fonts'
+# Orbitron[wght].ttf (SIL OFL, see assets/fonts/OFL-Orbitron.txt).
+# The DejaVu fonts in main/fonts/ carry their own lv_font_conv line in their
+# headers.
+#
+# Needs lv_font_conv:  npm i -g lv_font_conv
+# Run from the project root:  sh tools/gen_fonts.sh
+set -e
+F=assets/fonts
+O=main/fonts
+conv() {
+    lv_font_conv --bpp 4 --format lvgl --no-compress --force-fast-kern-format \
+        --lv-include lvgl.h "$@"
+}
+# speed, digits only
+conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --size 56 -o $O/dash_speed_56.c
+# rpm readout inside the rev counter
+conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 40 -o $O/dash_orb_40.c
+# small labels: km/h, x1000 rpm
+conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 18 -o $O/dash_orb_18.c
+# side gauge readouts
+# (A-F P U: trouble codes on the DIAG page, P0401 U0100 P242F)
+conv --font $F/Orbitron-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --symbols ABCDEFPU --size 30 -o $O/dash_orb_30.c
+# side gauge units and titles: bar, degC, TURBO, AFR
+conv --font $F/Orbitron-Bold.ttf -r 0x20-0x7E -r 0xB0 --size 14 -o $O/dash_orb_14.c
+
+# ---- alternative looks (ui_theme_*.c) --------------------------------------
+# EMO: Exo 2, big italic speed, rpm, bar values, tab values
+conv --font $F/Exo2-ExtraBoldItalic.ttf -r 0x30-0x39 --size 150 -o $O/emo_150.c
+conv --font $F/Exo2-SemiBold.ttf -r 0x30-0x39 --size 64 -o $O/emo_64.c
+conv --font $F/Exo2-SemiBold.ttf -r 0x20-0x7E -r 0xB0 --size 24 -o $O/emo_24.c
+conv --font $F/Exo2-SemiBold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 36 -o $O/emo_36.c
+conv --font $F/Exo2-SemiBold.ttf -r 0x20-0x7E --size 15 -o $O/emo_15.c
+# LONK: Orbitron Black numbers
+conv --font $F/Orbitron-Black.ttf -r 0x30-0x39 --size 64 -o $O/lonk_64.c
+conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 42 -o $O/lonk_42.c
+# HILL: Barlow Condensed
+conv --font $F/BarlowCondensed-Bold.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 66 -o $O/hill_66.c
+conv --font $F/BarlowCondensed-Bold.ttf -r 0x30-0x39 --size 38 -o $O/hill_38.c
+conv --font $F/BarlowCondensed-SemiBold.ttf -r 0x20-0x7E -r 0xB0 --size 20 -o $O/hill_20.c
+# OBD-II test screen values
+conv --font $F/Orbitron-Black.ttf -r 0x2D-0x2E -r 0x30-0x39 --size 60 -o $O/obd_60.c

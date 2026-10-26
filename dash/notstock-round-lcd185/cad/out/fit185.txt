@@ -1,0 +1,7 @@
+tube alone: [60.8 60.8 24.7] mm, watertight True
+lid watertight True, sleeves 5.9 mm in the tube
+tube depth 24.7 mm, bore 56 mm, lid's back at 26.7 mm behind the face
+speaker 30 x 20 x 5 at (0.5, -1.5), turned 0 deg; its ring 2.3 mm from the nearest boss, J1 or the skirt
+speaker room 5.0 mm (boss 8.4), screw: boss floor 1.5 + board 1.6 + sleeve 5.9 = 9.0; M2 x 12 goes 3.0 into the 4 mm standoff
+no holder.stl: no vent, the tube and the lid only
+no disp185.stl: the display's fit not checked

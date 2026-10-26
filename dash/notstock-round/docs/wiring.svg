@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="760" viewBox="0 0 1240 760" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect width="1240" height="760" fill="#ffffff"/>
+  <text x="30" y="44" font-size="26" font-weight="bold" fill="#111">NOT STOCK round gauge: CAN transceiver and power wiring</text>
+  <text x="30" y="72" font-size="15" fill="#555">Waveshare ESP32-S3-Touch-LCD-2.1, 12-pin connector  |  SN65HVD230 CAN board at the display  |  power box towards the OBD plug</text>
+
+  <!-- ===== 12-pin connector ===== -->
+  <rect x="40" y="110" width="270" height="560" rx="10" fill="#e8f0fb" stroke="#2b5fa8" stroke-width="2"/>
+  <text x="175" y="138" font-size="17" font-weight="bold" text-anchor="middle" fill="#1d3f70">Display, 12-pin</text>
+  <text x="175" y="158" font-size="12" text-anchor="middle" fill="#1d3f70">"12PIN wire interface"</text>
+  <g font-size="15" fill="#111">
+    <!-- rows every 40 px from y=190 -->
+    <g id="pins">
+      <text x="60" y="195">GND</text>
+      <text x="60" y="235" font-weight="bold" fill="#c0392b">VBus (5V)</text>
+      <text x="60" y="275" font-weight="bold" fill="#1e7e34">D-  (GPIO19)</text>
+      <text x="60" y="315" font-weight="bold" fill="#1e7e34">D+  (GPIO20)</text>
+      <text x="60" y="355" font-weight="bold">GND</text>
+      <text x="60" y="395" font-weight="bold" fill="#c0392b">3V3</text>
+      <text x="60" y="435" fill="#999">SCL (GPIO7)</text>
+      <text x="60" y="475" fill="#999">SDA (GPIO15)</text>
+      <text x="60" y="515" fill="#999">TXD (GPIO43)</text>
+      <text x="60" y="555" fill="#999">RXD (GPIO44)</text>
+      <text x="60" y="595" fill="#999">NC</text>
+      <text x="60" y="635" fill="#999">IO0</text>
+    </g>
+  </g>
+  <g fill="#2b5fa8">
+    <circle cx="300" cy="190" r="6"/><circle cx="300" cy="230" r="6"/><circle cx="300" cy="270" r="6"/>
+    <circle cx="300" cy="310" r="6"/><circle cx="300" cy="350" r="6"/><circle cx="300" cy="390" r="6"/>
+  </g>
+  <g fill="#bbb">
+    <circle cx="300" cy="430" r="5"/><circle cx="300" cy="470" r="5"/><circle cx="300" cy="510" r="5"/>
+    <circle cx="300" cy="550" r="5"/><circle cx="300" cy="590" r="5"/><circle cx="300" cy="630" r="5"/>
+  </g>
+  <text x="175" y="662" font-size="12" text-anchor="middle" fill="#888">grey: not connected</text>
+
+  <!-- ===== SN65HVD230 board ===== -->
+  <rect x="520" y="240" width="220" height="250" rx="10" fill="#e9f6ec" stroke="#1e7e34" stroke-width="2"/>
+  <text x="630" y="268" font-size="17" font-weight="bold" text-anchor="middle" fill="#14532d">SN65HVD230</text>
+  <text x="630" y="288" font-size="12" text-anchor="middle" fill="#14532d">CAN board, 3.3 V, at the display</text>
+  <g font-size="15" fill="#111">
+    <text x="540" y="325">3V3</text>
+    <text x="540" y="365">GND</text>
+    <text x="540" y="405">CTX</text>
+    <text x="540" y="445">CRX</text>
+    <text x="720" y="385" text-anchor="end">CANH</text>
+    <text x="720" y="425" text-anchor="end">CANL</text>
+  </g>
+  <g fill="#1e7e34">
+    <circle cx="526" cy="320" r="6"/><circle cx="526" cy="360" r="6"/>
+    <circle cx="526" cy="400" r="6"/><circle cx="526" cy="440" r="6"/>
+    <circle cx="734" cy="380" r="6"/><circle cx="734" cy="420" r="6"/>
+  </g>
+  <text x="630" y="476" font-size="11" text-anchor="middle" fill="#14532d">120 R on board (R2): keep</text>
+
+  <!-- wires display -> transceiver -->
+  <g fill="none" stroke-width="3.5" stroke-linejoin="round">
+    <!-- 3V3 -->
+    <path d="M300 390 H420 V320 H526" stroke="#c0392b"/>
+    <!-- GND from pin row 350 -->
+    <path d="M300 350 H400 V360 H526" stroke="#111"/>
+    <!-- D+ GPIO20 -> CTX -->
+    <path d="M300 310 H380 V400 H526" stroke="#1e7e34"/>
+    <!-- D- GPIO19 -> CRX -->
+    <path d="M300 270 H360 V440 H526" stroke="#27ae60" stroke-dasharray="10 5"/>
+  </g>
+  <g font-size="12" fill="#333">
+    <text x="430" y="314" fill="#c0392b">3V3</text>
+    <text x="430" y="354">GND</text>
+    <text x="430" y="394" fill="#1e7e34">GPIO20</text>
+    <text x="430" y="434" fill="#1e7e34">GPIO19</text>
+  </g>
+
+  <!-- power box -->
+  <rect x="930" y="170" width="270" height="330" rx="10" fill="#fdf2e6" stroke="#b9770e" stroke-width="2"/>
+  <text x="1065" y="198" font-size="17" font-weight="bold" text-anchor="middle" fill="#7e5109">Power box</text>
+  <text x="1065" y="218" font-size="12" text-anchor="middle" fill="#7e5109">fuse, TVS, 12 V -&gt; 5 V,</text>
+  <text x="1065" y="252" font-size="12" text-anchor="middle" fill="#7e5109">CAN straight through</text>
+  <g font-size="15" fill="#111">
+    <text x="950" y="286">+5 V</text>
+    <text x="950" y="325">GND</text>
+    <text x="950" y="385">CAN-H</text>
+    <text x="950" y="425">CAN-L</text>
+  </g>
+  <g fill="#b9770e">
+    <circle cx="936" cy="280" r="6"/><circle cx="936" cy="320" r="6"/>
+    <circle cx="936" cy="380" r="6"/><circle cx="936" cy="420" r="6"/>
+  </g>
+  <g font-size="13" fill="#7e5109">
+    <text x="1065" y="455" text-anchor="middle">from the OBD plug:</text>
+    <text x="1065" y="473" text-anchor="middle">16 +12 V, 4/5 GND, 6 CAN-H, 14 CAN-L</text>
+    
+  </g>
+
+  <!-- 5V and GND from box to 12-pin VBus / GND (top route) -->
+  <g fill="none" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M936 280 H860 V130 H340 V230 H300" stroke="#c0392b"/>
+    <path d="M936 320 H880 V110 H330 V190 H300" stroke="#111"/>
+    <!-- CAN pair -->
+    <path d="M734 380 H936" stroke="#e67e22"/>
+    <path d="M734 420 H936" stroke="#8e44ad"/>
+  </g>
+  <!-- twist marks -->
+  <g stroke="#555" stroke-width="1.5">
+    <line x1="800" y1="372" x2="812" y2="428"/><line x1="830" y1="372" x2="842" y2="428"/><line x1="860" y1="372" x2="872" y2="428"/>
+  </g>
+  <g font-size="12" fill="#333">
+    <text x="600" y="124" fill="#c0392b">+5 V -&gt; VBus</text>
+    <text x="600" y="104">GND -&gt; GND</text>
+    <text x="830" y="455" text-anchor="middle">CAN-H / CAN-L twisted pair</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="14" fill="#222">
+    <text x="360" y="560" font-weight="bold">Notes</text>
+    <text x="360" y="584">- The "USB" USB-C is out of use: CAN runs on its pins (GPIO19/20).</text>
+    <text x="360" y="606">- Flash and monitor over the "UART" USB-C, with the 12-pin unplugged</text>
+    <text x="374" y="626">(VBus is the USB 5 V rail: never two 5 V sources at once).</text>
+    <text x="360" y="648">- Never put 5 V on 3V3: that pin is an output of the board's regulator.</text>
+    <text x="360" y="670">- Firmware: PIN_TWAI_TX 20, PIN_TWAI_RX 19 in main/board_round.h.</text>
+    <text x="360" y="692">- Pin order as listed in Waveshare's 12-pin table; check the silkscreen.</text>
+  </g>
+</svg>

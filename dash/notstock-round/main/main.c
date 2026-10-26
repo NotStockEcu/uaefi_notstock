@@ -1,0 +1,186 @@
+/* NOT STOCK round gauge, OBD-II. Built here for the Waveshare
+ * ESP32-S3-Touch-LCD-2.1, and by ../notstock-round-amoled for the
+ * ESP32-S3-Touch-AMOLED-1.75 and by ../notstock-round-lcd185 for the
+ * ESP32-S3-Touch-LCD-1.85 (hw.c is the board's own there).
+ *
+ * Build: idf.py set-target esp32s3 && idf.py build flash monitor
+ * 2.1": flash and monitor over the board's "UART" USB-C. CAN is on
+ * GPIO19/20, the native USB's pins (12-pin D-/D+), so the "USB" USB-C is
+ * out of use. AMOLED: its one USB-C; CAN on the header, GPIO17/18.
+ *
+ * Here: the platform side of ui_round.h (settings in NVS, backlight, buzzer,
+ * trouble codes) and the loop that feeds the UI 30 times a second.
+ */
+#include <string.h>
+
+/* the board: the 2.1" LCD here, the others from their own projects
+ * (../notstock-round-amoled, ../notstock-round-lcd185) */
+#if defined(BOARD_A132)
+#include "board_a132.h"
+#elif defined(BOARD_AMOLED)
+#include "board_amoled.h"
+#elif defined(BOARD_LCD185)
+#include "board_lcd185.h"
+#else
+#include "board_round.h"
+#endif
+#include "can_obd.h"
+#include "hw.h"
+#include "sounds.h"
+#include "ui_round.h"
+#include "ui_round_int.h"
+
+#include "esp_heap_caps.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "lvgl.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+
+static const char *TAG = "round";
+
+#define UPDATE_MS 33
+
+/* ------------------------------------------------------------ settings */
+#define NS  "round"
+#define KEY "set"
+#define VER 6        /* bump whenever rnd_settings_t or its defaults change */
+#define VER_NO_HC 5  /* the same, without hc at the end: still loads */
+
+static void settings_load(void)
+{
+    rnd_settings_defaults();
+    esp_err_t e = nvs_flash_init();
+    if (e == ESP_ERR_NVS_NO_FREE_PAGES || e == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        e = nvs_flash_init();
+    }
+    nvs_handle_t h;
+    if (e != ESP_OK || nvs_open(NS, NVS_READONLY, &h) != ESP_OK) {
+        ESP_LOGI(TAG, "no saved settings, defaults");
+        return;
+    }
+    uint8_t ver = 0;
+    rnd_settings_t tmp;
+    size_t len = sizeof tmp;
+    if (nvs_get_u8(h, "ver", &ver) == ESP_OK && (ver == VER || ver == VER_NO_HC) &&
+        nvs_get_blob(h, KEY, &tmp, &len) == ESP_OK &&
+        len == (ver == VER ? sizeof tmp : offsetof(rnd_settings_t, hc)) &&
+        tmp.lang < RND_LANG_COUNT &&
+        tmp.sound < RND_SND_COUNT && tmp.volume >= 10 && tmp.volume <= 100) {
+        if (ver == VER_NO_HC) tmp.hc = 0;
+        g_rnd_set = tmp;
+        /* a look this build does not have: NOTSTOCK, the rest kept */
+        if (g_rnd_set.look >= RND_LOOK_COUNT) g_rnd_set.look = RND_LOOK_NOTSTOCK;
+        /* a limit outside what this build allows (a scale made shorter,
+         * as the boost's to 2 bar): its default */
+        for (int i = 0; i < RND_WARN_COUNT; i++) {
+            const rnd_limit_t *l = &RND_LIMIT[i];
+            float w = g_rnd_set.warn[i];
+            if (!(w >= l->lo - 1e-3f && w <= l->hi + 1e-3f)) g_rnd_set.warn[i] = l->def;
+        }
+        ESP_LOGI(TAG, "settings loaded");
+    } else {
+        /* the struct changed with a firmware update: defaults, rather than
+         * old bytes read as new fields */
+        ESP_LOGW(TAG, "stored settings stale, defaults");
+    }
+    nvs_close(h);
+}
+
+void rnd_settings_save(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) return;
+    nvs_set_u8(h, "ver", VER);
+    nvs_set_blob(h, KEY, &g_rnd_set, sizeof g_rnd_set);
+    nvs_commit(h);
+    nvs_close(h);
+}
+
+/* ---------------------------------------------------------- platform */
+/* a regeneration's start or end: the sound picked in SETTINGS; a board
+ * without a speaker (the 2.1"'s buzzer) beeps for every one of them */
+void rnd_sound(int event)
+{
+    int s = g_rnd_set.sound;
+    if (s == RND_SND_OFF) return;
+    size_t n = 0;
+    hw_volume(g_rnd_set.volume);
+    const int16_t *pcm = rnd_pcm(s, event, g_rnd_set.lang, &n);
+    if (pcm && hw_play(pcm, n)) return;
+    hw_beep(event == RND_EV_REGEN_START ? 3 : 1);
+}
+
+void rnd_backlight(uint8_t percent)
+{
+    hw_backlight(percent);
+}
+
+void rnd_contrast(bool high)
+{
+    hw_contrast(high);
+}
+
+#ifdef RND_HAVE_GMETER
+void rnd_g_zero(void)
+{
+    hw_g_zero();
+}
+#endif
+
+/* the Wi-Fi updater: none on most boards; the 1.85" has one
+ * (../notstock-round-lcd185/main/ota_lcd185.c, RND_HAVE_UPDATER) */
+#ifndef RND_HAVE_UPDATER
+bool rnd_update_available(void)
+{
+    return false;
+}
+
+void rnd_update_start(void)
+{
+}
+#endif
+
+/* ------------------------------------------------------------- feeding */
+static void update_cb(lv_timer_t *t)
+{
+    (void)t;
+    static rnd_data_t d;          /* the trouble code list is kept between */
+    can_obd_fill(&d);
+#ifdef RND_HAVE_GMETER
+    hw_motion_fill(&d);
+#endif
+    ui_round_update(&d);
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "NOT STOCK round gauge, %s", BOARD_NAME);
+    settings_load();
+    hw_init();
+    can_obd_start();
+
+    /* the gauges first, then the logo in front of them out of black and
+     * into them (hw_boot, straight into the frame buffer; the LVGL fade of
+     * ui_round_create(true) is what the PC simulator shows) */
+    ui_round_create(false);
+    lv_timer_create(update_cb, UPDATE_MS, NULL);
+    extern const lv_img_dsc_t *const boot_logo[];
+    hw_boot(boot_logo[0]);
+
+    lv_mem_monitor_t mon;
+    lv_mem_monitor(&mon);
+    ESP_LOGI(TAG, "LVGL heap %d%% used; internal RAM %u B free, PSRAM %u B",
+             mon.used_pct,
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+
+    while (1) {
+        uint32_t next = lv_timer_handler();
+        if (next == LV_NO_TIMER_READY || next > 20) next = 20;
+        if (next < 2) next = 2;
+        vTaskDelay(pdMS_TO_TICKS(next));
+    }
+}

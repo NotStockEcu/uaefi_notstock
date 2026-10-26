@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""Render the round gauge (tools/sim) into preview/*.png plus a contact
+sheet. Needs Pillow and LVGL 8.4:  LVGL_DIR=/path/to/lvgl python tools/preview.py
+Extra args go to one custom render:  python tools/preview.py page=2 boost=1.8
+"""
+import os
+import subprocess
+import sys
+
+from PIL import Image
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+SIM = os.path.join(HERE, "sim")
+OUT = os.path.join(ROOT, "preview")
+
+SCENES = {
+    "water": "page=0",
+    "oil": "page=1",
+    "boost": "page=2",
+    "intake": "page=3",
+    "exhaust": "page=4",
+    "rpm": "page=5",
+    "oil-warn": "page=1 oil=134",
+    "no-data": "link=0",
+    "swipe": "swipe=left t=0.2",
+    "boost-warn": "page=2 boost=2.31",
+    "exhaust-hot": "page=4 exhaust=684",
+    "menu": "screen=menu",
+    "dpf": "screen=dpf",
+    "dpf-full": "screen=dpf soot=26.1",
+    "dpf-regen": "screen=dpf regen=start t=24",
+    "regen-start": "regen=start t=2",
+    "regen-end": "regen=end t=2",
+    "settings": "screen=settings",
+    "look": "screen=look",
+    "limits": "screen=limits limit=0",
+    "limits-boost": "screen=limits limit=2",
+    "water-limit-90": "warn0=90",
+    "retro-water": "look=1 page=0",
+    "retro-boost": "look=1 page=2",
+    "retro-rpm": "look=1 page=5",
+    "retro-oil-warn": "look=1 page=1 oil=134",
+    "red-water": "look=2 page=0",
+    "red-boost": "look=2 page=2",
+    "red-rpm": "look=2 page=5",
+    "red-oil-warn": "look=2 page=1 oil=134",
+    "red-exhaust": "look=2 page=4 exhaust=684",
+    "cz-red-intake": "lang=1 look=2 page=3",
+    "night-toast": "dtap=1",
+    "night-retro": "look=1 night=1",
+    "pages": "screen=pages limit=3 hide=8",
+    "boot-in": "boot=1 t=0.6",
+    "boot-logo": "boot=1 t=2.0",
+    "boot-cross": "boot=1 t=3.2",
+    "cz-water": "lang=1",
+    "cz-retro-rpm": "lang=1 look=1 page=5",
+    "cz-menu": "lang=1 screen=menu",
+    "cz-settings": "lang=1 screen=settings",
+    "cz-dpf": "lang=1 screen=dpf",
+    "cz-regen-start": "lang=1 regen=start t=2",
+    "cz-pages": "lang=1 screen=pages limit=2",
+    "diag": "screen=diag t=1.5",
+    "multi": "page=7",
+    "multi-rpm": "page=7 multi=5,2,6,3 rpm=1850",
+    "retro-multi": "look=1 page=7",
+    "red-multi": "look=2 page=7",
+    "multi-hc": "page=7 hc=1",
+    "cz-retro-multi-warn": "lang=1 look=1 page=7 boost=2.31 oil=134",
+    "cz-multi-warn": "lang=1 page=7 boost=2.31 oil=134",
+    "cz-multi-edit": "lang=1 screen=multiedit",
+    "cz-diag": "lang=1 screen=diag t=1.5",
+    "retro-dpf": "look=1 screen=dpf",
+    "cz-retro-dpf-full": "lang=1 look=1 screen=dpf soot=26.1",
+    "retro-dpf-regen": "look=1 screen=dpf regen=start t=24",
+    "cz-retro-diag": "lang=1 look=1 screen=diag t=1.5",
+    "retro-diag-clean": "look=1 screen=diag dtc=0 t=1.5",
+    "cz-diag-clear": "lang=1 screen=diag t=1.5 tap=319,371",
+    "cz-diag-cleared": "lang=1 screen=diag dtcclear=1 t=2",
+    "cz-diag-refused": "lang=1 screen=diag dtcclear=1 dtcrefuse=1 t=2",
+}
+
+
+def render(name, args):
+    ppm = os.path.join(SIM, "build", name + ".ppm")
+    subprocess.run([os.path.join(SIM, "build", "sim"), ppm] + args.split(),
+                   check=True)
+    png = os.path.join(OUT, name + ".png")
+    Image.open(ppm).save(png)
+    os.remove(ppm)
+    return png
+
+
+def main():
+    make = ["make", "-s", "-j8"]
+    if "LVGL_DIR" in os.environ:
+        make.append("LVGL_DIR=" + os.environ["LVGL_DIR"])
+    subprocess.run(make, cwd=SIM, check=True)
+    os.makedirs(OUT, exist_ok=True)
+    if len(sys.argv) > 1:
+        print(render("custom", " ".join(sys.argv[1:])))
+        return
+    pngs = [render(n, a) for n, a in SCENES.items()]
+    n = Image.open(pngs[0]).size[0]
+    cols = 4
+    rows = (len(pngs) + cols - 1) // cols
+    sheet = Image.new("RGB", (n * cols, n * rows), (42, 42, 42))
+    for i, p in enumerate(pngs):
+        sheet.paste(Image.open(p), ((i % cols) * n, (i // cols) * n))
+    sheet.save(os.path.join(OUT, "sheet.png"))
+    print("preview/*.png, preview/sheet.png")
+
+
+if __name__ == "__main__":
+    main()
+
