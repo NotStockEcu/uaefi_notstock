@@ -1,0 +1,20 @@
+ESP32-S3-Touch-LCD-1.85, NOT STOCK round gauge fw17 (fw14 + noc/den swipem), with the Wi-Fi updater
+
+Noc: swipe dolu. Den: swipe nahoru. Dvojklep nic nedela.
+
+=== POPRVE, pres USB (jen jednou) ===
+Odpoj od displeje draty baterie z desky CAN, displej pripoj USB.
+Port: COM14.
+
+cd /d C:\dash\notstock-lcd185-fw17\flash
+python -m esptool --chip esp32s3 -p COM14 -b 460800 write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m 0x0 bootloader.bin 0x8000 partition-table.bin 0xf000 ota_data_initial.bin 0x20000 notstock_updater185.bin 0x200000 notstock_round_lcd185.bin
+
+Kdyz se port neobjevi: drz BOOT, zmackni RST.
+
+=== POTOM, pres WiFi ===
+1. Budik: MENU, dole AKTUALIZACE, SPUSTIT.
+2. Mobil: WiFi NOTSTOCK-185, heslo notstock.
+3. Prohlizec: http://192.168.4.1 (casto se otevre samo).
+4. Vyber soubor notstock_round_lcd185.bin, Nahrat.
+   Budik ukazuje procenta, pak se sam restartuje.
+   Zrusit na strance nebo 15 minut bez akce: zpet do budiku beze zmeny.
