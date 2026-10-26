@@ -370,22 +370,14 @@ static void touch_init(void)
              s_touch_ok && s_tp_bus == BUS_V1 ? " (board V1 pins)" : "");
 }
 
-/* A light finger (or a noisy car supply) drops out for a read or two in
- * the middle of a swipe, which LVGL takes as a release and the gesture is
- * lost. So a release counts only after TOUCH_HOLD empty reads in a row. */
-#define TOUCH_HOLD 3
-
 /* reg 0x02: fingers, then x and y in 12 bits; panel pixels, so scaled up
  * to the UI's 480 */
 static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
     static lv_coord_t lx, ly;
-    static int empty = TOUCH_HOLD;
     uint8_t b[5];
-    data->state = ++empty < TOUCH_HOLD ? LV_INDEV_STATE_PRESSED
-                                       : LV_INDEV_STATE_RELEASED;
-    if (empty > TOUCH_HOLD) empty = TOUCH_HOLD;
+    data->state = LV_INDEV_STATE_RELEASED;
     if (i2c_read(s_tp_bus, CST816_ADDR, 0x02, b, sizeof b) == ESP_OK &&
         (b[0] & 0x0F) > 0) {
         int x = ((b[1] & 0x0F) << 8) | b[2];
@@ -407,7 +399,6 @@ static void touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
         if (y >= FB_W) y = FB_W - 1;
         lx = (lv_coord_t)x;
         ly = (lv_coord_t)y;
-        empty = 0;
         data->state = LV_INDEV_STATE_PRESSED;
     }
     data->point.x = lx;

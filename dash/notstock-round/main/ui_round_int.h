@@ -139,16 +139,15 @@ void rnd_g_update(const rnd_data_t *d);
 void rnd_pages_open(void);              /* SETTINGS -> PAGES */
 void rnd_limits_changed(void);        /* redraw the zones */
 
-/* day / night: a double tap on the gauges or the DPF screen */
-void rnd_tap_cb(lv_event_t *e);           /* on LV_EVENT_SHORT_CLICKED */
+/* day / night: a swipe down / up on the gauges or the DPF screen */
+void rnd_night_swipe(lv_dir_t dir);       /* from a gesture handler */
 
 /* a long press that leaves the screen: cb runs, and the finger, still down
  * on the next screen, counts for nothing until it is lifted (else lifting it
  * taps whatever lies under it there) */
 void rnd_on_long(lv_obj_t *obj, lv_event_cb_t cb);
-void rnd_swiped(void);                    /* from a gesture handler */
 void rnd_backlight_apply(void);           /* from g_rnd_set */
-void rnd_night_toggle(void);
+void rnd_night_set(bool night);
 
 /* regeneration: popup, beep, and the flag the gauges show */
 void rnd_regen_watch(const rnd_data_t *d);

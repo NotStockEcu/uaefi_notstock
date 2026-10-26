@@ -5,7 +5,8 @@
  *
  * Here: which page is shown, the value smoothed onto the scale (so after a
  * page change or at power-up the needle or arc sweeps up on its own), the
- * peaks, the swipes, the long press for the menu, the double tap for night
+ * peaks, the swipes (left / right: pages, down / up: night / day), the
+ * long press for the menu,
  * the boot logo, and the page names and units in either language.
  *
  * Boot: the NOT STOCK badge (tools/gen_splash.py) fades in on black, holds,
@@ -383,7 +384,6 @@ void rnd_look_apply(void)
 }
 
 /* ------------------------------------------------------------ day / night */
-static uint32_t last_tap, last_swipe;
 static lv_obj_t *toast, *toast_lbl;
 
 void rnd_backlight_apply(void)
@@ -391,10 +391,10 @@ void rnd_backlight_apply(void)
     rnd_backlight(g_rnd_set.night ? g_rnd_set.night_level : 100);
 }
 
-void rnd_night_toggle(void)
+void rnd_night_set(bool night)
 {
     char buf[24];
-    g_rnd_set.night = !g_rnd_set.night;
+    g_rnd_set.night = night;
     rnd_backlight_apply();
     rnd_settings_save();
 
@@ -457,39 +457,19 @@ void rnd_lang_apply(void)
     lv_async_call(lang_rebuild, NULL);
 }
 
-/* LVGL keeps counting a long press after a gesture: a swipe held a moment
- * at its end opened the menu. A swipe ends the touch for everything else. */
-void rnd_swiped(void)
+void rnd_night_swipe(lv_dir_t dir)
 {
-    last_swipe = lv_tick_get();
-    last_tap = 0;
-    lv_indev_t *in = lv_indev_get_act();
-    if (in) lv_indev_wait_release(in);
-}
-
-void rnd_tap_cb(lv_event_t *e)
-{
-    (void)e;
-    /* the end of a swipe is no tap */
-    if (last_swipe && lv_tick_elaps(last_swipe) < 400) {
-        last_tap = 0;
-        return;
-    }
-    if (last_tap && lv_tick_elaps(last_tap) < 400) {
-        last_tap = 0;
-        rnd_night_toggle();
-    } else {
-        last_tap = lv_tick_get();
-    }
+    if (dir == LV_DIR_BOTTOM) rnd_night_set(true);     /* down: darker */
+    if (dir == LV_DIR_TOP)    rnd_night_set(false);    /* up: day */
 }
 
 static void gesture_cb(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT)  ui_round_page(step_page(page, +1));
     if (dir == LV_DIR_RIGHT) ui_round_page(step_page(page, -1));
+    rnd_night_swipe(dir);
 }
 
 static void long_cb(lv_event_t *e)
@@ -505,32 +485,8 @@ static void hold_cb(lv_event_t *e)
     if (in) lv_indev_wait_release(in);
 }
 
-/* A slow drag is no gesture but no long press either: a finger that went
- * further than LONG_SLOP from where it came down holds nothing. */
-#define LONG_SLOP 40
-static lv_point_t press_at;
-
-static void press_cb(lv_event_t *e)
-{
-    lv_indev_t *in = lv_event_get_indev(e);
-    if (in) lv_indev_get_point(in, &press_at);
-}
-
-static void long_guard(lv_event_t *e)
-{
-    lv_indev_t *in = lv_event_get_indev(e);
-    if (!in) return;
-    lv_point_t p;
-    lv_indev_get_point(in, &p);
-    if (LV_ABS(p.x - press_at.x) > LONG_SLOP ||
-        LV_ABS(p.y - press_at.y) > LONG_SLOP)
-        lv_event_stop_processing(e);
-}
-
 void rnd_on_long(lv_obj_t *obj, lv_event_cb_t cb)
 {
-    lv_obj_add_event_cb(obj, press_cb, LV_EVENT_PRESSED, NULL);
-    lv_obj_add_event_cb(obj, long_guard, LV_EVENT_LONG_PRESSED, NULL);
     lv_obj_add_event_cb(obj, cb, LV_EVENT_LONG_PRESSED, NULL);
     lv_obj_add_event_cb(obj, hold_cb, LV_EVENT_LONG_PRESSED, NULL);
 }
@@ -543,7 +499,6 @@ void ui_round_create(bool boot_logo_on)
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(scr, gesture_cb, LV_EVENT_GESTURE, NULL);
     rnd_on_long(scr, long_cb);
-    lv_obj_add_event_cb(scr, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
     rnd_backlight_apply();
     rnd_contrast(g_rnd_set.hc);
 

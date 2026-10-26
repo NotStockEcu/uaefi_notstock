@@ -2,7 +2,7 @@
 
 One value at a time on a round display, swipe left / right for the next: water, oil, boost, intake, exhaust, engine
 rpm. Long press anywhere for the menu: GAUGES, DPF STATUS, DIAGNOSTICS, SETTINGS.
-Double tap: night (backlight down), double tap again: day. Data comes over CAN the same way as on the 7" dash
+Swipe down: night (backlight down), swipe up: day. Data comes over CAN the same way as on the 7" dash
 (`../notstock-dash-7inch`: rusEFI broadcast, or OBD-II plus the VW UDS
 measuring values on a T5.1), through an SN65HVD230 board on two free GPIOs.
 
@@ -168,7 +168,8 @@ stores them (`rnd_settings_save()`, the platform's NVS).
   through the shown ones only, and their dots count those; the last shown
   one cannot be hidden.
 - **NIGHT 30 %**: the backlight at night, tap for the next step (10 to
-  50 %). Night itself is a double tap on the gauges or the DPF screen; a
+  50 %). Night itself is a swipe down on the gauges or the DPF screen (up:
+  day); a
   toast says NIGHT 30 % or DAY for a second. Kept over power-off. The
   backlight is the platform's `rnd_backlight()`.
 - **SOUND**: what sounds when a regeneration starts and ends; tap for the

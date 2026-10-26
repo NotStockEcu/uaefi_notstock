@@ -309,7 +309,6 @@ static void pg_move(lv_event_t *e)
 static void pg_gesture(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT)  pg_at = (pg_at + 1) % RND_PAGES;
     if (dir == LV_DIR_RIGHT) pg_at = (pg_at + RND_PAGES - 1) % RND_PAGES;
@@ -372,7 +371,6 @@ static void lim_step(lv_event_t *e)
 static void lim_gesture(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     if (dir == LV_DIR_LEFT)  lim = (lim + 1) % RND_WARN_COUNT;
     if (dir == LV_DIR_RIGHT) lim = (lim + RND_WARN_COUNT - 1) % RND_WARN_COUNT;

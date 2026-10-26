@@ -1,7 +1,7 @@
 /* PC render of the round gauge UI (main/ui_round*.c) into a PPM, masked to
  * the round panel. Usage:
  *   sim out.ppm [page=N] [water=V] [oil=V] [boost=V] [intake=V]
- *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right]
+ *               [exhaust=V] [rpm=V] [link=0|1] [t=S] [swipe=left|right|up|down]
  *               [swipe_ms=MS]       how long the finger takes across
  *               [hold=MS]           the finger stays this long at the
  *                                   swipe's end before it lifts
@@ -397,12 +397,14 @@ int main(int argc, char **argv)
     }
     if (swipe) {
         /* a finger across the middle, then let the new page settle */
-        int dir = strcmp(swipe, "left") == 0 ? -1 : 1;
+        bool vert = strcmp(swipe, "up") == 0 || strcmp(swipe, "down") == 0;
+        int dir = strcmp(swipe, "left") == 0 || strcmp(swipe, "up") == 0 ? -1 : 1;
         int n = swipe_ms / STEP_MS;
         if (n < 1) n = 1;
         for (int i = 0; i <= n; i++) {
-            s_tx = W / 2 - dir * 150 + dir * 300 * i / n;
-            s_ty = H / 2;
+            int a = W / 2 - dir * 150 + dir * 300 * i / n;
+            s_tx = vert ? W / 2 : a;
+            s_ty = vert ? a : H / 2;
             run(STEP_MS / 1000.0f, &d);
         }
         if (hold_ms > 0) run(hold_ms / 1000.0f, &d);

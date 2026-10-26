@@ -12,7 +12,7 @@
  *
  * MULTI is a page like the gauges (it has its place in the swipe order and
  * can be hidden). On the gauge screen it is a black layer over the look,
- * shown only on its page; gestures, long press and double tap go through to
+ * shown only on its page; gestures and the long press go through to
  * the screen as on any other page.
  */
 #include "ui_round_int.h"

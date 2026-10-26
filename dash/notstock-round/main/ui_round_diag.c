@@ -216,7 +216,6 @@ static void back_cb(lv_event_t *e)
 static void gesture_cb(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
     int n = shown.busy ? 0 : shown.n;
     if (n < 2) return;

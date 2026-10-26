@@ -190,10 +190,12 @@ static bool s_auto_dpf;          /* DPF STATUS up for a regeneration */
 
 static void dpf_gesture(lv_event_t *e)
 {
-    rnd_swiped();                 /* a swipe: no tap */
-    s_auto_dpf = false;           /* left by hand: stays left */
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-    if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) go_gauges(NULL);
+    if (dir == LV_DIR_LEFT || dir == LV_DIR_RIGHT) {
+        s_auto_dpf = false;       /* left by hand: stays left */
+        go_gauges(NULL);
+    }
+    rnd_night_swipe(dir);
 }
 
 static lv_obj_t *ring(lv_obj_t *par, uint16_t from, uint16_t to,
@@ -449,7 +451,6 @@ void rnd_dpf_create(void)
     lv_obj_clear_flag(dpf, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(dpf, dpf_gesture, LV_EVENT_GESTURE, NULL);
     rnd_on_long(dpf, go_menu);
-    lv_obj_add_event_cb(dpf, rnd_tap_cb, LV_EVENT_SHORT_CLICKED, NULL);
 
     if (dstyle == ST_RETRO)    build_retro();
     else if (dstyle == ST_RED) build_red();
@@ -624,7 +625,6 @@ static void popup_click(lv_event_t *e)
 static void popup_gesture(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     popup_close();
 }
 

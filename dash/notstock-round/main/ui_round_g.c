@@ -129,7 +129,6 @@ static void show_toast(const char *t)
 static void gesture_cb(lv_event_t *e)
 {
     (void)e;
-    rnd_swiped();
     last_swipe = lv_tick_get();
     last_tap = 0;
 }
