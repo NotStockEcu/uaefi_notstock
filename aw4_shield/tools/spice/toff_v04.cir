@@ -1,0 +1,28 @@
+* turn-off time of Q3 with 22k pull-up (opto off at 1 ms)
+.model DLED D(Is=1e-18 N=1.8 Rs=2)
+.model QOPTO NPN(BF=100 Is=1e-14 VAF=80)
+.model DZ15 D(Is=1e-12 Rs=5 BV=15 IBV=5m)
+.model D4007 D(Is=7e-9 N=1.9 Rs=0.04 BV=1000)
+.model IRF9540 VDMOS(pchan Vto=-3.2 Kp=8 Rd=0.06 Rs=0.03 Cgs=1.3n Cgdmax=0.9n Cgdmin=0.15n Rb=0.02 Is=1e-12)
+VBAT sw 0 14.4
+VS gp 0 PULSE(3.3 0 1m 1u 1u 10m 20m)
+RGS gp gs 60
+R17 gs la 470
+DU4 la u4m DLED
+VU4s u4m 0 0
+FU4 0 u4b VU4s 0.5
+RU4b u4b 0 1e9
+QU4 sc u4b 0 QOPTO
+R18 sc g1 1k
+R19 sw g1 22k
+D11 g1 sw DZ15
+M3 nod g1 sw IRF9540
+LSOL nod sm 15m
+RSOL sm 0 12
+D12 0 nod D4007
+.control
+tran 1u 4m
+meas tran toff WHEN i(LSOL)=0.6 FALL=1
+meas tran vgs_on AVG v(g1) FROM=0.5m TO=0.9m
+.endc
+.end

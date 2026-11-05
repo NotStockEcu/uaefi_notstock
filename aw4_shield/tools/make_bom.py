@@ -41,6 +41,20 @@ CAT={
  "J5 Nextion +5V GND RX TX":("Konektory","Konektor JST-XH 4 pin (do DPS)","rozteč 2,5 mm, vertikální","JST B4B-XH-A","J5","",5),
  "J6 rezerva":("Konektory","Kolíková lišta 1×7","rozteč 2,54 mm (volitelné – rezerva)","libovolná (odlomit z 1×40)","J6","",5),
  "JP1 5V -> Nano (jumper)":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm","libovolná + zkratovací propojka 2,54","JP1","",5),
+ "6k8":   ("Rezistory","Rezistor 6,8 kΩ","0,25 W, 1 %, DIN 0207 – dělič vstupů 5 V -> 3 V","libovolný výrobce","6k8","",1),
+ "4k7":   ("Rezistory","Rezistor 4,7 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","4k7","",1),
+ "22k":   ("Rezistory","Rezistor 22 kΩ","0,25 W, 1 %, DIN 0207 – gate pull-up MOSFETů","libovolný výrobce","22k","",1),
+ "47k":   ("Rezistory","Rezistor 47 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","47k","",1),
+ "470":   ("Rezistory","Rezistor 470 Ω","0,25 W, 1 %, DIN 0207","libovolný výrobce","470","",1),
+ "120":   ("Rezistory","Rezistor 120 Ω","0,25 W, 1 %, DIN 0207 – zakončení CAN","libovolný výrobce","120","",1),
+ "BZX55C3V6":  ("Diody","Zenerova dioda 3,6 V","0,5 W, DO-35 – ochrana vstupů 3,3 V","BZX55C3V6 (nebo BZX79C3V6)","3V6","pozor na polaritu – proužek = katoda (K)",2),
+ "MCP2562-E/P":("Polovodiče","CAN budič MCP2562","DIP-8, VDD 5 V, VIO 3,3 V","Microchip MCP2562-E/P","MCP2562","zářez/tečka = pin 1 (čtvercový pad)",4),
+ "P1 modulu RP2350-Touch-LCD-2":("Konektory","Dutinková lišta 1×14","rozteč 2,54 mm, výška ~8,5 mm – pro lištu P1 modulu","Sullins PPTC141LFBN-RC","MODUL P1","osadit kolmo, obě lišty rovnoběžně (nejlépe s modulem zasunutým)",5),
+ "P2 modulu RP2350-Touch-LCD-2":("Konektory","Dutinková lišta 1×14","rozteč 2,54 mm, výška ~8,5 mm – pro lištu P2 modulu","Sullins PPTC141LFBN-RC","MODUL P2","osadit kolmo, obě lišty rovnoběžně (nejlépe s modulem zasunutým)",5),
+ "J6 rezerva GPIO5 / 3V3 / GND":("Konektory","Kolíková lišta 1×3","rozteč 2,54 mm (volitelné – rezerva)","odlomit z lišty 1×40","J6","",5),
+ "JP1 5V -> modul (jumper)":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm – sundat při programování modulu přes USB","odlomit z lišty 1×40 + propojka","JP1","",5),
+ "JP2 zakončení CAN 120R":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm – zakončení CAN (jen na konci sběrnice)","odlomit z lišty 1×40 + propojka","JP2","",5),
+ "J4 CAN-H / CAN-L":("Konektory","Svorkovnice 2 pól","rozteč 5,08 mm, do DPS – CAN z rusEFI","Phoenix Contact MKDS 1,5/2-5,08 (1715721)","J4","otvory pro vodiče ven z desky",8),
  "Arduino Nano":("Moduly","Arduino Nano (ATmega328P, 5 V)","zasouvá se do patic (viz níže)","Arduino Nano nebo klon s CH340","NANO","USB směrem k pravé hraně desky",9),
 }
 
@@ -59,6 +73,11 @@ DK={
  "J1 +12V / PGND":("Phoenix Contact","1715721","MKDS 1,5/2-5,08"),"J2 SOL1-3 / TCU1-3":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),
  "J3 UP DOWN READY LOCKUP":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),"J5 Nextion +5V GND RX TX":("JST","B4B-XH-A(LF)(SN)",""),
  "Arduino Nano":("Arduino","A000005","originál; klon s CH340 je levnější, ale DigiKey ho nevede"),
+ "6k8":("Yageo","MFR-25FBF52-6K8",""),"4k7":("Yageo","MFR-25FBF52-4K7",""),"22k":("Yageo","MFR-25FBF52-22K",""),
+ "47k":("Yageo","MFR-25FBF52-47K",""),"470":("Yageo","MFR-25FBF52-470R",""),"120":("Yageo","MFR-25FBF52-120R",""),
+ "BZX55C3V6":("Vishay","BZX55C3V6-TAP",""),"MCP2562-E/P":("Microchip","MCP2562-E/P",""),
+ "P1 modulu RP2350-Touch-LCD-2":("Sullins","PPTC141LFBN-RC","dutinková lišta 1x14"),"P2 modulu RP2350-Touch-LCD-2":("Sullins","PPTC141LFBN-RC","dutinková lišta 1x14"),
+ "J4 CAN-H / CAN-L":("Phoenix Contact","1715721","MKDS 1,5/2-5,08"),
 }
 ALT={ # MPN -> náhrada (stejná hodnota, pouzdro a rozteč)
  "ECA-1EM100":"Nichicon UVR1E100MDD",
@@ -71,20 +90,15 @@ ALT={ # MPN -> náhrada (stejná hodnota, pouzdro a rozteč)
  "37215000411":"libovolná pojistka TR5 5 A T",
 }
 DK_EXTRA=[ # (Manufacturer, MPN, qty/board, ref, description, note)
- ("Sullins","PPTC151LFBN-RC",2,"U2 patice","Dutinková lišta 1×15, 2,54 mm (patice Nana)",""),
- ("Sullins","PRPC040SAAN-RC",1,"J6, JP1","Kolíková lišta 1×40, 2,54 mm (odlomit 1×7 a 1×2)",""),
- ("Sullins","SPC02SYAN",1,"JP1","Zkratovací propojka 2,54 mm",""),
+ ("Sullins","PRPC040SAAN-RC",1,"J6, JP1, JP2","Kolíková lišta 1×40, 2,54 mm (odlomit 1×3 a 2× 1×2)",""),
+ ("Sullins","SPC02SYAN",2,"JP1, JP2","Zkratovací propojka 2,54 mm",""),
  ("Littelfuse","37215000411",1,"F1 (pojistka)","Pojistka TR5 5 A, pomalá","OVĚŘIT – řada 372, 5 A T"),
- ("JST","XHP-4",1,"kabel J5","Pouzdro JST-XH 4 pin (kabelová část)",""),
- ("JST","SXH-001T-P0.6",4,"kabel J5","Krimpovací kontakt JST-XH",""),
 ]
-STEPS={1:"1. rezistory",2:"2. diody",3:"3. keramické C a ferity",4:"4. optočleny, tranzistor, LED",5:"5. lišty, patice, JST",6:"6. elektrolyty",7:"7. TO-220, stabilizátor, patice pojistky",8:"8. relé a svorkovnice",9:"9. Arduino Nano (zasunout)"}
+STEPS={1:"1. rezistory",2:"2. diody",3:"3. keramické C a ferity",4:"4. optočleny, tranzistory, CAN budič, LED",5:"5. lišty a dutinkové lišty pro modul",6:"6. elektrolyty",7:"7. TO-220, stabilizátor, patice pojistky",8:"8. relé a svorkovnice",9:"9. modul RP2350 (zasunout)"}
 EXTRA=[ # items not on the schematic, per board
- ("Konektory","Dutinková lišta 1×15 (patice pro Nano)","rozteč 2,54 mm","libovolná",2,"U2 (patice)"),
  ("Mechanické","Pojistka TR5 5 A, pomalá (T)","TR5, rozteč 5,08 mm","Littelfuse řada 372, 5 A T",1,"do F1"),
- ("Konektory","Kabelová část JST-XH 4 pin","pouzdro + 4 kontakty","JST XHP-4 + 4× SXH-001T-P0.6",1,"kabel k displeji"),
- ("Moduly","Displej Nextion 2,4″","UART, 5 V","Nextion NX3224T024 (nebo NX4024T032 3,2″)",1,"mimo desku, přes J5"),
- ("Mechanické","Distanční sloupek M3 + šroub","pro 4 díry M3 v rozích","libovolné, např. 10 mm",4,"H1–H4"),
+ ("Moduly","Waveshare RP2350-Touch-LCD-2","řídicí modul s displejem 2″ 240×320","Waveshare (e-shopy, Waveshare.com)",1,"J7 + J8"),
+ ("Mechanické","Distanční sloupek M3 + šroub","pro 3 díry M3","libovolné, např. 10 mm",3,"H1–H3"),
 ]
 
 groups={}
@@ -109,7 +123,7 @@ F="Arial"
 thin=Side(style="thin",color="BBBBBB"); B=Border(left=thin,right=thin,top=thin,bottom=thin)
 hdr_fill=PatternFill("solid",fgColor="1F3864"); grp_fill=PatternFill("solid",fgColor="D9E1F2"); inp_fill=PatternFill("solid",fgColor="FFFF00")
 wb=Workbook(); ws=wb.active; ws.title="Objednávka"
-ws["A1"]="AW4 shield v0.3 (THT, 100×100 mm) – seznam součástek k objednání"; ws["A1"].font=Font(name=F,bold=True,size=14)
+ws["A1"]="AW4 shield v0.4 (THT, 100×100 mm, RP2350-Touch-LCD-2) – seznam součástek k objednání"; ws["A1"].font=Font(name=F,bold=True,size=14)
 ws["A2"]="Počet desek:"; ws["A2"].font=Font(name=F,bold=True)
 ws["C2"]=1; ws["C2"].font=Font(name=F,bold=True,color="0000FF"); ws["C2"].fill=inp_fill; ws["C2"].border=B
 ws["C2"].comment=Comment("Zadejte, kolik desek budete osazovat. Sloupec 'Ks celkem' se přepočítá.","AW4")
@@ -180,7 +194,7 @@ for i,h in enumerate(H3,1):
     c=ws3.cell(row=4,column=i,value=h); c.font=Font(name=F,bold=True,color="FFFFFF"); c.fill=hdr_fill; c.border=B; c.alignment=Alignment(horizontal="center",wrap_text=True)
 dkrows={}
 for p in parts:
-    if p["val"] in ("JP1 5V -> Nano (jumper)","J6 rezerva"): continue   # z odlamovací lišty (DK_EXTRA)
+    if p["val"] in ("JP1 5V -> Nano (jumper)","J6 rezerva","JP1 5V -> modul (jumper)","JP2 zakončení CAN 120R","J6 rezerva GPIO5 / 3V3 / GND"): continue   # z odlamovací lišty (DK_EXTRA)
     man,mpn,note=DK[p["val"]]; c=CAT[p["val"]]
     key=(mpn,man)
     if key not in dkrows: dkrows[key]=[c[1]+" – "+c[2],note,[],c[0] in ("Rezistory","Diody") or p["val"] in ("100nF","600R@100MHz")]
@@ -197,7 +211,7 @@ for mpn,man,q,ref,desc,note,small in lines:
         c=ws3.cell(row=r,column=i,value=v); c.font=Font(name=F,size=10,color=("C00000" if (i==7 and "OVĚŘIT" in str(v)) else "000000")); c.border=B; c.alignment=Alignment(vertical="top",wrap_text=True)
     ws3.cell(row=r,column=4,value=f"=C{r}*'Objednávka'!$C$2"+("+'Objednávka'!$G$2" if small else "")).font=Font(name=F,size=10,bold=True)
     r+=1
-ws3.cell(row=r+1,column=1,value="Mimo DigiKey: displej Nextion NX3224T024 (např. přímo Itead / Nextion, AliExpress, Laskakit), distanční sloupky M3.").font=Font(name=F,italic=True,size=9)
+ws3.cell(row=r+1,column=1,value="Mimo DigiKey: modul Waveshare RP2350-Touch-LCD-2 (máte), distanční sloupky M3.").font=Font(name=F,italic=True,size=9)
 for i,w in enumerate([24,16,9,9,30,58,34,34],1): ws3.column_dimensions[get_column_letter(i)].width=w
 ws3.freeze_panes="A5"
 with open(OUT.replace("bom_objednavka.xlsx","digikey_bom.csv"),"w",newline="",encoding="utf-8") as f:

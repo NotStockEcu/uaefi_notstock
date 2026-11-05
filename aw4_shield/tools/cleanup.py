@@ -35,6 +35,16 @@ for it in range(8):
     out.append(s[last:]); open(PCB,"w").write("".join(out))
     print("pass",it,"removed",len(spans))
     subprocess.run(["chroot","/opt/kicad10/rootfs","/bin/sh","-c","cd /work/pcb && HOME=/tmp python3 /work/refill.py aw4_shield.kicad_pcb >/dev/null 2>&1"])
+# starved thermal reliefs: those pads are track-connected -> keep them out of the pour
+r=drc()
+pads=set()
+for v in r.get("violations",[]):
+    if v["type"]=="starved_thermal":
+        for item in v["items"]:
+            if "pad" in item.get("description","").lower(): pads.add(item["uuid"])
+if pads:
+    subprocess.run(["cp","/home/user/uaefi_notstock/aw4_shield/tools/fix_starved.py","/opt/kicad10/rootfs/work/fix_starved.py"])
+    subprocess.run(["chroot","/opt/kicad10/rootfs","/bin/sh","-c","cd /work/pcb && HOME=/tmp python3 /work/fix_starved.py aw4_shield.kicad_pcb "+" ".join(sorted(pads))+" 2>/dev/null"])
 r=drc()
 from collections import Counter
 print(Counter(v["type"] for v in r.get("violations",[])+r.get("schematic_parity",[]))," unconnected:",len(r.get("unconnected_items",[])))

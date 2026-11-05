@@ -394,11 +394,7 @@
       },
       {
         "netclass": "SUPPLY",
-        "pattern": "/+5V_DISP"
-      },
-      {
-        "netclass": "SUPPLY",
-        "pattern": "/NANO_5V"
+        "pattern": "/MOD_5V"
       },
       {
         "netclass": "SUPPLY",
