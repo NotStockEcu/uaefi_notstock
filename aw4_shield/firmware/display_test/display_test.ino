@@ -3,8 +3,8 @@
 // Zapojení (stejné piny jako na desce, konektor J5):
 //   Nextion +5V (červený) -> Nano 5V
 //   Nextion GND (černý)   -> Nano GND
-//   Nextion TX  (žlutý)   -> Nano D2   (Nano přijímá)
-//   Nextion RX  (modrý)   -> Nano D3   (Nano vysílá)
+//   Nextion TX  (modrý)   -> Nano D2   (Nano přijímá)
+//   Nextion RX  (žlutý)   -> Nano D3   (Nano vysílá)
 //   Barvy vodičů ověřte podle popisu na konektoru displeje (+5V / TX / RX / GND).
 //
 // Na displeji musí být nahraný projekt podle nextion/README.md (stránka page0, pole t0, t1, t2).

@@ -61,8 +61,8 @@ Bez desky, jen Nano a displej:
 |---|---|
 | +5V (červený) | 5V |
 | GND (černý) | GND |
-| TX (žlutý) | **D2** |
-| RX (modrý) | **D3** |
+| TX (modrý) | **D2** |
+| RX (žlutý) | **D3** |
 
 Barvy vodičů ověřte podle popisu u konektoru na displeji (+5V / TX / RX / GND). TX displeje jde na D2 (Nano přijímá), RX displeje na D3 (Nano vysílá).
 
