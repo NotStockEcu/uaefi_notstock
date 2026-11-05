@@ -44,7 +44,11 @@ bool pressed(Button &b) {
   return false;
 }
 
-// Nextion: textové pole "t0" s číslem stupně, "t1" pro lockup; příkaz končí třemi 0xFF.
+// Nextion (projekt podle nextion/README.md): stránka page0,
+//   t0 = velké číslo stupně, t1 = "LOCKUP", t2 = režim ("TCU" / "MANUAL").
+// Příkaz končí třemi 0xFF.
+const uint16_t COL_GREY = 33808, COL_GREEN = 2016;   // barvy RGB565
+
 void nextionSend(const char *cmd) {
   disp.print(cmd);
   disp.write(0xFF); disp.write(0xFF); disp.write(0xFF);
@@ -52,10 +56,13 @@ void nextionSend(const char *cmd) {
 
 void updateDisplay() {
   char buf[24];
+  snprintf(buf, sizeof(buf), "t0.pco=%u", ready ? COL_GREEN : COL_GREY);
+  nextionSend(buf);
   if (ready) snprintf(buf, sizeof(buf), "t0.txt=\"%u\"", gear);
   else       snprintf(buf, sizeof(buf), "t0.txt=\"-\"");
   nextionSend(buf);
   nextionSend(ready && lockup ? "t1.txt=\"LOCKUP\"" : "t1.txt=\"\"");
+  nextionSend(ready ? "t2.txt=\"MANUAL\"" : "t2.txt=\"TCU\"");
 }
 
 void applyOutputs() {

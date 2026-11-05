@@ -24,7 +24,9 @@ Deska (shield) s Arduinem Nano, která:
 | `docs/aw4_shield.pdf` | přehledové / vysvětlující schéma (3 strany) |
 | `docs/aw4_shield_pcb.pdf`, `docs/pcb_*.png` | výkres DPS po vrstvách a 3D náhledy |
 | `bom.csv` | strojový seznam součástek ze schématu |
-| `firmware/aw4_controller.ino` | základní firmware (doladí se později) |
+| `firmware/aw4_controller.ino` | hlavní firmware |
+| `firmware/display_test/` | test displeje Nextion s Nanem na stole |
+| `nextion/README.md` | **návod: projekt pro Nextion Editor, fonty, nahrání přes microSD, zapojení testu** |
 | `tools/` | skripty, kterými se schéma i deska generují |
 
 ## Podle servisního manuálu AW-4

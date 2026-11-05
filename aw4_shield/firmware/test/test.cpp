@@ -1,7 +1,9 @@
 #include "fw.cpp"
 void run(int ms){ for(int i=0;i<ms;i++){ now++; loop(); } }
 void press(int p){ pinv[p]=1; run(60); pinv[p]=0; run(60); }
-void dump(const char*t){ printf("%-34s relay(D8)=%d  S1=%d S2=%d S3=%d  gear=%d  disp='%s'\n",t,pinv[8],pinv[9],pinv[10],pinv[11],gear, disp.msgs.empty()?"":disp.msgs[disp.msgs.size()-2].c_str()); }
+std::string last(const char*pre){ for(size_t i=disp.msgs.size();i-->0;) if(disp.msgs[i].rfind(pre,0)==0) return disp.msgs[i]; return ""; }
+size_t count(const char*pre){ size_t n=0; for(auto&m:disp.msgs) if(m.rfind(pre,0)==0) n++; return n; }
+void dump(const char*t){ printf("%-34s relay(D8)=%d  S1=%d S2=%d S3=%d  gear=%d  disp='%s' '%s' '%s'\n",t,pinv[8],pinv[9],pinv[10],pinv[11],gear, last("t0.txt").c_str(), last("t1.txt").c_str(), last("t2.txt").c_str()); }
 int fails=0;
 void expect(bool c,const char*m){ if(!c){printf("  FAIL: %s\n",m);fails++;} }
 int main(){
@@ -12,6 +14,7 @@ int main(){
   // order: solenoids before relay
   int iRel=-1,iS1=-1; for(size_t i=0;i<log_.size();i++){ if(log_[i]=="D8=0")iRel=i; if(log_[i]=="D9=1")iS1=i; }
   expect(iS1>=0 && iRel>iS1,"outputs set before relay pulls in");
+  expect(last("t2.txt")=="t2.txt=\"MANUAL\"","display shows MANUAL when READY on");
   press(4); dump("UP -> 2"); expect(gear==2&&pinv[9]==1&&pinv[10]==1,"2nd: S1 on S2 on");
   pinv[7]=1; run(60); dump("LOCKUP switch on in 2nd"); expect(pinv[11]==0,"no lockup in 2nd");
   press(4); dump("UP -> 3"); expect(gear==3&&pinv[9]==0&&pinv[10]==1&&pinv[11]==1,"3rd: S1 off S2 on, lockup on");
@@ -25,7 +28,8 @@ int main(){
   expect(pinv[8]==1&&pinv[9]==0&&pinv[10]==0&&pinv[11]==0,"READY off: relay off, outputs off");
   iRel=-1; int iOff=-1; for(size_t i=0;i<log_.size();i++){ if(log_[i]=="D8=1")iRel=i; if(log_[i]=="D9=0")iOff=i; }
   expect(iRel>=0 && iOff>iRel,"relay released before outputs drop");
-  size_t n=disp.msgs.size(); run(2000); printf("display messages in 2 s idle: %zu\n", disp.msgs.size()-n);
-  expect(disp.msgs.size()-n>=6 && disp.msgs.size()-n<=10,"periodic display refresh ~0.5 s");
+  size_t n=count("t0.txt="); run(2000); printf("display updates in 2 s idle: %zu\n", count("t0.txt=")-n);
+  expect(count("t0.txt=")-n>=3 && count("t0.txt=")-n<=5,"periodic display refresh ~0.5 s");
+  expect(last("t2.txt")=="t2.txt=\"TCU\"" && last("t0.txt")=="t0.txt=\"-\"","display shows TCU mode when READY off");
   printf(fails? "\n%d FAILED\n":"\nALL CHECKS PASSED\n",fails); return fails;
 }
