@@ -26,6 +26,8 @@ Deska (shield) s Arduinem Nano, která:
 | `bom.csv` | strojový seznam součástek ze schématu |
 | `firmware/aw4_controller.ino` | hlavní firmware |
 | `firmware/display_test/` | test displeje Nextion s Nanem na stole |
+| `firmware/aw4_bench/` | simulátor celého ovladače na stole – ovládání písmeny ze Serial Monitoru, stav na displeji |
+| `firmware/nextion_diag/` | diagnostika spojení s displejem (prohozené TX/RX, rychlost) |
 | `nextion/README.md` | **návod: projekt pro Nextion Editor, fonty, nahrání přes microSD, zapojení testu** |
 | `tools/` | skripty, kterými se schéma i deska generují |
 
