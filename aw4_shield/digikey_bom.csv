@@ -5,7 +5,7 @@ Quantity,Manufacturer Part Number,Manufacturer,Customer Reference,Description
 1,SMBJ24A,Littelfuse,D2,"Transil (TVS) 24 V, 600 W, SMB"
 1,56000001009,Littelfuse,F1,Patice pojistky TR5
 1,TSR 1-2450,Traco Power,U1,Spínaný stabilizátor 12 → 5 V / 1 A
-2,1984617,Phoenix Contact,J1 J4,"Svorkovnice 2 pól, rozteč 3,5 mm"
+3,1984617,Phoenix Contact,J1 J4 J5,"Svorkovnice 2 pól, rozteč 3,5 mm"
 2,1984659,Phoenix Contact,J2 J3,"Svorkovnice 6 pól, rozteč 3,5 mm"
 3,G5LE-1 DC12,Omron,K1 K2 K3,"Relé 12 V SPDT, 10 A"
 1,37215000411,Littelfuse,do patice F1,Pojistka TR5 5 A (T)

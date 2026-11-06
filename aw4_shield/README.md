@@ -1,6 +1,6 @@
 # AW4 shield v0.5 – ovladač automatické převodovky Aisin AW4 s modulem RP2350-Touch-LCD-2
 
-Deska **76 × 90 mm**, SMD součástky osadí **JLCPCB** (Economic PCBA), ručně se pájí vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka) a dva SMD díly s velkými pady (C1, D2). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasouvá **ze spodní strany desky** (displej ven, na výšku, vlevo nahoře) – relé, svorkovnice a měnič jsou na druhé straně, takže displej může být v rovné přední stěně krabičky. Všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
+Deska **100 × 100 mm**, SMD součástky osadí **JLCPCB** (Economic PCBA), ručně se pájí vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka) a dva SMD díly s velkými pady (C1, D2). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasouvá **ze spodní strany desky** (displej ven, na výšku, vlevo nahoře) – relé, svorkovnice a měnič jsou na druhé straně, takže displej může být v rovné přední stěně krabičky. Všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
 
 * při spínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
@@ -133,7 +133,7 @@ Modul se zasouvá **ze spodní strany desky, displejem ven, na výšku, USB-C k 
 
 ## Deska plošných spojů
 
-* **76 × 90 mm, 2 vrstvy, 1,6 mm, měď 1 oz**, 3× díra M3. Součástky jen na horní straně, spodní strana patří modulu s displejem.
+* **100 × 100 mm, 2 vrstvy, 1,6 mm, měď 1 oz**, 3× díra M3. Součástky jen na horní straně, spodní strana patří modulu s displejem. Při pohledu ze strany displeje je modul vpravo nahoře. LED READY je na horní straně (ze strany displeje není vidět – stav ukazuje displej).
 * Šířky cest: +12 V **1,5 mm** (k MOSFETům), solenoidy/TCU **1,0 mm**, +12V_AUX/+5V/GND/PGND **0,6 mm**, signály 0,3 mm. Spodní vrstva: rozlitá měď PGND (výkonová část vpravo) a GND (logika vlevo), spojené jen přes R2. Při 2,6 A se cesta +12 V ohřeje o ~6 °C, cesta solenoidu (1,3 A) o ~3 °C. Výkonové sítě přecházejí mezi vrstvami jen přes prokovy 0,7–0,8 mm (průřez pokovení větší než průřez cesty).
 * Na potisku jsou u ručně pájených dílů označení a hodnoty, u svorkovnic názvy svorek, obrys modulu; SMD díly jsou v osazovacím výkresu.
 * Rozvedeno autorouterem (Freerouting). **KiCad 10.0.6: DRC 0 chyb, 0 nepropojených, 0 rozdílů proti schématu, ERC 0 chyb / 0 varování.**
