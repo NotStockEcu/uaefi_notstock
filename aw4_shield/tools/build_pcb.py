@@ -12,7 +12,7 @@ parts={p["ref"]:p for p in d["parts"]}
 FPDIR="/usr/share/kicad/footprints/"
 # placement: ref -> (x, y, rot)   v0.5: 76 x 90 mm, modul na výšku vlevo nahoře na SPODNÍ straně (displej ven), USB-C k horní hraně, svorkovnice dole
 X0,Y0,X1,Y1=100,100,200,200
-DX=14  # pravá výkonová část posunutá o 14 mm (kanál mezi modulem a relé)
+DX=20  # pravá výkonová část posunutá o 20 mm (kanál mezi modulem a relé)
 P={}
 # ---- modul RP2350-Touch-LCD-2 ze SPODNÍ strany: deska 35 x 48,2 mm na x 100.5-135.5, y 100-148.2.
 # Při pohledu na displej (zespodu) je P1 vlevo, při pohledu shora (přes desku) je P1 vpravo. Pin 1 dole, USB-C nahoře.
@@ -61,13 +61,13 @@ for r,(x,y,a) in list(P.items()):
 # čtení solenoidů SOL1-3: svisle v kanálu mezi lištou J7 a relé, u každého relé jeho kanál
 for n,(Ra,Rb,C,D) in enumerate([("R30","R31","C10","D17"),("R32","R33","C11","D18"),("R34","R35","C12","D19")]):
     yc=109.0+17.5*n
-    P[Ra]=(149.6,yc-5.5,90); P[Rb]=(149.6,yc-2.0,90); P[C]=(149.6,yc+1.5,90); P[D]=(149.6,yc+5.5,90)
+    P[Ra]=(154.0,yc-5.5,90); P[Rb]=(154.0,yc-2.0,90); P[C]=(154.0,yc+1.5,90); P[D]=(154.0,yc+5.5,90)
 # optočleny a budič relé: do kanálu mezi lištou J7 (P1) a relé (mimo prostor modulu)
-for i,u in enumerate(["U4","U5","U6","U3"]): P[u]=(141.75,103.2+6.4*i,0)
+for i,u in enumerate(["U4","U5","U6","U3"]): P[u]=(143.5,103.2+6.4*i,0)
 for row,(y,refs) in enumerate([(128.6,["R17","R20","R23"]),(131.8,["R13","R26","R27"])]):
-    for k,r in enumerate(refs): P[r]=(138.2+3.6*k,y,0)
-P["Q6"]=(138.6,135.6,0); P["R14"]=(142.4,135.4,0); P["R15"]=(146.0,135.4,0)
-P["Q2"]=(138.6,139.6,0); P["D9"]=(143.6,139.4,0)
+    for k,r in enumerate(refs): P[r]=(139.7+3.6*k,y,0)
+P["Q6"]=(140.1,135.6,0); P["R14"]=(143.9,135.4,0); P["R15"]=(147.5,135.4,0)
+P["Q2"]=(140.1,139.6,0); P["D9"]=(145.1,139.4,0)
 missing=[r for r in parts if r not in P]; assert not missing, missing
 
 b=pcbnew.CreateEmptyBoard()
@@ -124,8 +124,8 @@ fab(118,146.5,"MODUL RP2350-Touch-LCD-2 – ze spodní strany, USB-C nahoru",0.9
 def bsilk(x,y,t,size):
     tx=pcbnew.PCB_TEXT(b); tx.SetText(t); tx.SetPosition(pcbnew.VECTOR2I_MM(x,y)); tx.SetLayer(pcbnew.B_SilkS); tx.SetMirrored(True)
     tx.SetTextSize(pcbnew.VECTOR2I_MM(size,size)); tx.SetTextThickness(MM(size*0.15)); b.Add(tx)
-bsilk(172,179.6,"AW4 shield v0.5",1.6); bsilk(172,182.1,"SMD: JLC, THT: rucne",1.0)
-bsilk(172,184.0,"Aisin AW-4 / RP2350-Touch-LCD-2 / CAN",0.9); bsilk(172,185.8,"READY vyp. = puvodni TCU",0.9)
+bsilk(178,179.6,"AW4 shield v0.5",1.6); bsilk(178,182.1,"SMD: JLC, THT: rucne",1.0)
+bsilk(178,184.0,"Aisin AW-4 / RP2350-Touch-LCD-2 / CAN",0.9); bsilk(178,185.8,"READY vyp. = puvodni TCU",0.9)
 bsilk(118,122,"MODUL RP2350-Touch-LCD-2",1.0); bsilk(118,124.2,"displejem ven, USB-C nahoru",0.8)
 # potisk: u ručně pájených dílů hodnota/označení, SMD díly (osazuje JLC) jen ve výkresu (F.Fab)
 SHORT={'5A':'5A','TSR 1-2450 (12V->5V 1A)':'TSR1-2450'}
