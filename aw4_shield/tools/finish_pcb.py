@@ -2,11 +2,6 @@ import pcbnew, sys
 MM=pcbnew.FromMM
 b=pcbnew.LoadBoard(sys.argv[1])
 ok=pcbnew.ImportSpecctraSES(b, sys.argv[2]); print("import SES", ok)
-# GND pins of the Nano are connected by tracks; keep them out of the pour (avoids starved thermals)
-for fp in b.GetFootprints():
-    if fp.GetReference()=="U2":
-        for pad in fp.Pads():
-            if pad.GetNetname()=="/GND": pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_NONE)
 def zone(netname, layer, pts, prio=0):
     z=pcbnew.ZONE(b); z.SetLayer(layer); z.SetNet(b.FindNet("/"+netname))
     ol=z.Outline(); ol.NewOutline()
@@ -14,8 +9,9 @@ def zone(netname, layer, pts, prio=0):
     z.SetLocalClearance(MM(0.4)); z.SetMinThickness(MM(0.3)); z.SetAssignedPriority(prio)
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL); z.SetThermalReliefGap(MM(0.4)); z.SetThermalReliefSpokeWidth(MM(0.6))
     b.Add(z); return z
-zone("PGND", pcbnew.B_Cu, [(100.5,100.5),(171,100.5),(171,172.5),(100.5,172.5)])
-zone("GND",  pcbnew.B_Cu, [(100.5,174),(171,174),(171,118),(199.5,118),(199.5,199.5),(100.5,199.5)])
+# v0.5: PGND (výkonová část vpravo a dole) / GND (logika pod modulem a vlevo dole), spojené jen přes R2
+zone("PGND", pcbnew.B_Cu, [(137,100.5),(175.5,100.5),(175.5,181.5),(132.8,181.5),(132.8,156),(137,156)])
+zone("GND",  pcbnew.B_Cu, [(100.5,100.5),(136.4,100.5),(136.4,155.4),(132.2,155.4),(132.2,181.5),(100.5,181.5)])
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
 pcbnew.SaveBoard(sys.argv[1], b)
 tr=[t for t in b.GetTracks()]

@@ -365,10 +365,6 @@
         "pattern": "/+12V_SW"
       },
       {
-        "netclass": "POWER",
-        "pattern": "/PGND"
-      },
-      {
         "netclass": "SOLENOID",
         "pattern": "/SOL?_OUT"
       },
@@ -383,6 +379,14 @@
       {
         "netclass": "SUPPLY",
         "pattern": "/GND"
+      },
+      {
+        "netclass": "SUPPLY",
+        "pattern": "/PGND"
+      },
+      {
+        "netclass": "SUPPLY",
+        "pattern": "/+12V_AUX"
       },
       {
         "netclass": "SUPPLY",

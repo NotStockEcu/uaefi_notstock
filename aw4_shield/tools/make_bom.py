@@ -1,221 +1,157 @@
-import json, re, sys
+# AW4 shield v0.5 – podklady k objednání:
+#   fab/jlc_bom.csv, fab/jlc_cpl.csv  ... osazení SMD v JLCPCB (BOM + pozice)
+#   bom_objednavka.xlsx               ... listy: JLC SMD, Ruční osazení, Postup, DigiKey
+#   digikey_bom.csv                   ... ručně pájené díly pro DigiKey BOM Manager
+# Použití: make_bom.py parts.json pozice.csv výstupní_složka
+import json, csv, re, sys, collections, urllib.request
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from openpyxl.comments import Comment
 
-parts=json.load(open(sys.argv[1]))["parts"]
-OUT=sys.argv[2]
-# value -> (group, name, spec, example part, label on silkscreen, polarity note, assembly step)
-CAT={
- "330":   ("Rezistory","Rezistor 330 Ω","0,25 W, 1 %, metalizovaný, DIN 0207 (montáž nastojato, rozteč 2,54)","libovolný výrobce","330","",1),
- "220":   ("Rezistory","Rezistor 220 Ω","0,25 W, 1 %, DIN 0207","libovolný výrobce","220","",1),
- "1k":    ("Rezistory","Rezistor 1 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","1k","",1),
- "2k2":   ("Rezistory","Rezistor 2,2 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","2k2","",1),
- "10k":   ("Rezistory","Rezistor 10 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","10k","",1),
- "100k":  ("Rezistory","Rezistor 100 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","100k","",1),
- "100R":  ("Rezistory","Rezistor 100 Ω","0,25 W, 1 %, DIN 0207","libovolný výrobce","100R","",1),
- "0R":    ("Rezistory","Rezistor 0 Ω (propojka)","0,25 W, DIN 0207 – spojuje PGND a GND (lze nahradit drátkem)","libovolný výrobce","0R","",1),
- "BZX55C12":   ("Diody","Zenerova dioda 12 V","0,5 W, DO-35","BZX55C12 (nebo BZX79C12)","12V","pozor na polaritu – proužek = katoda (K)",2),
- "BZX55C15":   ("Diody","Zenerova dioda 15 V","0,5 W, DO-35","BZX55C15 (nebo BZX79C15)","15V","pozor na polaritu – proužek = katoda (K)",2),
- "BZX55C5V6":  ("Diody","Zenerova dioda 5,6 V","0,5 W, DO-35 – ochrana vstupů","BZX55C5V6 (nebo BZX79C5V6)","5V6","pozor na polaritu – proužek = katoda (K)",2),
- "1N4148":     ("Diody","Dioda 1N4148","DO-35","1N4148","4148","pozor na polaritu – proužek = katoda (K)",2),
- "1N4007":     ("Diody","Dioda 1N4007","1 A / 1000 V, DO-41 – flyback solenoidů","1N4007","4007","pozor na polaritu – proužek = katoda (K)",2),
- "P6KE27A":    ("Diody","Transil (TVS) 27 V","600 W, jednosměrný, DO-15","P6KE27A","P6KE27","pozor na polaritu – proužek = katoda (K)",2),
- "100nF":      ("Kondenzátory","Kondenzátor 100 nF","keramický, 50 V, X7R, rozteč 2,54 mm","např. KEMET C320C104K5R5TA","100n","",3),
- "600R@100MHz":("Kondenzátory","Feritová perla","axiální, ≥ 600 Ω @ 100 MHz, ≥ 1 A (montáž nastojato)","např. Fair-Rite 2743019447","FB","",3),
- "10uF 25V":   ("Kondenzátory","Elektrolyt 10 µF / 25 V","Ø5 mm, rozteč 2,0 mm","Panasonic ECA-1EM100","10u","polarita! + na označený pad",6),
- "100uF 16V":  ("Kondenzátory","Elektrolyt 100 µF / 16 V","Ø6,3 mm, rozteč 2,5 mm, 105 °C","Panasonic EEU-FR1C101","100u","polarita! + na označený pad",6),
- "470uF 25V":  ("Kondenzátory","Elektrolyt 470 µF / 25 V","Ø10 mm, rozteč 5 mm, 105 °C, low-ESR","Panasonic EEU-FR1E471","470u","polarita! + na označený pad",6),
- "PC817":      ("Polovodiče","Optočlen PC817","DIP-4","PC817C (Sharp / Everlight / Lite-On)","PC817","tečka = pin 1 (u čtvercového padu)",4),
- "BC337":      ("Polovodiče","Tranzistor NPN BC337","TO-92, pinout C-B-E (pad 1 = C)","BC337-40","BC337","plochá strana podle potisku; nožičky trochu roztáhnout (rozteč 2,54)",4),
- "zelená READY":("Polovodiče","LED zelená 3 mm","indikace READY","libovolná 3 mm","LED","polarita! kratší nožička / plochá strana = katoda (čtvercový pad)",4),
- "IRF4905":    ("Polovodiče","P-MOSFET IRF4905","TO-220 – ochrana proti přepólování","IRF4905PBF (Infineon)","IRF4905","kovová plocha podle potisku",7),
- "IRF9540N":   ("Polovodiče","P-MOSFET IRF9540N","TO-220 – spínání solenoidů","IRF9540NPBF (Infineon)","9540N","kovová plocha podle potisku",7),
- "TSR 1-2450 (12V->5V 1A)":("Polovodiče","Spínaný stabilizátor 5 V / 1 A","formát 7805 (SIP-3), vstup 6,5–36 V","Traco TSR 1-2450","TSR1-2450","pin 1 = Vin (čtvercový pad)",7),
- "G5LE-1 12V SPDT":("Mechanické","Relé 12 V SPDT","kontakty 10 A, cívka 12 V","Omron G5LE-1 DC12 (pinově kompatibilní: Songle SRD-12VDC-SL-C)","K1–K3","",8),
- "5A":         ("Mechanické","Patice pro pojistku TR5","rozteč 5,08 mm","Littelfuse 560 (TR5 patice)","F1","",7),
- "J1 +12V / PGND":("Konektory","Svorkovnice 2 pól","rozteč 5,08 mm, do DPS","Phoenix Contact MKDS 1,5/2-5,08 (1715721)","J1","otvory pro vodiče ven z desky",8),
- "J2 SOL1-3 / TCU1-3":("Konektory","Svorkovnice 6 pól","rozteč 5,08 mm, do DPS","Phoenix Contact MKDS 1,5/6-5,08 (1715763)","J2","otvory pro vodiče ven z desky",8),
- "J3 UP DOWN READY LOCKUP":("Konektory","Svorkovnice 6 pól","rozteč 5,08 mm, do DPS","Phoenix Contact MKDS 1,5/6-5,08 (1715763)","J3","otvory pro vodiče ven z desky",8),
- "J5 Nextion +5V GND RX TX":("Konektory","Konektor JST-XH 4 pin (do DPS)","rozteč 2,5 mm, vertikální","JST B4B-XH-A","J5","",5),
- "J6 rezerva":("Konektory","Kolíková lišta 1×7","rozteč 2,54 mm (volitelné – rezerva)","libovolná (odlomit z 1×40)","J6","",5),
- "JP1 5V -> Nano (jumper)":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm","libovolná + zkratovací propojka 2,54","JP1","",5),
- "6k8":   ("Rezistory","Rezistor 6,8 kΩ","0,25 W, 1 %, DIN 0207 – dělič vstupů 5 V -> 3 V","libovolný výrobce","6k8","",1),
- "4k7":   ("Rezistory","Rezistor 4,7 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","4k7","",1),
- "22k":   ("Rezistory","Rezistor 22 kΩ","0,25 W, 1 %, DIN 0207 – gate pull-up MOSFETů","libovolný výrobce","22k","",1),
- "47k":   ("Rezistory","Rezistor 47 kΩ","0,25 W, 1 %, DIN 0207","libovolný výrobce","47k","",1),
- "470":   ("Rezistory","Rezistor 470 Ω","0,25 W, 1 %, DIN 0207","libovolný výrobce","470","",1),
- "120":   ("Rezistory","Rezistor 120 Ω","0,25 W, 1 %, DIN 0207 – zakončení CAN","libovolný výrobce","120","",1),
- "BZX55C3V6":  ("Diody","Zenerova dioda 3,6 V","0,5 W, DO-35 – ochrana vstupů 3,3 V","BZX55C3V6 (nebo BZX79C3V6)","3V6","pozor na polaritu – proužek = katoda (K)",2),
- "MCP2562-E/P":("Polovodiče","CAN budič MCP2562","DIP-8, VDD 5 V, VIO 3,3 V","Microchip MCP2562-E/P","MCP2562","zářez/tečka = pin 1 (čtvercový pad)",4),
- "P1 modulu RP2350-Touch-LCD-2":("Konektory","Dutinková lišta 1×14","rozteč 2,54 mm, výška ~8,5 mm – pro lištu P1 modulu","Sullins PPTC141LFBN-RC","MODUL P1","osadit kolmo, obě lišty rovnoběžně (nejlépe s modulem zasunutým)",5),
- "P2 modulu RP2350-Touch-LCD-2":("Konektory","Dutinková lišta 1×14","rozteč 2,54 mm, výška ~8,5 mm – pro lištu P2 modulu","Sullins PPTC141LFBN-RC","MODUL P2","osadit kolmo, obě lišty rovnoběžně (nejlépe s modulem zasunutým)",5),
- "J6 rezerva GPIO5 / 3V3 / GND":("Konektory","Kolíková lišta 1×3","rozteč 2,54 mm (volitelné – rezerva)","odlomit z lišty 1×40","J6","",5),
- "JP1 5V -> modul (jumper)":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm – sundat při programování modulu přes USB","odlomit z lišty 1×40 + propojka","JP1","",5),
- "JP2 zakončení CAN 120R":("Konektory","Kolíková lišta 1×2 + jumper","rozteč 2,54 mm – zakončení CAN (jen na konci sběrnice)","odlomit z lišty 1×40 + propojka","JP2","",5),
- "J4 CAN-H / CAN-L":("Konektory","Svorkovnice 2 pól","rozteč 5,08 mm, do DPS – CAN z rusEFI","Phoenix Contact MKDS 1,5/2-5,08 (1715721)","J4","otvory pro vodiče ven z desky",8),
- "Arduino Nano":("Moduly","Arduino Nano (ATmega328P, 5 V)","zasouvá se do patic (viz níže)","Arduino Nano nebo klon s CH340","NANO","USB směrem k pravé hraně desky",9),
-}
+parts = json.load(open(sys.argv[1]))["parts"]
+POS, OUT = sys.argv[2], sys.argv[3].rstrip("/") + "/"
 
-# value / extra-name -> (Manufacturer, MPN, note).  "OVĚŘIT" = číslo dílu si ověřte při nahrání do BOM Manageru.
-DK={
- "330":("Yageo","MFR-25FBF52-330R",""),"220":("Yageo","MFR-25FBF52-220R",""),"1k":("Yageo","MFR-25FBF52-1K",""),
- "2k2":("Yageo","MFR-25FBF52-2K2",""),"10k":("Yageo","MFR-25FBF52-10K",""),"100k":("Yageo","MFR-25FBF52-100K",""),
- "100R":("Yageo","MFR-25FBF52-100R",""),"0R":("Yageo","ZOR-25-B-52-0R",""),
- "BZX55C12":("Vishay","BZX55C12-TAP",""),"BZX55C15":("Vishay","BZX55C15-TAP",""),"BZX55C5V6":("Vishay","BZX55C5V6-TAP",""),
- "1N4148":("onsemi","1N4148",""),"1N4007":("onsemi","1N4007G",""),"P6KE27A":("Littelfuse","P6KE27A",""),
- "100nF":("KEMET","C320C104K5R5TA",""),"600R@100MHz":("Fair-Rite","2743019447",""),
- "10uF 25V":("Panasonic","ECA-1EM100","Ø5×11 mm, rozteč 2,0 mm"),"100uF 16V":("Panasonic","EEU-FR1C101",""),"470uF 25V":("Panasonic","EEU-FR1E471",""),
- "PC817":("Lite-On","LTV-817","pinově shodný s PC817"),"BC337":("onsemi","BC33740TA",""),"zelená READY":("Kingbright","WP7104GD",""),
- "IRF4905":("Infineon","IRF4905PBF",""),"IRF9540N":("Infineon","IRF9540NPBF",""),"TSR 1-2450 (12V->5V 1A)":("Traco Power","TSR 1-2450",""),
- "G5LE-1 12V SPDT":("Omron","G5LE-1 DC12",""),"5A":("Littelfuse","56000001009","OVĚŘIT – patice TR5 (řada 560)"),
- "J1 +12V / PGND":("Phoenix Contact","1715721","MKDS 1,5/2-5,08"),"J2 SOL1-3 / TCU1-3":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),
- "J3 UP DOWN READY LOCKUP":("Phoenix Contact","1715763","MKDS 1,5/6-5,08"),"J5 Nextion +5V GND RX TX":("JST","B4B-XH-A(LF)(SN)",""),
- "Arduino Nano":("Arduino","A000005","originál; klon s CH340 je levnější, ale DigiKey ho nevede"),
- "6k8":("Yageo","MFR-25FBF52-6K8",""),"4k7":("Yageo","MFR-25FBF52-4K7",""),"22k":("Yageo","MFR-25FBF52-22K",""),
- "47k":("Yageo","MFR-25FBF52-47K",""),"470":("Yageo","MFR-25FBF52-470R",""),"120":("Yageo","MFR-25FBF52-120R",""),
- "BZX55C3V6":("Vishay","BZX55C3V6-TAP",""),"MCP2562-E/P":("Microchip","MCP2562-E/P",""),
- "P1 modulu RP2350-Touch-LCD-2":("Sullins","PPTC141LFBN-RC","dutinková lišta 1x14"),"P2 modulu RP2350-Touch-LCD-2":("Sullins","PPTC141LFBN-RC","dutinková lišta 1x14"),
- "J4 CAN-H / CAN-L":("Phoenix Contact","1715721","MKDS 1,5/2-5,08"),
-}
-ALT={ # MPN -> náhrada (stejná hodnota, pouzdro a rozteč)
- "ECA-1EM100":"Nichicon UVR1E100MDD",
- "EEU-FR1C101":"Nichicon UVR1C101MED",
- "EEU-FR1E471":"Nichicon UHE1E471MPD",
- "LTV-817":"Sharp PC817X1NSZ1B",
- "WP7104GD":"libovolná zelená LED 3 mm",
- "2743019447":"Würth 74270012 (feritová perla)",
- "56000001009":"libovolná patice TR5, rozteč 5,08 mm",
- "37215000411":"libovolná pojistka TR5 5 A T",
-}
-DK_EXTRA=[ # (Manufacturer, MPN, qty/board, ref, description, note)
- ("Sullins","PRPC040SAAN-RC",1,"J6, JP1, JP2","Kolíková lišta 1×40, 2,54 mm (odlomit 1×3 a 2× 1×2)",""),
- ("Sullins","SPC02SYAN",2,"JP1, JP2","Zkratovací propojka 2,54 mm",""),
- ("Littelfuse","37215000411",1,"F1 (pojistka)","Pojistka TR5 5 A, pomalá","OVĚŘIT – řada 372, 5 A T"),
-]
-STEPS={1:"1. rezistory",2:"2. diody",3:"3. keramické C a ferity",4:"4. optočleny, tranzistory, CAN budič, LED",5:"5. lišty a dutinkové lišty pro modul",6:"6. elektrolyty",7:"7. TO-220, stabilizátor, patice pojistky",8:"8. relé a svorkovnice",9:"9. modul RP2350 (zasunout)"}
-EXTRA=[ # items not on the schematic, per board
- ("Mechanické","Pojistka TR5 5 A, pomalá (T)","TR5, rozteč 5,08 mm","Littelfuse řada 372, 5 A T",1,"do F1"),
- ("Moduly","Waveshare RP2350-Touch-LCD-2","řídicí modul s displejem 2″ 240×320","Waveshare (e-shopy, Waveshare.com)",1,"J7 + J8"),
- ("Mechanické","Distanční sloupek M3 + šroub","pro 3 díry M3","libovolné, např. 10 mm",3,"H1–H3"),
-]
-
-groups={}
-for p in parts:
-    c=CAT[p["val"]]
-    key=(c[0],c[1],c[2],c[3])
-    groups.setdefault(key,[]).append(p["ref"])
 def refkey(r):
-    m=re.match(r"([A-Z]+)(\d+)",r); return (m.group(1),int(m.group(2)))
-order=["Rezistory","Diody","Kondenzátory","Polovodiče","Mechanické","Konektory","Moduly"]
-rows=[]
-for (g,n,spec,ex),refs in groups.items():
-    rows.append((g,n,spec,ex,len(refs)," ".join(sorted(refs,key=refkey))))
-for g,n,spec,ex,q,refs in EXTRA: rows.append((g,n,spec,ex,q,refs))
-def valsort(n):
-    m=re.search(r"(\d+[,.]?\d*)\s*(k|M)?Ω",n)
-    if not m: return 0
-    v=float(m.group(1).replace(",","."))*{"k":1e3,"M":1e6,None:1}[m.group(2)]; return v
-rows.sort(key=lambda r:(order.index(r[0]),valsort(r[1]),r[1]))
+    m = re.match(r"([A-Z]+)(\d+)", r); return (m.group(1), int(m.group(2))) if m else (r, 0)
 
-F="Arial"
-thin=Side(style="thin",color="BBBBBB"); B=Border(left=thin,right=thin,top=thin,bottom=thin)
-hdr_fill=PatternFill("solid",fgColor="1F3864"); grp_fill=PatternFill("solid",fgColor="D9E1F2"); inp_fill=PatternFill("solid",fgColor="FFFF00")
-wb=Workbook(); ws=wb.active; ws.title="Objednávka"
-ws["A1"]="AW4 shield v0.4 (THT, 100×100 mm, RP2350-Touch-LCD-2) – seznam součástek k objednání"; ws["A1"].font=Font(name=F,bold=True,size=14)
-ws["A2"]="Počet desek:"; ws["A2"].font=Font(name=F,bold=True)
-ws["C2"]=1; ws["C2"].font=Font(name=F,bold=True,color="0000FF"); ws["C2"].fill=inp_fill; ws["C2"].border=B
-ws["C2"].comment=Comment("Zadejte, kolik desek budete osazovat. Sloupec 'Ks celkem' se přepočítá.","AW4")
-ws["D2"]="Rezerva navíc (ks na položku, pro drobné díly):"; ws["D2"].font=Font(name=F)
-ws["G2"]=2; ws["G2"].font=Font(name=F,bold=True,color="0000FF"); ws["G2"].fill=inp_fill; ws["G2"].border=B
-ws["G2"].comment=Comment("Přičte se jen k rezistorům, diodám a kondenzátorům (snadno se ztratí nebo zničí).","AW4")
-ws["A3"]="Žluté buňky = vstupy (modré číslo). Ostatní se počítají. Příklady dílů jsou orientační – jde o běžné typy, které se dají koupit v GM, TME, Mouser apod.; LCSC/TME kódy nejsou ověřené."
-ws["A3"].font=Font(name=F,italic=True,size=9,color="555555")
-H=["Pol.","Skupina","Součástka","Specifikace","Příklad dílu (výrobce / typ)","Ks / deska","Ks celkem","Označení na desce","Koupeno ✓"]
-r0=5
-for i,h in enumerate(H,1):
-    c=ws.cell(row=r0,column=i,value=h); c.font=Font(name=F,bold=True,color="FFFFFF"); c.fill=hdr_fill; c.alignment=Alignment(horizontal="center",vertical="center",wrap_text=True); c.border=B
-r=r0+1; pol=1; first=r
-for g,n,spec,ex,q,refs in rows:
-    vals=[pol,g,n,spec,ex,q,None,refs,""]
-    for i,v in enumerate(vals,1):
-        c=ws.cell(row=r,column=i,value=v); c.font=Font(name=F,size=10); c.border=B; c.alignment=Alignment(vertical="top",wrap_text=True)
-    small = g in ("Rezistory","Diody") or n in ("Kondenzátor 100 nF","Feritová perla")
-    ws.cell(row=r,column=7,value=f"=F{r}*$C$2+IF({str(small).upper()},$G$2,0)" if small else f"=F{r}*$C$2")
-    ws.cell(row=r,column=7).font=Font(name=F,size=10,bold=True)
-    ws.cell(row=r,column=6).alignment=Alignment(horizontal="center",vertical="top"); ws.cell(row=r,column=7).alignment=Alignment(horizontal="center",vertical="top")
-    if r%2==0:
-        for i in range(1,10): ws.cell(row=r,column=i).fill=PatternFill("solid",fgColor="F2F2F2")
-    r+=1; pol+=1
-last=r-1
-ws.cell(row=r+1,column=5,value="Celkem kusů k objednání:").font=Font(name=F,bold=True)
-ws.cell(row=r+1,column=7,value=f"=SUM(G{first}:G{last})").font=Font(name=F,bold=True)
-ws.cell(row=r+2,column=5,value=f"Součástek osazených na desce (referencí ve schématu): {len(parts)}").font=Font(name=F,size=9,color="555555")
-for i,w in enumerate([5,13,30,42,40,8,9,34,10],1): ws.column_dimensions[get_column_letter(i)].width=w
-ws.freeze_panes="A6"; ws.auto_filter.ref=f"A{r0}:I{last}"
-ws.page_setup.orientation="landscape"; ws.page_setup.fitToWidth=1; ws.page_setup.fitToHeight=0; ws.sheet_properties.pageSetUpPr.fitToPage=True
+# ---------- JLC: info o dílech (typ knihovny, sklad) ----------
+def jlc_info(code):
+    try:
+        body = json.dumps({"keyword": code, "currentPage": 1, "pageSize": 5}).encode()
+        req = urllib.request.Request("https://jlcpcb.com/api/overseas-pcb-order/v1/shoppingCart/smtGood/selectSmtComponentList",
+                                     data=body, headers={"Content-Type": "application/json"})
+        for x in json.load(urllib.request.urlopen(req, timeout=30))["data"]["componentPageInfo"]["list"] or []:
+            if x["componentCode"] == code:
+                t = {"base": "Basic", "expand": "Extended"}.get(x["componentLibraryType"], x["componentLibraryType"])
+                if t == "Extended" and x.get("preferredComponentFlag"): t = "Preferred ext."
+                return t, x["stockCount"], x["componentBrandEn"], x["describe"]
+    except Exception as e:
+        print("JLC dotaz selhal", code, e)
+    return "?", None, "", ""
 
-# --- assembly sheet ---
-ws2=wb.create_sheet("Osazení")
-ws2["A1"]="Postup osazení – od nejnižších součástek po nejvyšší"; ws2["A1"].font=Font(name=F,bold=True,size=14)
-ws2["A2"]="Na desce je na potisku vytištěné, co kam patří (sloupec 'Na potisku'). Označení (R18 …) je v osazovacím výkresu docs/aw4_shield_osazovaci_vykres.pdf a v interaktivním BOM."
-ws2["A2"].font=Font(name=F,italic=True,size=9,color="555555")
-H2=["Krok","Označení","Na potisku","Součástka","Hodnota ve schématu","Pozor","Osazeno ✓"]
-for i,h in enumerate(H2,1):
-    c=ws2.cell(row=4,column=i,value=h); c.font=Font(name=F,bold=True,color="FFFFFF"); c.fill=hdr_fill; c.border=B; c.alignment=Alignment(horizontal="center",wrap_text=True)
-items=[]
-for p in parts:
-    g,n,spec,ex,lab,pol,step=CAT[p["val"]]
-    if p["ref"][0] in "JK" or p["ref"]=="JP1": lab=p["ref"]
-    items.append((step,refkey(p["ref"]),p["ref"],lab,n,p["val"],pol))
-items.sort()
-r=5; prev=None
-for step,_,ref,lab,n,val,pol in items:
-    if step!=prev:
-        c=ws2.cell(row=r,column=1,value=STEPS[step]); c.font=Font(name=F,bold=True); 
-        for i in range(1,8): ws2.cell(row=r,column=i).fill=grp_fill; ws2.cell(row=r,column=i).border=B
-        r+=1; prev=step
-    for i,v in enumerate(["",ref,lab,n,val,pol,""],1):
-        c=ws2.cell(row=r,column=i,value=v); c.font=Font(name=F,size=10,color=("C00000" if (i==6 and v) else "000000")); c.border=B; c.alignment=Alignment(vertical="top",wrap_text=True)
-    r+=1
-for i,w in enumerate([30,10,12,32,26,48,10],1): ws2.column_dimensions[get_column_letter(i)].width=w
-ws2.freeze_panes="A5"
-ws2.page_setup.orientation="landscape"; ws2.sheet_properties.pageSetUpPr.fitToPage=True; ws2.page_setup.fitToWidth=1; ws2.page_setup.fitToHeight=0
+smt = [p for p in parts if not p.get("hand")]
+hand = [p for p in parts if p.get("hand")]
+grp = collections.OrderedDict()
+for p in sorted(smt, key=lambda p: refkey(p["ref"])):
+    grp.setdefault((p["val"], p["fp"], p["lcsc"], p["mpn"]), []).append(p["ref"])
 
-# --- DigiKey sheet + CSV for BOM Manager ---
-import csv
-ws3=wb.create_sheet("DigiKey")
-ws3["A1"]="DigiKey – seznam pro BOM Manager (digikey.com → BOM Manager → Upload, nebo soubor digikey_bom.csv)"; ws3["A1"].font=Font(name=F,bold=True,size=13)
-ws3["A2"]="Množství = Ks/deska × počet desek (list Objednávka, C2) + rezerva u drobných dílů (G2). DigiKey páruje podle výrobního čísla (MPN). Dostupnost a ceny nebyly ověřené (z tohoto prostředí není DigiKey dostupný) – řádky označené OVĚŘIT zkontrolujte, u ostatních je to běžný katalogový díl."
-ws3["A2"].font=Font(name=F,italic=True,size=9,color="555555")
-H3=["Manufacturer Part Number","Manufacturer","Ks / deska","Quantity","Customer Reference","Popis","Poznámka","Náhrada, když DigiKey díl nezná / nemá"]
-for i,h in enumerate(H3,1):
-    c=ws3.cell(row=4,column=i,value=h); c.font=Font(name=F,bold=True,color="FFFFFF"); c.fill=hdr_fill; c.border=B; c.alignment=Alignment(horizontal="center",wrap_text=True)
-dkrows={}
-for p in parts:
-    if p["val"] in ("JP1 5V -> Nano (jumper)","J6 rezerva","JP1 5V -> modul (jumper)","JP2 zakončení CAN 120R","J6 rezerva GPIO5 / 3V3 / GND"): continue   # z odlamovací lišty (DK_EXTRA)
-    man,mpn,note=DK[p["val"]]; c=CAT[p["val"]]
-    key=(mpn,man)
-    if key not in dkrows: dkrows[key]=[c[1]+" – "+c[2],note,[],c[0] in ("Rezistory","Diody") or p["val"] in ("100nF","600R@100MHz")]
-    dkrows[key][2].append(p["ref"])
-lines=[]
-for (mpn,man),(desc,note,refs,small) in dkrows.items():
-    lines.append((mpn,man,len(refs)," ".join(sorted(refs,key=refkey)),desc,note,small))
-for man,mpn,q,ref,desc,note in DK_EXTRA: lines.append((mpn,man,q,ref,desc,note,False))
-lines.sort(key=lambda l:(not l[6], l[1], l[0]))
-r=5
-for mpn,man,q,ref,desc,note,small in lines:
-    vals=[mpn,man,q,None,ref,desc,note,ALT.get(mpn,"")]
-    for i,v in enumerate(vals,1):
-        c=ws3.cell(row=r,column=i,value=v); c.font=Font(name=F,size=10,color=("C00000" if (i==7 and "OVĚŘIT" in str(v)) else "000000")); c.border=B; c.alignment=Alignment(vertical="top",wrap_text=True)
-    ws3.cell(row=r,column=4,value=f"=C{r}*'Objednávka'!$C$2"+("+'Objednávka'!$G$2" if small else "")).font=Font(name=F,size=10,bold=True)
-    r+=1
-ws3.cell(row=r+1,column=1,value="Mimo DigiKey: modul Waveshare RP2350-Touch-LCD-2 (máte), distanční sloupky M3.").font=Font(name=F,italic=True,size=9)
-for i,w in enumerate([24,16,9,9,30,58,34,34],1): ws3.column_dimensions[get_column_letter(i)].width=w
-ws3.freeze_panes="A5"
-with open(OUT.replace("bom_objednavka.xlsx","digikey_bom.csv"),"w",newline="",encoding="utf-8") as f:
-    w=csv.writer(f); w.writerow(["Manufacturer Part Number","Manufacturer","Quantity","Customer Reference","Description"])
-    for mpn,man,q,ref,desc,note,small in lines: w.writerow([mpn,man,q+(2 if small else 0),ref,desc+(" ("+note+")" if note else "")])
-print("digikey lines",len(lines))
-wb.save(OUT); print("rows",len(rows),"parts",len(parts))
+# ---------- fab/jlc_bom.csv ----------
+info = {}
+with open(OUT + "fab/jlc_bom.csv", "w", newline="") as f:
+    w = csv.writer(f); w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
+    for (val, fp, lcsc, mpn), refs in grp.items():
+        w.writerow([f"{val} ({mpn})" if mpn and mpn != val else val, ",".join(refs), fp.split(":")[1], lcsc])
+        info[lcsc] = jlc_info(lcsc)
+
+# ---------- fab/jlc_cpl.csv (z kicad-cli pcb export pos --smd-only) ----------
+smt_refs = {p["ref"] for p in smt}
+rows = list(csv.DictReader(open(POS)))
+with open(OUT + "fab/jlc_cpl.csv", "w", newline="") as f:
+    w = csv.writer(f); w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
+    seen = set()
+    for r in rows:
+        if r["Ref"] not in smt_refs: continue
+        seen.add(r["Ref"])
+        w.writerow([r["Ref"], f'{float(r["PosX"]):.3f}mm', f'{float(r["PosY"]):.3f}mm',
+                    "Top" if r["Side"].lower().startswith("top") else "Bottom", f'{float(r["Rot"]):g}'])
+missing = smt_refs - seen
+assert not missing, f"SMD díly chybí v pozicích: {missing}"
+
+# ---------- ruční díly ----------
+HAND = {  # value -> (popis, výrobce, MPN, poznámka k osazení, krok)
+ "J1 +12V / PGND": ("Svorkovnice 2 pól, rozteč 3,5 mm", "Phoenix Contact", "1984617", "PT 1,5/2-3,5-H; otvory pro vodiče ven z desky", 4),
+ "J4 CAN-H / CAN-L": ("Svorkovnice 2 pól, rozteč 3,5 mm", "Phoenix Contact", "1984617", "PT 1,5/2-3,5-H; otvory pro vodiče ven z desky", 4),
+ "J2 SOL1-3 / TCU1-3": ("Svorkovnice 6 pól, rozteč 3,5 mm", "Phoenix Contact", "1984659", "PT 1,5/6-3,5-H; otvory pro vodiče ven z desky", 4),
+ "J3 UP DOWN READY LOCKUP": ("Svorkovnice 6 pól, rozteč 3,5 mm", "Phoenix Contact", "1984659", "PT 1,5/6-3,5-H; otvory pro vodiče ven z desky", 4),
+ "P1 modulu RP2350-Touch-LCD-2": ("Dutinková lišta 1×14, 2,54 mm", "Sullins", "PPTC141LFBN-RC", "osadit kolmo, nejlépe se zasunutým modulem", 2),
+ "P2 modulu RP2350-Touch-LCD-2": ("Dutinková lišta 1×14, 2,54 mm", "Sullins", "PPTC141LFBN-RC", "osadit kolmo, nejlépe se zasunutým modulem", 2),
+ "J6 rezerva GPIO5 / 3V3 / GND": ("Kolíková lišta 1×3 (rezerva, volitelné)", "Sullins", "PRPC040SAAN-RC", "odlomit z lišty 1×40", 1),
+ "JP2 zakončení CAN 120R": ("Kolíková lišta 1×2 + propojka", "Sullins", "PRPC040SAAN-RC", "odlomit z lišty 1×40; propojku nasadit jen na konci sběrnice", 1),
+ "G5LE-1 12V SPDT": ("Relé 12 V SPDT, 10 A", "Omron", "G5LE-1 DC12", "pinově kompatibilní: Songle SRD-12VDC-SL-C", 5),
+ "5A": ("Patice pojistky TR5", "Littelfuse", "56000001009", "pojistka viz níže", 3),
+ "TSR 1-2450 (12V->5V 1A)": ("Spínaný stabilizátor 12 → 5 V / 1 A", "Traco Power", "TSR 1-2450", "pin 1 = Vin (čtvercový pad), potisk TSR1-2450", 3),
+}
+EXTRA = [  # (popis, výrobce, MPN, ks/desku, poznámka)
+ ("Pojistka TR5 5 A (T)", "Littelfuse", "37215000411", 1, "do patice F1"),
+ ("Zkratovací propojka 2,54 mm", "Sullins", "SPC02SYAN", 1, "pro JP2"),
+ ("Modul RP2350-Touch-LCD-2", "Waveshare", "RP2350-Touch-LCD-2", 1, "zasouvá se do J7/J8 displejem nahoru, USB-C k horní hraně"),
+]
+hgrp = collections.OrderedDict()
+for p in sorted(hand, key=lambda p: (HAND[p["val"]][4], refkey(p["ref"]))):
+    d = HAND[p["val"]]; hgrp.setdefault((d[0], d[1], d[2]), [d, []])[1].append(p["ref"])
+
+# ---------- digikey_bom.csv ----------
+with open(OUT + "digikey_bom.csv", "w", newline="") as f:
+    w = csv.writer(f); w.writerow(["Quantity", "Manufacturer Part Number", "Manufacturer", "Customer Reference", "Description"])
+    dk = collections.OrderedDict()
+    for (desc, man, mpn), (d, refs) in hgrp.items():
+        if man == "Waveshare": continue
+        k = (mpn, man); dk.setdefault(k, [0, [], desc]); dk[k][0] += len(refs); dk[k][1] += refs
+    for desc, man, mpn, q, note in EXTRA:
+        if man == "Waveshare": continue
+        k = (mpn, man); dk.setdefault(k, [0, [], desc]); dk[k][0] += q; dk[k][1] += [note]
+    for (mpn, man), (q, refs, desc) in dk.items():
+        if mpn == "PRPC040SAAN-RC": q, desc = 1, "Kolíková lišta 1×40 – odlomit 1×3 (J6) a 1×2 (JP2)"   # jedna lišta stačí
+        w.writerow([q, mpn, man, " ".join(refs), desc])
+
+# ---------- xlsx ----------
+F = "Calibri"; thin = Side(style="thin", color="BBBBBB"); B = Border(left=thin, right=thin, top=thin, bottom=thin)
+HF = PatternFill("solid", fgColor="2F5496")
+def table(ws, r0, head, data, widths):
+    for i, h in enumerate(head, 1):
+        c = ws.cell(row=r0, column=i, value=h); c.font = Font(name=F, bold=True, color="FFFFFF"); c.fill = HF
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); c.border = B
+    for j, row in enumerate(data):
+        for i, v in enumerate(row, 1):
+            c = ws.cell(row=r0 + 1 + j, column=i, value=v); c.font = Font(name=F, size=10); c.border = B
+            c.alignment = Alignment(vertical="top", wrap_text=True)
+            if j % 2: c.fill = PatternFill("solid", fgColor="F2F2F2")
+    for i, wd in enumerate(widths, 1): ws.column_dimensions[get_column_letter(i)].width = wd
+    ws.freeze_panes = f"A{r0+1}"
+    return r0 + len(data)
+wb = Workbook()
+ws = wb.active; ws.title = "JLC SMD"
+ws["A1"] = "AW4 shield v0.5 – díly, které osadí JLCPCB (SMD, horní strana)"; ws["A1"].font = Font(name=F, bold=True, size=14)
+ws["A2"] = ("Nahrát: fab/aw4_shield_gerber.zip (deska), fab/jlc_bom.csv (BOM) a fab/jlc_cpl.csv (pozice). "
+            "Basic a Preferred díly jsou bez příplatku, za každý Extended díl si JLC účtuje jednorázový poplatek (cca 3 USD). "
+            "V náhledu JLC zkontrolovat natočení diod, optočlenů, tranzistorů, SN65HVD230 a elektrolytu C1.")
+ws["A2"].alignment = Alignment(wrap_text=True); ws.merge_cells("A2:H2"); ws.row_dimensions[2].height = 45
+data = []
+for (val, fp, lcsc, mpn), refs in grp.items():
+    t, stock, brand, desc = info[lcsc]
+    data.append([", ".join(refs), len(refs), val, mpn, fp.split(":")[1], lcsc, t, stock])
+last = table(ws, 4, ["Označení", "Ks/desku", "Hodnota", "Výrobní číslo", "Pouzdro", "LCSC", "Knihovna JLC", "Sklad JLC (při generování)"],
+             data, [34, 9, 22, 22, 24, 12, 14, 14])
+ext = sorted({d[5] for d in data if d[6] == "Extended"})
+ws.cell(row=last + 2, column=1, value=f"Extended díly (příplatek za založení): {len(ext)} – " + ", ".join(ext)).font = Font(name=F, bold=True)
+ws.cell(row=last + 3, column=1, value=f"SMD součástek celkem: {len(smt)}, různých druhů: {len(grp)}").font = Font(name=F, size=10)
+
+ws2 = wb.create_sheet("Ruční osazení")
+ws2["A1"] = "AW4 shield v0.5 – vývodové díly, které se pájí ručně (po dodání osazené desky z JLC)"; ws2["A1"].font = Font(name=F, bold=True, size=14)
+ws2["B2"] = "Počet desek:"; ws2["C2"] = 1; ws2["B2"].font = Font(name=F, bold=True); ws2["C2"].font = Font(name=F, bold=True, color="C00000")
+data = []; r = 5
+for (desc, man, mpn), (d, refs) in hgrp.items():
+    data.append([d[4], ", ".join(refs), desc, man, mpn, len(refs), f"=F{r}*$C$2", d[3]]); r += 1
+for desc, man, mpn, q, note in EXTRA:
+    data.append(["", "", desc, man, mpn, q, f"=F{r}*$C$2", note]); r += 1
+table(ws2, 4, ["Krok", "Označení", "Díl", "Výrobce", "Výrobní číslo", "Ks/desku", "Objednat", "Poznámka"], data, [6, 18, 36, 16, 22, 9, 10, 52])
+
+ws3 = wb.create_sheet("Postup")
+steps = ["Desku objednat v JLCPCB s osazením (PCBA, horní strana): gerbery + jlc_bom.csv + jlc_cpl.csv; v náhledu zkontrolovat natočení polarizovaných dílů.",
+         "Krok 1 – kolíkové lišty J6 a JP2 (nízké, pájí se první).",
+         "Krok 2 – dutinkové lišty J7, J8 pro modul: nejlépe zasunout do modulu, nasadit na desku a teprve pak připájet, ať jsou rovnoběžné.",
+         "Krok 3 – měnič TSR 1-2450 (U1) a patice pojistky F1.",
+         "Krok 4 – svorkovnice J1–J4 (otvory pro vodiče ven z desky).",
+         "Krok 5 – relé K1–K3 (nejvyšší díly, nakonec).",
+         "Kontrola před zapnutím: multimetrem odpor +12 V proti PGND (nesmí být zkrat), pak napájet z laboratorního zdroje s omezením proudu (~0,3 A) a změřit +5 V na J3.",
+         "Modul zasunout displejem nahoru, USB-C k horní hraně desky. Programovat přes USB jde i při napájení desky (5 V do modulu jde přes Schottkyho diodu D7)."]
+for i, t in enumerate(steps, 1):
+    c = ws3.cell(row=i, column=1, value=t); c.font = Font(name=F, size=11); c.alignment = Alignment(wrap_text=True, vertical="top")
+ws3.column_dimensions["A"].width = 120
+
+ws4 = wb.create_sheet("DigiKey")
+rows = list(csv.reader(open(OUT + "digikey_bom.csv")))
+table(ws4, 1, rows[0], rows[1:], [10, 26, 18, 30, 40])
+wb.save(OUT + "bom_objednavka.xlsx")
+print("SMD druhů:", len(grp), "SMD kusů:", len(smt), "ručních:", len(hand), "extended:", ext)
+for k, v in info.items(): print(" ", k, v[0], v[1])

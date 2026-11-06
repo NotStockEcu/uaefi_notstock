@@ -44,20 +44,20 @@ defbox('CONN4','J',[("1","1"),("2","2"),("3","3"),("4","4")],[])
 defbox('CONN6','J',[(str(i),str(i)) for i in range(1,7)],[])
 defbox('CONN7','J',[(str(i),str(i)) for i in range(1,8)],[])
 defbox('PFET','Q',[("1","G")],[("2","D"),("3","S")])
-defbox('NPN','Q',[("2","B")],[("1","C"),("3","E")])
+defbox('NPN','Q',[("1","B")],[("3","C"),("2","E")])
 defbox('PC817','U',[("1","A"),("2","K")],[("4","C"),("3","E")])
 defbox('RELAY_SPDT','K',[("2","COIL1"),("5","COIL2")],[("1","COM"),("4","NC"),("3","NO")])
 defbox('REG_5V','U',[("1","VIN"),("2","GND")],[("3","VOUT")])
 defbox('MOD_P1','J',[("1","GPIO7 UP"),("2","GPIO9 DOWN"),("3","GPIO8 READY"),("4","GPIO22 LOCKUP"),("5","GPIO21 RELE"),("6","GPIO18 (LCD)"),("7","GPIO23 SOL1"),("8","GPIO11 SOL2"),("9","GPIO6 SOL3"),("10","GPIO5"),("11","GPIO20 (LCD)"),("12","GPIO19 (LCD)"),("13","GND"),("14","5V")],[])
 defbox('MOD_P2','J',[("1","3V3"),("2","GND"),("3","GPIO28"),("4","GPIO29"),("5","GPIO13"),("6","GPIO12"),("7","GPIO2"),("8","GPIO1 CAN_TX"),("9","GPIO3"),("10","GPIO0 CAN_RX"),("11","GPIO4"),("12","GPIO10"),("13","GND"),("14","VBAT")],[])
 defbox('CONN3','J',[("1","1"),("2","2"),("3","3")],[])
-defbox('MCP2562','U',[("1","TXD"),("4","RXD"),("8","STBY"),("5","VIO")],[("3","VDD"),("2","VSS"),("7","CANH"),("6","CANL")])
+defbox('SN65HVD230','U',[("1","D (TXD)"),("4","R (RXD)"),("8","RS"),("5","VREF")],[("3","VCC"),("2","GND"),("7","CANH"),("6","CANL")])
 nano_left=[("1","D1/TX"),("2","D0/RX"),("3","RESET"),("4","GND"),("5","D2"),("6","D3"),("7","D4"),("8","D5"),("9","D6"),("10","D7"),("11","D8"),("12","D9"),("13","D10"),("14","D11"),("15","D12")]
 nano_right=[("16","D13"),("17","3V3"),("18","AREF"),("19","A0"),("20","A1"),("21","A2"),("22","A3"),("23","A4"),("24","A5"),("25","A6"),("26","A7"),("27","5V"),("28","RESET"),("29","GND"),("30","VIN")]
 defbox('ARDUINO_NANO','U',nano_left,nano_right)
 LIB=[two_pin('R','R',GFX['R']),two_pin('C','C',GFX['C']),two_pin('CP','C',GFX['CP']),
      two_pin('D','D',GFX['D'],"K","A"),two_pin('LED','D',GFX['D'],"K","A"),two_pin('FUSE','F',GFX['FUSE']),two_pin('FERRITE','L',GFX['FERRITE'])]
-for k,(l,r) in BOX.items(): LIB.append(box_sym(k,BOX_REF if False else {'CONN2':'J','CONN4':'J','CONN6':'J','CONN7':'J','PFET':'Q','NPN':'Q','PC817':'U','RELAY_SPDT':'K','REG_5V':'U','MOD_P1':'J','MOD_P2':'J','CONN3':'J','MCP2562':'U','ARDUINO_NANO':'U'}[k],l,r))
+for k,(l,r) in BOX.items(): LIB.append(box_sym(k,BOX_REF if False else {'CONN2':'J','CONN4':'J','CONN6':'J','CONN7':'J','PFET':'Q','NPN':'Q','PC817':'U','RELAY_SPDT':'K','REG_5V':'U','MOD_P1':'J','MOD_P2':'J','CONN3':'J','SN65HVD230':'U','ARDUINO_NANO':'U'}[k],l,r))
 
 # pin geometry helper: returns {num:(dx,dy,outward_angle)} in sheet coordinates relative to part origin
 def pin_geom(sym):
@@ -82,64 +82,78 @@ def pin_names(sym):
 parts=[]; texts=[]
 cnt=collections.Counter()
 def newref(p): cnt[p]+=1; return f"{p}{cnt[p]}"
-def add(sym,val,fp,x,y,nets,pref,dnp=False,note="",ref=None):
+# lcsc: LCSC/JLC part number (osadí JLC); hand=True: vývodový díl, pájí se ručně
+def add(sym,val,fp,x,y,nets,pref,dnp=False,note="",ref=None,lcsc="",mpn="",hand=False):
     ref=ref or newref(pref)
     x=round(round(x/2.54)*2.54,2); y=round(round(y/2.54)*2.54,2)
-    parts.append(dict(ref=ref,sym=sym,val=val,fp=fp,x=x,y=y,nets=nets,dnp=dnp,note=note,uuid=U())); return ref
+    parts.append(dict(ref=ref,sym=sym,val=val,fp=fp,x=x,y=y,nets=nets,dnp=dnp,note=note,uuid=U(),lcsc=lcsc,mpn=mpn,hand=hand)); return ref
 def text(x,y,t,size=2.5):
     texts.append((x,y,t,size))
-R0805="Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"; C0805="Capacitor_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm"
-def res(val,x,y,a,b,note="",ref=None): return add('R',val,R0805,x,y,{"1":a,"2":b},"R",note=note,ref=ref)
-def cap(val,x,y,a,b,ref=None): return add('C',val,C0805,x,y,{"1":a,"2":b},"C",ref=ref)
-def diode(val,fp,x,y,k,a,note="",ref=None): return add('D',val,fp,x,y,{"1":k,"2":a},"D",note=note,ref=ref)
+R0805="Resistor_SMD:R_0805_2012Metric"; C0805="Capacitor_SMD:C_0805_2012Metric"
+SOD123="Diode_SMD:D_SOD-123"; SMA="Diode_SMD:D_SMA"; SOT23="Package_TO_SOT_SMD:SOT-23-3"; DPAK="Package_TO_SOT_SMD:TO-252-2"
+OPTO="Package_DIP:SMDIP-4_W9.53mm"
+RES={"100k":("C149504","0805W8F1003T5E"),"0R":("C17477","0805W8F0000T5E"),"6k8":("C17772","0805W8F6801T5E"),"10k":("C17414","0805W8F1002T5E"),
+     "330":("C17630","0805W8F3300T5E"),"2k2":("C17520","0805W8F2201T5E"),"4k7":("C17673","0805W8F4701T5E"),"47k":("C17713","0805W8F4702T5E"),
+     "470":("C17710","0805W8F4700T5E"),"1k":("C17513","0805W8F1001T5E"),"22k":("C17560","0805W8F2202T5E"),"120":("C17437","0805W8F1200T5E")}
+def res(val,x,y,a,b,note="",ref=None): return add('R',val,R0805,x,y,{"1":a,"2":b},"R",note=note,ref=ref,lcsc=RES[val][0],mpn=RES[val][1])
+def cap(val,x,y,a,b,ref=None): return add('C',val,C0805,x,y,{"1":a,"2":b},"C",ref=ref,lcsc="C49678",mpn="CC0805KRX7R9BB104")
+DI={"MMSZ5227B":(SOD123,"C22395553"),"MMSZ5242B":(SOD123,"C19077426"),"MMSZ5245B":(SOD123,"C19077428"),"1N4148W":(SOD123,"C81598"),
+    "M7":(SMA,"C95872"),"SS14":(SMA,"C2480"),"SMBJ24A":("Diode_SMD:D_SMB","C123819")}
+def diode(val,x,y,k,a,note="",ref=None): return add('D',val,DI[val][0],x,y,{"1":k,"2":a},"D",note=note,ref=ref,lcsc=DI[val][1],mpn=val)
+NPN_=("MMBT2222A",SOT23,"C8512"); PFET_=("AOD409",DPAK,"C36220"); PC817_=("PC817X2CSP9F",OPTO,"C66405")
+def npn(x,y,b,c,e,note="",ref=None): return add('NPN',NPN_[0],NPN_[1],x,y,{"1":b,"3":c,"2":e},"Q",note=note,ref=ref,lcsc=NPN_[2],mpn=NPN_[0])
+def pfet(x,y,g,d,s_,note="",ref=None): return add('PFET',PFET_[0],PFET_[1],x,y,{"1":g,"2":d,"3":s_},"Q",note=note,ref=ref,lcsc=PFET_[2],mpn=PFET_[0])
+def opto(x,y,a,k,c,e,ref): return add('PC817',"PC817",PC817_[1],x,y,{"1":a,"2":k,"4":c,"3":e},"U",ref=ref,lcsc=PC817_[2],mpn=PC817_[0])
+PT=lambda n:f"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-{n}-3.5-H_1x{n:02d}_P3.50mm_Horizontal"
 
 # --- Power ---
-text(20,25,"NAPÁJENÍ: +12V → F1 → Q0 (ochrana proti přepólování) → +12V_SW; TSR 1-2450 → +5V; PGND ↔ GND jen přes R 0R (hvězda)",3)
-add('CONN2',"J1 +12V / PGND","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",40,50,{"1":"+12V_IN","2":"PGND"},"J",ref="J1")
-add('FUSE',"5A","Fuse:Fuseholder_TR5_Littelfuse_No560_No460",75,50,{"1":"+12V_IN","2":"+12V_FUSED"},"F",note="pojistka TR5 5 A (T) v patici TR5")
-add('PFET',"IRF4905","Package_TO_SOT_THT:TO-220-3_Vertical",110,50,{"1":"Q0_G","2":"+12V_FUSED","3":"+12V_SW"},"Q",note="ochrana proti přepólování (D na vstupu, S na zátěži)")
-res("100k",150,50,"Q0_G","PGND")
-diode("BZX55C12","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",170,50,"+12V_SW","Q0_G",note="zener 12 V gate-source Q0")
-diode("P6KE27A","Diode_THT:D_DO-15_P5.08mm_Vertical_CathodeUp",190,50,"+12V_SW","PGND",note="TVS 600 W (load dump), VBR 25,7-28,4 V")
-add('CP',"470uF 25V","Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",210,50,{"1":"+12V_SW","2":"PGND"},"C")
-cap("100nF",230,50,"+12V_SW","PGND")
-add('REG_5V',"TSR 1-2450 (12V->5V 1A)","Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT",275,50,{"1":"+12V_SW","2":"GND","3":"+5V_BUCK"},"U",note="spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V",ref="U1")
-add('CP',"10uF 25V","Capacitor_THT:CP_Radial_D5.0mm_P2.00mm",300,50,{"1":"+12V_SW","2":"GND"},"C")
-res("0R",320,50,"PGND","GND",note="hvězda PGND-GND (jediné spojení zemí)")
-add('FERRITE',"600R@100MHz","Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical",345,50,{"1":"+5V_BUCK","2":"+5V"},"L")
-add('CP',"100uF 16V","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",370,50,{"1":"+5V","2":"GND"},"C")
-add('CONN2',"JP1 5V -> modul (jumper)","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",405,50,{"1":"+5V","2":"MOD_5V"},"J",note="sundat při programování modulu po USB",ref="JP1")
+text(20,25,"NAPÁJENÍ: +12V → F1 → Q1 (ochrana proti přepólování) → +12V_SW; TSR 1-2450 → +5V; PGND ↔ GND jen přes R2 0R (hvězda)",3)
+add('CONN2',"J1 +12V / PGND",PT(2),40,50,{"1":"+12V_IN","2":"PGND"},"J",ref="J1",hand=True,mpn="Phoenix PT 1,5/2-3,5-H (1984617)")
+add('FUSE',"5A","Fuse:Fuseholder_TR5_Littelfuse_No560_No460",75,50,{"1":"+12V_IN","2":"+12V_FUSED"},"F",note="pojistka TR5 5 A (T) v patici TR5",ref="F1",hand=True,mpn="Littelfuse 56000001009 + 37215000411")
+pfet(110,50,"Q0_G","+12V_FUSED","+12V_SW",note="ochrana proti přepólování (D na vstupu, S na zátěži)",ref="Q1")
+res("100k",150,50,"Q0_G","PGND",ref="R1")
+diode("MMSZ5242B",170,50,"+12V_AUX","Q0_G",note="zener 12 V gate-source Q1",ref="D1")
+diode("SMBJ24A",190,50,"+12V_SW","PGND",note="TVS 600 W (load dump), VBR 26,7-29,5 V",ref="D2")
+add('CP',"470uF 25V","Capacitor_SMD:CP_Elec_10x10.5",210,50,{"1":"+12V_SW","2":"PGND"},"C",ref="C1",lcsc="C248607",mpn="EEE-FK1E471P")
+cap("100nF",230,50,"+12V_AUX","PGND",ref="C2")
+add('R',"0R","Resistor_SMD:R_1206_3216Metric",250,50,{"1":"+12V_SW","2":"+12V_AUX"},"R",note="odbočka +12 V pro cívky relé, měnič a gate (jen kvůli šířkám cest)",ref="R29",lcsc="C17888",mpn="1206W4F0000T5E")
+add('REG_5V',"TSR 1-2450 (12V->5V 1A)","Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT",275,50,{"1":"+12V_AUX","2":"GND","3":"+5V_BUCK"},"U",note="spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V",ref="U1",hand=True,mpn="TSR 1-2450")
+add('C',"10uF 25V",C0805,300,50,{"1":"+12V_AUX","2":"GND"},"C",ref="C3",lcsc="C15850",mpn="CL21A106KAYNNNE")
+res("0R",320,50,"PGND","GND",note="hvězda PGND-GND (jediné spojení zemí)",ref="R2")
+add('FERRITE',"120R@100MHz 2A","Inductor_SMD:L_0603_1608Metric",345,50,{"1":"+5V_BUCK","2":"+5V"},"L",ref="L1",lcsc="C14709",mpn="BLM18PG121SN1D")
+add('C',"100uF 6.3V","Capacitor_SMD:C_1206_3216Metric",370,50,{"1":"+5V","2":"GND"},"C",ref="C4",lcsc="C15008",mpn="CL31A107MQHNNNE")
+diode("SS14",405,50,"MOD_5V","+5V",note="5 V do modulu přes Schottky – USB modulu a napájení desky se nepřetahují (JP1 už není potřeba)",ref="D7")
 
 # --- RP2350-Touch-LCD-2 module + connectors ---
 text(20,95,"MODUL RP2350-Touch-LCD-2 (zasunutý do J7 = lišta P1, J8 = lišta P2) a konektory",3)
 SOCK="Connector_PinSocket_2.54mm:PinSocket_1x14_P2.54mm_Vertical"
-add('MOD_P1',"P1 modulu RP2350-Touch-LCD-2",SOCK,60,140,{"1":"UP_D","2":"DOWN_D","3":"READY_D","4":"LOCKUP_D","5":"K_CTRL","7":"SOL1_CTRL","8":"SOL2_CTRL","9":"SOL3_CTRL","10":"GPIO5_SPARE","13":"GND","14":"MOD_5V"},"J",note="dutinková lišta 1x14 pro lištu P1 modulu; piny 6, 11, 12 = displej modulu, nezapojovat",ref="J7")
-add('MOD_P2',"P2 modulu RP2350-Touch-LCD-2",SOCK,120,140,{"1":"+3V3_MOD","2":"GND","8":"CAN_TX","10":"CAN_RX","13":"GND"},"J",note="dutinková lišta 1x14 pro lištu P2 modulu",ref="J8")
-add('CONN3',"J6 rezerva GPIO5 / 3V3 / GND","Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",165,140,{"1":"GPIO5_SPARE","2":"+3V3_MOD","3":"GND"},"J",ref="J6")
-add('CONN6',"J2 SOL1-3 / TCU1-3","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal",195,140,{"1":"SOL1_OUT","2":"SOL2_OUT","3":"SOL3_OUT","4":"TCU1","5":"TCU2","6":"TCU3"},"J",note="1-3 k převodovce, 4-6 z původní TCU",ref="J2")
-add('CONN6',"J3 UP DOWN READY LOCKUP","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-6-5.08_1x06_P5.08mm_Horizontal",255,140,{"1":"+5V","2":"GND","3":"UP_IN","4":"DOWN_IN","5":"READY_IN","6":"LOCKUP_IN"},"J",ref="J3")
+add('MOD_P1',"P1 modulu RP2350-Touch-LCD-2",SOCK,60,140,{"1":"UP_D","2":"DOWN_D","3":"READY_D","4":"LOCKUP_D","5":"K_CTRL","7":"SOL1_CTRL","8":"SOL2_CTRL","9":"SOL3_CTRL","10":"GPIO5_SPARE","13":"GND","14":"MOD_5V"},"J",note="dutinková lišta 1x14 pro lištu P1 modulu; piny 6, 11, 12 = displej modulu, nezapojovat",ref="J7",hand=True,mpn="Sullins PPTC141LFBN-RC")
+add('MOD_P2',"P2 modulu RP2350-Touch-LCD-2",SOCK,120,140,{"1":"+3V3_MOD","2":"GND","8":"CAN_TX","10":"CAN_RX","13":"GND"},"J",note="dutinková lišta 1x14 pro lištu P2 modulu",ref="J8",hand=True,mpn="Sullins PPTC141LFBN-RC")
+add('CONN3',"J6 rezerva GPIO5 / 3V3 / GND","Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",165,140,{"1":"GPIO5_SPARE","2":"+3V3_MOD","3":"GND"},"J",ref="J6",hand=True,mpn="kolíková lišta 1x3 2,54 mm")
+add('CONN6',"J2 SOL1-3 / TCU1-3",PT(6),195,140,{"1":"SOL1_OUT","2":"SOL2_OUT","3":"SOL3_OUT","4":"TCU1","5":"TCU2","6":"TCU3"},"J",note="1-3 k převodovce, 4-6 z původní TCU",ref="J2",hand=True,mpn="Phoenix PT 1,5/6-3,5-H (1984659)")
+add('CONN6',"J3 UP DOWN READY LOCKUP",PT(6),255,140,{"1":"+5V","2":"GND","3":"UP_IN","4":"DOWN_IN","5":"READY_IN","6":"LOCKUP_IN"},"J",ref="J3",hand=True,mpn="Phoenix PT 1,5/6-3,5-H (1984659)")
 
 # --- Inputs ---
 text(20,172,"VSTUPY: 5 V spínače -> 3,3 V logika: dělič 6k8 / 10k (~3,0 V), 100nF, zener 3V6",3)
 x=40
-for nm in ("UP","DOWN","READY","LOCKUP"):
-    res("6k8",x,197,nm+"_IN",nm+"_D")
-    res("10k",x+24,197,nm+"_D","GND")
-    cap("100nF",x+48,197,nm+"_D","GND")
-    diode("BZX55C3V6","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",x+72,197,nm+"_D","GND")
+for i,nm in enumerate(("UP","DOWN","READY","LOCKUP")):
+    res("6k8",x,197,nm+"_IN",nm+"_D",ref=f"R{3+2*i}")
+    res("10k",x+24,197,nm+"_D","GND",ref=f"R{4+2*i}")
+    cap("100nF",x+48,197,nm+"_D","GND",ref=f"C{5+i}")
+    diode("MMSZ5227B",x+72,197,nm+"_D","GND",ref=f"D{3+i}")
     x+=96
 
 # --- Relay coil drive ---
 text(20,232,"CÍVKY RELÉ K1-K3 (společné): READY přepínač AND GPIO21 (aktivní HIGH přes Q6)",3)
 res("330",40,258,"READY_IN","RLY_A",ref="R13")
-add('PC817',"PC817","Package_DIP:DIP-4_W7.62mm",75,258,{"1":"RLY_A","2":"RLY_K","4":"RLY_C","3":"Q4_B"},"U",ref="U3")
-res("2k2",110,258,"+12V_SW","RLY_C",ref="R14")
+opto(75,258,"RLY_A","RLY_K","RLY_C","Q4_B",ref="U3")
+res("2k2",110,258,"+12V_AUX","RLY_C",ref="R14")
 res("10k",130,258,"Q4_B","PGND",ref="R15")
-add('NPN',"BC337","Package_TO_SOT_THT:TO-92_Inline_Wide",160,258,{"2":"Q4_B","1":"K_LOW","3":"PGND"},"Q",note="TO-92 pinout BC337: 1=C 2=B 3=E")
-diode("1N4148","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",190,258,"+12V_SW","K_LOW",note="flyback cívek",ref="D9")
-res("2k2",210,258,"+12V_SW","LED_A",ref="R16")
-add('LED',"zelená READY","LED_THT:LED_D3.0mm",230,258,{"1":"K_LOW","2":"LED_A"},"D",ref="D10")
-add('NPN',"BC337","Package_TO_SOT_THT:TO-92_Inline_Wide",280,258,{"2":"Q6_B","1":"RLY_K","3":"GND"},"Q",note="spíná LED optočlenu U3 z GPIO21 (3,3 V)",ref="Q6")
+npn(160,258,"Q4_B","K_LOW","PGND",note="spíná cívky K1-K3 (3x 33 mA)",ref="Q2")
+diode("1N4148W",190,258,"+12V_AUX","K_LOW",note="flyback cívek",ref="D9")
+res("2k2",210,258,"+12V_AUX","LED_A",ref="R16")
+add('LED',"zelená READY","LED_SMD:LED_0805_2012Metric",230,258,{"1":"K_LOW","2":"LED_A"},"D",ref="D10",lcsc="C2297",mpn="KT-0805G")
+npn(280,258,"Q6_B","RLY_K","GND",note="spíná LED optočlenu U3 z GPIO21 (3,3 V)",ref="Q6")
 res("4k7",255,258,"K_CTRL","Q6_B",ref="R26")
 res("47k",305,258,"Q6_B","GND",note="bez modulu drží Q6 zavřený (relé odpadlá)",ref="R27")
 
@@ -150,22 +164,21 @@ for n in (1,2,3):
     yy=318
     rb=17+3*(n-1)
     res("470",xb,yy,f"SOL{n}_CTRL",f"S{n}_LEDA",ref=f"R{rb}")
-    add('PC817',"PC817","Package_DIP:DIP-4_W7.62mm",xb+28,yy+25,{"1":f"S{n}_LEDA","2":"GND","4":f"S{n}_C","3":"PGND"},"U",ref=f"U{3+n}")
+    opto(xb+28,yy+25,f"S{n}_LEDA","GND",f"S{n}_C","PGND",ref=f"U{3+n}")
     res("1k",xb+52,yy,f"S{n}_C",f"G{n}",ref=f"R{rb+1}")
-    res("22k",xb+70,yy,"+12V_SW",f"G{n}",note="gate pull-up (22k: optočlen stačí ~0,5 mA i z 3,3 V GPIO)",ref=f"R{rb+2}")
-    diode("BZX55C15","Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_CathodeUp",xb+88,yy,"+12V_SW",f"G{n}",note="zener 15 V gate-source",ref=f"D{9+2*n}")
-    add('PFET',"IRF9540N","Package_TO_SOT_THT:TO-220-3_Vertical",xb+118,yy+25,{"1":f"G{n}","2":f"SOL{n}_NO","3":"+12V_SW"},"Q",ref=f"Q{2+n}")
-    add('RELAY_SPDT',"G5LE-1 12V SPDT","Relay_THT:Relay_SPDT_Omron-G5LE-1",xb+158,yy+25,{"2":"+12V_SW","5":"K_LOW","1":f"SOL{n}_OUT","4":f"TCU{n}","3":f"SOL{n}_NO"},"K",note="čísla pinů relé ověřit podle footprintu",ref=f"K{n}")
-    diode("1N4007","Diode_THT:D_DO-41_SOD81_P5.08mm_Vertical_CathodeUp",xb+158,yy+60,f"SOL{n}_OUT","PGND",note="flyback na straně solenoidu",ref=f"D{10+2*n}")
+    res("22k",xb+70,yy,"+12V_AUX",f"G{n}",note="gate pull-up (22k: optočlen stačí ~0,5 mA i z 3,3 V GPIO)",ref=f"R{rb+2}")
+    diode("MMSZ5245B",xb+88,yy,"+12V_AUX",f"G{n}",note="zener 15 V gate-source",ref=f"D{9+2*n}")
+    pfet(xb+118,yy+25,f"G{n}",f"SOL{n}_NO","+12V_SW",ref=f"Q{2+n}")
+    add('RELAY_SPDT',"G5LE-1 12V SPDT","Relay_THT:Relay_SPDT_Omron-G5LE-1",xb+158,yy+25,{"2":"+12V_AUX","5":"K_LOW","1":f"SOL{n}_OUT","4":f"TCU{n}","3":f"SOL{n}_NO"},"K",note="čísla pinů relé ověřit podle footprintu",ref=f"K{n}",hand=True,mpn="Omron G5LE-1 DC12")
+    diode("M7",xb+158,yy+60,f"SOL{n}_OUT","PGND",note="flyback na straně solenoidu",ref=f"D{10+2*n}")
 
 # --- CAN (rusEFI) ---
-text(20,392,"CAN (rusEFI): MCP2562, VDD 5 V, VIO 3,3 V z modulu, TX/RX = GPIO1/GPIO0 (P2); zakončení 120R přes JP2",3)
-add('MCP2562',"MCP2562-E/P","Package_DIP:DIP-8_W7.62mm",60,415,{"1":"CAN_TX","4":"CAN_RX","8":"GND","5":"+3V3_MOD","3":"+5V","2":"GND","7":"CANH","6":"CANL"},"U",note="CAN budič, STBY na GND = normální režim",ref="U7")
-cap("100nF",110,415,"+5V","GND",ref="C9")
-cap("100nF",130,415,"+3V3_MOD","GND",ref="C10")
+text(20,392,"CAN (rusEFI): SN65HVD230 (3,3 V z modulu), TX/RX = GPIO1/GPIO0 (P2), RS na GND = plná rychlost; zakončení 120R přes JP2",3)
+add('SN65HVD230',"SN65HVD230DR","Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",60,415,{"1":"CAN_TX","4":"CAN_RX","8":"GND","3":"+3V3_MOD","2":"GND","7":"CANH","6":"CANL"},"U",note="CAN budič 3,3 V; VREF (5) nezapojeno",ref="U7",lcsc="C12084",mpn="SN65HVD230DR")
+cap("100nF",110,415,"+3V3_MOD","GND",ref="C9")
 res("120",160,415,"CANH","CAN_TERM",note="zakončení sběrnice (osadit JP2, jen když je deska na konci sběrnice)",ref="R28")
-add('CONN2',"JP2 zakončení CAN 120R","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",190,415,{"1":"CAN_TERM","2":"CANL"},"J",ref="JP2")
-add('CONN2',"J4 CAN-H / CAN-L","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",230,415,{"1":"CANH","2":"CANL"},"J",ref="J4")
+add('CONN2',"JP2 zakončení CAN 120R","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",190,415,{"1":"CAN_TERM","2":"CANL"},"J",ref="JP2",hand=True,mpn="kolíková lišta 1x2 + jumper")
+add('CONN2',"J4 CAN-H / CAN-L",PT(2),230,415,{"1":"CANH","2":"CANL"},"J",ref="J4",hand=True,mpn="Phoenix PT 1,5/2-3,5-H (1984617)")
 
 # ---------------- connectivity check ----------------
 nets=collections.defaultdict(list)
@@ -190,7 +203,7 @@ for k,v in pts.items():
 def esc(s): return s.replace("\\","\\\\").replace('"','\\"')
 o=[]
 o.append(f'(kicad_sch (version 20231120) (generator "eeschema") (generator_version "8.0") (uuid "{ROOT}") (paper "A2") '
-         f'(title_block (title "AW4 shield – ovladač automatické převodovky Aisin AW-4") (rev "0.4") (comment 1 "RP2350-Touch-LCD-2 modul, 3x SPDT relé, 3x high-side P-MOSFET, CAN")) ')
+         f'(title_block (title "AW4 shield – ovladač automatické převodovky Aisin AW-4") (rev "0.5") (comment 1 "RP2350-Touch-LCD-2 modul, 3x SPDT relé, 3x high-side P-MOSFET, CAN; SMD osazuje JLC")) ')
 o.append("(lib_symbols "+" ".join(LIB)+")")
 for (x,y,t,sz) in texts:
     o.append(f'(text "{esc(t)}" (exclude_from_sim no) (at {x} {y} 0) (effects (font (size {sz} {sz}) bold) (justify left bottom)) (uuid "{U()}"))')
@@ -211,6 +224,8 @@ for p in parts:
       f'(property "Footprint" "{esc(p["fp"])}" (at {X:g} {Y:g} 0) {fp_eff}) '
       f'(property "Datasheet" "" (at {X:g} {Y:g} 0) {fp_eff}) '
       f'(property "Description" "{esc(p["note"])}" (at {X:g} {Y:g} 0) {fp_eff}) '
+      f'(property "LCSC" "{esc(p["lcsc"])}" (at {X:g} {Y:g} 0) {fp_eff}) '
+      f'(property "MPN" "{esc(p["mpn"])}" (at {X:g} {Y:g} 0) {fp_eff}) '
       + " ".join(f'(pin "{num}" (uuid "{U()}"))' for num in g)
       + f' (instances (project "{PROJ}" (path "/{ROOT}" (reference "{p["ref"]}") (unit 1)))))')
     for num,(dx,dy,a) in g.items():
