@@ -5,6 +5,7 @@ MODELS='''
 .model QBC337 NPN(BF=150 Is=1.4e-14 VAF=74 Rb=10 Rc=1 Ikf=0.3)   ; MMBT2222A (v0.5 Q2, Q6)
 .model D4148 D(Is=4e-9 N=1.9 Rs=0.6 BV=100)
 .model DZ3V6 D(Is=1e-9 N=2.5 Rs=20 BV=3.6 IBV=5m)
+.model DBAV D(Is=2.5n N=1.75 Rs=0.6 BV=100)   ; BAV99 (v0.5 D3-D6)
 .model DZ15 D(Is=1e-12 Rs=5 BV=15 IBV=5m)
 .model IRF9540 VDMOS(pchan Vto=-2.4 Kp=20 Rd=0.02 Rs=0.01 Cgs=3.4n Cgdmax=1.2n Cgdmin=0.15n Rb=0.01 Is=1e-12)   ; AOD409 (v0.5 Q1, Q3-Q5)
 '''
@@ -20,9 +21,9 @@ for VB in (12.0, 14.4):
     for GP in (3.3, 3.0):
         deck=f"* v0.5 checks\n{MODELS}\nVBAT sw 0 {VB}\nV5 v5 0 5\n"
         # input: switch on (5 V) -> 6k8 -> node, 10k pull-down, 3V6 zener, 100 nF
-        deck+="R3 v5 in 6.8k\nR4 in 0 10k\nD3 0 in DZ3V6\n"
+        deck+="V33 v33 0 3.3\nR3 v5 in 6.8k\nR4 in 0 10k\nD3a in v33 DBAV\nD3b 0 in DBAV\n"
         # input: hypothetical 14.4 V on the input wire (miswiring) -> clamp check
-        deck+=f"VX x14 0 14.4\nRX x14 inx 6.8k\nR4x inx 0 10k\nD3x 0 inx DZ3V6\n"
+        deck+=f"VX x14 0 14.4\nRX x14 inx 6.8k\nR4x inx 0 10k\nD3xa inx v33 DBAV\nD3xb 0 inx DBAV\n"
         # relay drive: READY_5V -> 330 -> LED U3 -> Q6 (base via 4k7 from GPIO, 47k pull-down) -> GND
         deck+=f"VG gpio 0 {GP}\nRG gpio gq 60\nR26 gq q6b 4.7k\nR27 q6b 0 47k\nQ6 rlyk q6b 0 QBC337\nR13 v5 ra 330\n"+opto("U3","ra","rlyk","rc","qb",CTR)
         deck+="R14 sw rc 2.2k\nR15 qb 0 10k\nQ2 kl qb 0 QBC337\nRCOIL sw kl 133\nD9 kl sw D4148\n"

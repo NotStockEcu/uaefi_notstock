@@ -1,6 +1,6 @@
 # AW4 shield v0.5 – ovladač automatické převodovky Aisin AW4 s modulem RP2350-Touch-LCD-2
 
-Deska **76 × 82 mm**, SMD součástky osadí **JLCPCB**, ručně se pájí jen vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasune **na výšku vlevo nahoře**, všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
+Deska **76 × 82 mm**, SMD součástky osadí **JLCPCB** (Economic PCBA), ručně se pájí vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka) a dva SMD díly s velkými pady (C1, D2). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasune **na výšku vlevo nahoře**, všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
 
 * při spínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
@@ -31,10 +31,11 @@ Předchozí vývodová verze 100 × 100 mm (v0.4) je v historii gitu (commit „
 ## Objednání
 
 1. **JLCPCB**: nahrát `fab/aw4_shield_gerber.zip`, 2 vrstvy, 1,6 mm, **měď 1 oz stačí**. Zapnout **PCB Assembly** (horní strana) a nahrát `fab/jlc_bom.csv` a `fab/jlc_cpl.csv`.
-   * 30 druhů / 63 kusů SMD. Většina jsou díly z knihovny **Basic** nebo **Preferred** (bez příplatku). **Extended** jsou jen 4: MOSFET AOD409, optočlen PC817 SMD, transil SMBJ24A a elektrolyt C1 (JLC za každý účtuje jednorázový poplatek, cca 3 USD).
-   * V náhledu osazení **zkontrolovat natočení** polarizovaných dílů (diody, optočleny, SOT-23, SOIC-8, D-PAK, elektrolyt C1). JLC to při kontrole také hlídá, ale natočení z KiCadu nemusí u všech pouzder sedět.
+   * Zvolit **Economic PCBA**. Poplatek za založení dílu (Feeders Loading fee) se platí jednou za objednávku za každý druh dílu mimo knihovnu Basic. Kromě Basic dílů jsou na desce jen 3 druhy: **AOD409** (MOSFET, Extended), **MMSZ5245B** (zenerka 15 V) a **SN65HVD230** (CAN) – oba poslední vede JLC jako Preferred, v přehledu objednávky se ale mohou ukázat jako Extended.
+   * C1 (470 µF) a D2 (SMBJ24A) se kvůli poplatku pájí ručně (SMD s velkými pady).
+   * V náhledu osazení **zkontrolovat natočení** polarizovaných dílů (diody, optočleny, SOT-23, SOIC-8, D-PAK). JLC to při kontrole také hlídá, ale natočení z KiCadu nemusí u všech pouzder sedět.
    * Sklad dílů ověřený při generování (listopad 2026) je v listu „JLC SMD“; před objednáním zkontrolovat v košíku.
-2. **Ruční díly** (list „Ruční osazení“ nebo `digikey_bom.csv`): 3× relé Omron G5LE-1 DC12, svorkovnice Phoenix PT 1,5 (rozteč 3,5 mm), 2× dutinková lišta 1×14, TSR 1-2450, patice TR5 + pojistka 5 A, kolíková lišta + propojka, modul RP2350-Touch-LCD-2.
+2. **Ruční díly** (list „Ruční osazení“ nebo `digikey_bom.csv`): C1 Panasonic EEE-FK1E471P, D2 SMBJ24A, 3× relé Omron G5LE-1 DC12, svorkovnice Phoenix PT 1,5 (rozteč 3,5 mm), 2× dutinková lišta 1×14, TSR 1-2450, patice TR5 + pojistka 5 A, kolíková lišta + propojka, modul RP2350-Touch-LCD-2.
 
 ## Podle servisního manuálu AW-4
 
@@ -110,11 +111,13 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 | J1–J4 | Phoenix PT 1,5 (3,5 mm) | +12 V/GND, SOL/TCU, spínače, CAN | ručně |
 | Q1, Q3–Q5 | AOD409 (P-MOSFET −60 V, 40 mΩ, D-PAK) | přepólování / high-side spínače solenoidů | JLC |
 | Q2, Q6 | MMBT2222A | cívky relé / LED optočlenu relé z GPIO21 | JLC |
-| U3 / U4–U6 | PC817 SMD | optočlen relé / optočleny solenoidů | JLC |
+| U3 / U4–U6 | LTV-817S (PC817 v SMD) | optočlen relé / optočleny solenoidů | JLC |
 | U7 | SN65HVD230 (3,3 V) | CAN budič, J4 = CAN-H/CAN-L, JP2 = zakončení 120 Ω | JLC |
-| R3–R10, D3–D6 | 6k8 + 10k, MMSZ5227B (3,6 V) | dělič a ochrana vstupů 5 V → 3,3 V | JLC |
+| R3–R10, D3–D6 | 6k8 + 10k, BAV99 | dělič 5 V → 3,0 V, přepětí svede BAV99 do 3V3 / GND | JLC |
 | D12, D14, D16 | M7 (1N4007 v SMA) | flyback diody na straně solenoidu (za relé) | JLC |
-| D2 | SMBJ24A | transil na napájení | JLC |
+| D2 | SMBJ24A | transil na napájení | ručně (SMD) |
+| C1 | 470 µF / 25 V SMD (EEE-FK1E471P) | zásobní kondenzátor +12 V | ručně (SMD) |
+| D1, D11, D13, D15 | MMSZ5245B (15 V) | ochrana gate–source MOSFETů | JLC |
 | D7 | SS14 | 5 V do modulu (OR s USB) | JLC |
 | R2 | 0 Ω | jediné spojení výkonové (PGND) a logické (GND) země | JLC |
 
@@ -133,7 +136,7 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 
 ## Revize zapojení (simulace ngspice, `tools/spice/sim_v05.py`, `toff_v05.cir`)
 
-* **Vstupy:** sepnutý spínač 5 V → **2,97 V** na pinu; i 14,4 V omylem na vodiči vstupu zenerka omezí na 3,5 V.
+* **Vstupy:** sepnutý spínač 5 V → **2,97 V** na pinu; 14,4 V omylem na vodiči vstupu svede BAV99 do 3V3 (pin ~3,9 V, proud omezený rezistorem 6k8 na 1,5 mA).
 * **Spínání solenoidů:** optočlen z GPIO přes 470 Ω (2,5–3,1 mA); s gate pull-upem 22 kΩ AOD409 spíná naplno (Vgs −11,3 V) i při optočlenu s CTR 25 % a GPIO 3,0 V. Gate se zavře za ~0,3 ms, proud solenoidu klesne za ~1 ms, flyback drží −1 V.
 * **Relé:** Q6 (MMBT2222A) z GPIO21 (0,5 mA) sepne LED U3 (9,6 mA), Q2 sepne cívky (0,2 V); při GPIO21 = 0 nebo vyjmutém modulu relé spolehlivě odpadnou.
 * **Napájení 5 V:** modul s displejem + optočleny ≪ 1 A z TSR; CAN budič bere 3,3 V z modulu.

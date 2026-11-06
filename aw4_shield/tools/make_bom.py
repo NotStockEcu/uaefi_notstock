@@ -69,6 +69,8 @@ HAND = {  # value -> (popis, výrobce, MPN, poznámka k osazení, krok)
  "JP2 zakončení CAN 120R": ("Kolíková lišta 1×2 + propojka", "Sullins", "PRPC040SAAN-RC", "odlomit z lišty 1×40; propojku nasadit jen na konci sběrnice", 1),
  "G5LE-1 12V SPDT": ("Relé 12 V SPDT, 10 A", "Omron", "G5LE-1 DC12", "pinově kompatibilní: Songle SRD-12VDC-SL-C", 5),
  "5A": ("Patice pojistky TR5", "Littelfuse", "56000001009", "pojistka viz níže", 3),
+ "470uF 25V": ("Elektrolyt 470 µF / 25 V, SMD 10×10,2 mm", "Panasonic", "EEE-FK1E471P", "SMD – velké pady, pájí se ručně; polarita: + podle potisku (zkosený roh = +)", 3),
+ "SMBJ24A": ("Transil (TVS) 24 V, 600 W, SMB", "Littelfuse", "SMBJ24A", "SMD – pájí se ručně; proužek = katoda (k +12 V)", 3),
  "TSR 1-2450 (12V->5V 1A)": ("Spínaný stabilizátor 12 → 5 V / 1 A", "Traco Power", "TSR 1-2450", "pin 1 = Vin (čtvercový pad), potisk TSR1-2450", 3),
 }
 EXTRA = [  # (popis, výrobce, MPN, ks/desku, poznámka)
@@ -114,7 +116,7 @@ ws = wb.active; ws.title = "JLC SMD"
 ws["A1"] = "AW4 shield v0.5 – díly, které osadí JLCPCB (SMD, horní strana)"; ws["A1"].font = Font(name=F, bold=True, size=14)
 ws["A2"] = ("Nahrát: fab/aw4_shield_gerber.zip (deska), fab/jlc_bom.csv (BOM) a fab/jlc_cpl.csv (pozice). "
             "Basic a Preferred díly jsou bez příplatku, za každý Extended díl si JLC účtuje jednorázový poplatek (cca 3 USD). "
-            "V náhledu JLC zkontrolovat natočení diod, optočlenů, tranzistorů, SN65HVD230 a elektrolytu C1.")
+            "Objednat jako Economic PCBA. V náhledu JLC zkontrolovat natočení diod, optočlenů, tranzistorů a SN65HVD230.")
 ws["A2"].alignment = Alignment(wrap_text=True); ws.merge_cells("A2:H2"); ws.row_dimensions[2].height = 45
 data = []
 for (val, fp, lcsc, mpn), refs in grp.items():
@@ -137,7 +139,8 @@ for desc, man, mpn, q, note in EXTRA:
 table(ws2, 4, ["Krok", "Označení", "Díl", "Výrobce", "Výrobní číslo", "Ks/desku", "Objednat", "Poznámka"], data, [6, 18, 36, 16, 22, 9, 10, 52])
 
 ws3 = wb.create_sheet("Postup")
-steps = ["Desku objednat v JLCPCB s osazením (PCBA, horní strana): gerbery + jlc_bom.csv + jlc_cpl.csv; v náhledu zkontrolovat natočení polarizovaných dílů.",
+steps = ["Desku objednat v režimu Economic PCBA. Ručně se pájí i dva SMD díly s velkými pady: C1 (470 µF) a D2 (SMBJ24A) – krok 3.",
+         "Desku objednat v JLCPCB s osazením (PCBA, horní strana): gerbery + jlc_bom.csv + jlc_cpl.csv; v náhledu zkontrolovat natočení polarizovaných dílů.",
          "Krok 1 – kolíkové lišty J6 a JP2 (nízké, pájí se první).",
          "Krok 2 – dutinkové lišty J7, J8 pro modul: nejlépe zasunout do modulu, nasadit na desku a teprve pak připájet, ať jsou rovnoběžné.",
          "Krok 3 – měnič TSR 1-2450 (U1) a patice pojistky F1.",

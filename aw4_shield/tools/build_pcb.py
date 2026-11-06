@@ -23,15 +23,15 @@ P["Q6"]=(128.2,114.6,0)
 P["Q2"]=(108.5,120.5,0); P["R14"]=(114,120.5,0); P["R15"]=(119,120.5,0); P["D9"]=(113,125.5,0)
 P["U7"]=(127,139,90); P["C9"]=(127,145.2,0)
 for i,(Ra,Rb,C,D) in enumerate([("R3","R4","C5","D3"),("R5","R6","C6","D4"),("R7","R8","C7","D5"),("R9","R10","C8","D6")]):
-    y=131.5+3.2*i
+    y=131.0+3.7*i
     P[Ra]=(107.2,y,0); P[Rb]=(111.0,y,0); P[C]=(114.8,y,0); P[D]=(119.4,y,0)
 # ---- relé + výkonové kanály (vpravo) ----
 for n,(K,D,Q,Z,Rpu,Rg) in enumerate([("K1","D12","Q3","D11","R19","R18"),("K2","D14","Q4","D13","R22","R21"),("K3","D16","Q5","D15","R25","R24")]):
     yc=109.0+17.5*n
     P[K]=(141,yc,90)
     P[Q]=(169.4,yc+4.5,0)
-    P[Z]=(164.9,yc-1.5,0); P[Rpu]=(169.3,yc-1.5,0); P[Rg]=(172.7,yc-1.5,0)
-    P[D]=(166,yc-5.5,0)
+    P[Rg]=(164.6,yc-1.5,0); P[Rpu]=(168.4,yc-1.5,180); P[Z]=(172.8,yc-1.5,0)
+    P[D]=(166,yc-5.5,0) if n else (172.1,yc-5.6,0)
 # ---- napájení (pás nad svorkovnicemi) ----
 P["F1"]=(168.5,164,180); P["R29"]=(140.6,155.6,0); P["Q1"]=(152,164,0); P["D2"]=(152,156.6,0); P["C2"]=(146,156.6,0)
 P["R1"]=(152.5,169.9,0); P["D1"]=(147.6,169.9,0)
@@ -119,7 +119,7 @@ for fp in b.GetFootprints():
         t.SetTextSize(pcbnew.VECTOR2I_MM(sz,sz)); t.SetTextThickness(MM(sz*0.16)); fp.Add(t)
     r.SetLayer(pcbnew.F_Fab); r.SetTextSize(pcbnew.VECTOR2I_MM(0.7,0.7)); r.SetTextThickness(MM(0.11))
 # mounting holes
-HOLES=[(173,103,"MountingHole_3.2mm_M3"),(103.5,152,"MountingHole_3.2mm_M3"),(172.5,155.5,"MountingHole_3.2mm_M3")]
+HOLES=[(165.0,102.9,"MountingHole_3.2mm_M3"),(103.5,152,"MountingHole_3.2mm_M3"),(172.5,155.5,"MountingHole_3.2mm_M3")]
 for i,(x,y,hname) in enumerate(HOLES):
     fp=pcbnew.FootprintLoad(FPDIR+"MountingHole.pretty",hname)
     fp.SetFPID(pcbnew.LIB_ID("MountingHole",hname))
@@ -129,7 +129,7 @@ for i,(x,y,hname) in enumerate(HOLES):
 for x0,y0,x1,y1 in [(X0,Y0,X1,Y0),(X1,Y0,X1,Y1),(X1,Y1,X0,Y1),(X0,Y1,X0,Y0)]:
     s=pcbnew.PCB_SHAPE(b); s.SetShape(pcbnew.SHAPE_T_SEGMENT); s.SetStart(pcbnew.VECTOR2I_MM(x0,y0)); s.SetEnd(pcbnew.VECTOR2I_MM(x1,y1))
     s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(MM(0.1)); b.Add(s)
-b.GetDesignSettings().m_CopperEdgeClearance=MM(0.3)   # typical fab limit (JLCPCB 0.3 mm)
+b.GetDesignSettings().m_CopperEdgeClearance=MM(0.5)   # pro autorouter; finish_pcb.py vrátí 0,3 mm (JLC)   # typical fab limit (JLCPCB 0.3 mm)
 # net classes
 ns=b.GetDesignSettings().m_NetSettings
 dflt=ns.GetDefaultNetclass(); dflt.SetTrackWidth(MM(0.3)); dflt.SetClearance(MM(0.25)); dflt.SetViaDiameter(MM(0.8)); dflt.SetViaDrill(MM(0.4))

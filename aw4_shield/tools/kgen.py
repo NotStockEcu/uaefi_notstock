@@ -51,13 +51,14 @@ defbox('REG_5V','U',[("1","VIN"),("2","GND")],[("3","VOUT")])
 defbox('MOD_P1','J',[("1","GPIO7 UP"),("2","GPIO9 DOWN"),("3","GPIO8 READY"),("4","GPIO22 LOCKUP"),("5","GPIO21 RELE"),("6","GPIO18 (LCD)"),("7","GPIO23 SOL1"),("8","GPIO11 SOL2"),("9","GPIO6 SOL3"),("10","GPIO5"),("11","GPIO20 (LCD)"),("12","GPIO19 (LCD)"),("13","GND"),("14","5V")],[])
 defbox('MOD_P2','J',[("1","3V3"),("2","GND"),("3","GPIO28"),("4","GPIO29"),("5","GPIO13"),("6","GPIO12"),("7","GPIO2"),("8","GPIO1 CAN_TX"),("9","GPIO3"),("10","GPIO0 CAN_RX"),("11","GPIO4"),("12","GPIO10"),("13","GND"),("14","VBAT")],[])
 defbox('CONN3','J',[("1","1"),("2","2"),("3","3")],[])
+defbox('BAV99','D',[("3","K1/A2 (vstup)")],[("2","K2 (3V3)"),("1","A1 (GND)")])
 defbox('SN65HVD230','U',[("1","D (TXD)"),("4","R (RXD)"),("8","RS"),("5","VREF")],[("3","VCC"),("2","GND"),("7","CANH"),("6","CANL")])
 nano_left=[("1","D1/TX"),("2","D0/RX"),("3","RESET"),("4","GND"),("5","D2"),("6","D3"),("7","D4"),("8","D5"),("9","D6"),("10","D7"),("11","D8"),("12","D9"),("13","D10"),("14","D11"),("15","D12")]
 nano_right=[("16","D13"),("17","3V3"),("18","AREF"),("19","A0"),("20","A1"),("21","A2"),("22","A3"),("23","A4"),("24","A5"),("25","A6"),("26","A7"),("27","5V"),("28","RESET"),("29","GND"),("30","VIN")]
 defbox('ARDUINO_NANO','U',nano_left,nano_right)
 LIB=[two_pin('R','R',GFX['R']),two_pin('C','C',GFX['C']),two_pin('CP','C',GFX['CP']),
      two_pin('D','D',GFX['D'],"K","A"),two_pin('LED','D',GFX['D'],"K","A"),two_pin('FUSE','F',GFX['FUSE']),two_pin('FERRITE','L',GFX['FERRITE'])]
-for k,(l,r) in BOX.items(): LIB.append(box_sym(k,BOX_REF if False else {'CONN2':'J','CONN4':'J','CONN6':'J','CONN7':'J','PFET':'Q','NPN':'Q','PC817':'U','RELAY_SPDT':'K','REG_5V':'U','MOD_P1':'J','MOD_P2':'J','CONN3':'J','SN65HVD230':'U','ARDUINO_NANO':'U'}[k],l,r))
+for k,(l,r) in BOX.items(): LIB.append(box_sym(k,BOX_REF if False else {'CONN2':'J','CONN4':'J','CONN6':'J','CONN7':'J','PFET':'Q','NPN':'Q','PC817':'U','RELAY_SPDT':'K','REG_5V':'U','MOD_P1':'J','MOD_P2':'J','CONN3':'J','SN65HVD230':'U','BAV99':'D','ARDUINO_NANO':'U'}[k],l,r))
 
 # pin geometry helper: returns {num:(dx,dy,outward_angle)} in sheet coordinates relative to part origin
 def pin_geom(sym):
@@ -100,10 +101,10 @@ def cap(val,x,y,a,b,ref=None): return add('C',val,C0805,x,y,{"1":a,"2":b},"C",re
 DI={"MMSZ5227B":(SOD123,"C22395553"),"MMSZ5242B":(SOD123,"C19077426"),"MMSZ5245B":(SOD123,"C19077428"),"1N4148W":(SOD123,"C81598"),
     "M7":(SMA,"C95872"),"SS14":(SMA,"C2480"),"SMBJ24A":("Diode_SMD:D_SMB","C123819")}
 def diode(val,x,y,k,a,note="",ref=None): return add('D',val,DI[val][0],x,y,{"1":k,"2":a},"D",note=note,ref=ref,lcsc=DI[val][1],mpn=val)
-NPN_=("MMBT2222A",SOT23,"C8512"); PFET_=("AOD409",DPAK,"C36220"); PC817_=("PC817X2CSP9F",OPTO,"C66405")
+NPN_=("MMBT2222A",SOT23,"C8512"); PFET_=("AOD409",DPAK,"C36220"); PC817_=("LTV-817S-TA1-C",OPTO,"C109227")
 def npn(x,y,b,c,e,note="",ref=None): return add('NPN',NPN_[0],NPN_[1],x,y,{"1":b,"3":c,"2":e},"Q",note=note,ref=ref,lcsc=NPN_[2],mpn=NPN_[0])
 def pfet(x,y,g,d,s_,note="",ref=None): return add('PFET',PFET_[0],PFET_[1],x,y,{"1":g,"2":d,"3":s_},"Q",note=note,ref=ref,lcsc=PFET_[2],mpn=PFET_[0])
-def opto(x,y,a,k,c,e,ref): return add('PC817',"PC817",PC817_[1],x,y,{"1":a,"2":k,"4":c,"3":e},"U",ref=ref,lcsc=PC817_[2],mpn=PC817_[0])
+def opto(x,y,a,k,c,e,ref): return add('PC817',"LTV-817S",PC817_[1],x,y,{"1":a,"2":k,"4":c,"3":e},"U",ref=ref,lcsc=PC817_[2],mpn=PC817_[0])
 PT=lambda n:f"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-{n}-3.5-H_1x{n:02d}_P3.50mm_Horizontal"
 
 # --- Power ---
@@ -112,9 +113,9 @@ add('CONN2',"J1 +12V / PGND",PT(2),40,50,{"1":"+12V_IN","2":"PGND"},"J",ref="J1"
 add('FUSE',"5A","Fuse:Fuseholder_TR5_Littelfuse_No560_No460",75,50,{"1":"+12V_IN","2":"+12V_FUSED"},"F",note="pojistka TR5 5 A (T) v patici TR5",ref="F1",hand=True,mpn="Littelfuse 56000001009 + 37215000411")
 pfet(110,50,"Q0_G","+12V_FUSED","+12V_SW",note="ochrana proti přepólování (D na vstupu, S na zátěži)",ref="Q1")
 res("100k",150,50,"Q0_G","PGND",ref="R1")
-diode("MMSZ5242B",170,50,"+12V_AUX","Q0_G",note="zener 12 V gate-source Q1",ref="D1")
-diode("SMBJ24A",190,50,"+12V_SW","PGND",note="TVS 600 W (load dump), VBR 26,7-29,5 V",ref="D2")
-add('CP',"470uF 25V","Capacitor_SMD:CP_Elec_10x10.5",210,50,{"1":"+12V_SW","2":"PGND"},"C",ref="C1",lcsc="C248607",mpn="EEE-FK1E471P")
+diode("MMSZ5245B",170,50,"+12V_AUX","Q0_G",note="zener 15 V gate-source Q1",ref="D1")
+add('D',"SMBJ24A",DI["SMBJ24A"][0],190,50,{"1":"+12V_SW","2":"PGND"},"D",note="TVS 600 W (load dump), VBR 26,7-29,5 V; pájí se ručně",ref="D2",lcsc="C123819",mpn="SMBJ24A",hand=True)
+add('CP',"470uF 25V","Capacitor_SMD:CP_Elec_10x10.5",210,50,{"1":"+12V_SW","2":"PGND"},"C",note="SMD elektrolyt, pájí se ručně",ref="C1",lcsc="C248607",mpn="EEE-FK1E471P",hand=True)
 cap("100nF",230,50,"+12V_AUX","PGND",ref="C2")
 add('R',"0R","Resistor_SMD:R_1206_3216Metric",250,50,{"1":"+12V_SW","2":"+12V_AUX"},"R",note="odbočka +12 V pro cívky relé, měnič a gate (jen kvůli šířkám cest)",ref="R29",lcsc="C17888",mpn="1206W4F0000T5E")
 add('REG_5V',"TSR 1-2450 (12V->5V 1A)","Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT",275,50,{"1":"+12V_AUX","2":"GND","3":"+5V_BUCK"},"U",note="spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V",ref="U1",hand=True,mpn="TSR 1-2450")
@@ -134,13 +135,13 @@ add('CONN6',"J2 SOL1-3 / TCU1-3",PT(6),195,140,{"1":"SOL1_OUT","2":"SOL2_OUT","3
 add('CONN6',"J3 UP DOWN READY LOCKUP",PT(6),255,140,{"1":"+5V","2":"GND","3":"UP_IN","4":"DOWN_IN","5":"READY_IN","6":"LOCKUP_IN"},"J",ref="J3",hand=True,mpn="Phoenix PT 1,5/6-3,5-H (1984659)")
 
 # --- Inputs ---
-text(20,172,"VSTUPY: 5 V spínače -> 3,3 V logika: dělič 6k8 / 10k (~3,0 V), 100nF, zener 3V6",3)
+text(20,172,"VSTUPY: 5 V spínače -> 3,3 V logika: dělič 6k8 / 10k (~3,0 V), 100nF, BAV99 svede přepětí do 3V3 / GND",3)
 x=40
 for i,nm in enumerate(("UP","DOWN","READY","LOCKUP")):
     res("6k8",x,197,nm+"_IN",nm+"_D",ref=f"R{3+2*i}")
     res("10k",x+24,197,nm+"_D","GND",ref=f"R{4+2*i}")
     cap("100nF",x+48,197,nm+"_D","GND",ref=f"C{5+i}")
-    diode("MMSZ5227B",x+72,197,nm+"_D","GND",ref=f"D{3+i}")
+    add('BAV99',"BAV99",SOT23,x+72,197,{"1":"GND","2":"+3V3_MOD","3":nm+"_D"},"D",note="ochranné diody vstupu do 3V3 a GND",ref=f"D{3+i}",lcsc="C2500",mpn="BAV99,215")
     x+=96
 
 # --- Relay coil drive ---

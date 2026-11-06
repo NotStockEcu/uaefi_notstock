@@ -2,6 +2,7 @@ import pcbnew, sys
 MM=pcbnew.FromMM
 b=pcbnew.LoadBoard(sys.argv[1])
 ok=pcbnew.ImportSpecctraSES(b, sys.argv[2]); print("import SES", ok)
+b.GetDesignSettings().m_CopperEdgeClearance=MM(0.3)   # pravidlo výrobce (JLCPCB)
 def zone(netname, layer, pts, prio=0):
     z=pcbnew.ZONE(b); z.SetLayer(layer); z.SetNet(b.FindNet("/"+netname))
     ol=z.Outline(); ol.NewOutline()

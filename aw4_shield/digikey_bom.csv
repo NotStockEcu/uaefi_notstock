@@ -1,6 +1,8 @@
 Quantity,Manufacturer Part Number,Manufacturer,Customer Reference,Description
 1,PRPC040SAAN-RC,Sullins,J6 JP2,Kolíková lišta 1×40 – odlomit 1×3 (J6) a 1×2 (JP2)
 2,PPTC141LFBN-RC,Sullins,J7 J8,"Dutinková lišta 1×14, 2,54 mm"
+1,EEE-FK1E471P,Panasonic,C1,"Elektrolyt 470 µF / 25 V, SMD 10×10,2 mm"
+1,SMBJ24A,Littelfuse,D2,"Transil (TVS) 24 V, 600 W, SMB"
 1,56000001009,Littelfuse,F1,Patice pojistky TR5
 1,TSR 1-2450,Traco Power,U1,Spínaný stabilizátor 12 → 5 V / 1 A
 2,1984617,Phoenix Contact,J1 J4,"Svorkovnice 2 pól, rozteč 3,5 mm"

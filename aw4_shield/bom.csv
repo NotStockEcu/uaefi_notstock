@@ -1,15 +1,14 @@
 Ref,Qty,Value,Footprint,Poznámka
-C1,1,470uF 25V,Capacitor_SMD:CP_Elec_10x10.5,
+C1,1,470uF 25V,Capacitor_SMD:CP_Elec_10x10.5,"SMD elektrolyt, pájí se ručně"
 C2 C5 C6 C7 C8 C9,6,100nF,Capacitor_SMD:C_0805_2012Metric,
 C3,1,10uF 25V,Capacitor_SMD:C_0805_2012Metric,
 C4,1,100uF 6.3V,Capacitor_SMD:C_1206_3216Metric,
-D1,1,MMSZ5242B,Diode_SMD:D_SOD-123,zener 12 V gate-source Q1
-D2,1,SMBJ24A,Diode_SMD:D_SMB,"TVS 600 W (load dump), VBR 26,7-29,5 V"
-D3 D4 D5 D6,4,MMSZ5227B,Diode_SMD:D_SOD-123,
+D1 D11 D13 D15,4,MMSZ5245B,Diode_SMD:D_SOD-123,zener 15 V gate-source Q1
+D2,1,SMBJ24A,Diode_SMD:D_SMB,"TVS 600 W (load dump), VBR 26,7-29,5 V; pájí se ručně"
+D3 D4 D5 D6,4,BAV99,Package_TO_SOT_SMD:SOT-23-3,ochranné diody vstupu do 3V3 a GND
 D7,1,SS14,Diode_SMD:D_SMA,5 V do modulu přes Schottky – USB modulu a napájení desky se nepřetahují (JP1 už není potřeba)
 D9,1,1N4148W,Diode_SMD:D_SOD-123,flyback cívek
 D10,1,zelená READY,LED_SMD:LED_0805_2012Metric,
-D11 D13 D15,3,MMSZ5245B,Diode_SMD:D_SOD-123,zener 15 V gate-source
 D12 D14 D16,3,M7,Diode_SMD:D_SMA,flyback na straně solenoidu
 F1,1,5A,Fuse:Fuseholder_TR5_Littelfuse_No560_No460,pojistka TR5 5 A (T) v patici TR5
 J1,1,J1 +12V / PGND,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-2-3.5-H_1x02_P3.50mm_Horizontal",
@@ -38,6 +37,6 @@ R27,1,47k,Resistor_SMD:R_0805_2012Metric,bez modulu drží Q6 zavřený (relé o
 R28,1,120,Resistor_SMD:R_0805_2012Metric,"zakončení sběrnice (osadit JP2, jen když je deska na konci sběrnice)"
 R29,1,0R,Resistor_SMD:R_1206_3216Metric,"odbočka +12 V pro cívky relé, měnič a gate (jen kvůli šířkám cest)"
 U1,1,TSR 1-2450 (12V->5V 1A),Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT,"spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V"
-U3 U4 U5 U6,4,PC817,Package_DIP:SMDIP-4_W9.53mm,
+U3 U4 U5 U6,4,LTV-817S,Package_DIP:SMDIP-4_W9.53mm,
 U7,1,SN65HVD230DR,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,"CAN budič 3,3 V; VREF (5) nezapojeno"
 MODUL,1,Waveshare RP2350-Touch-LCD-2,(zasunuto do J7/J8),řídicí modul s displejem
