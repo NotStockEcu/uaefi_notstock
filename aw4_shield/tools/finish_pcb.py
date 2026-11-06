@@ -11,8 +11,8 @@ def zone(netname, layer, pts, prio=0):
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL); z.SetThermalReliefGap(MM(0.4)); z.SetThermalReliefSpokeWidth(MM(0.6))
     b.Add(z); return z
 # v0.5: PGND (výkonová část vpravo a dole) / GND (logika pod modulem a vlevo dole), spojené jen přes R2
-zone("PGND", pcbnew.B_Cu, [(137,100.5),(175.5,100.5),(175.5,181.5),(132.8,181.5),(132.8,156),(137,156)])
-zone("GND",  pcbnew.B_Cu, [(100.5,100.5),(136.4,100.5),(136.4,155.4),(132.2,155.4),(132.2,181.5),(100.5,181.5)])
+zone("PGND", pcbnew.B_Cu, [(148,100.5),(199.5,100.5),(199.5,199.5),(132.8,199.5),(132.8,156),(148,156)])
+zone("GND",  pcbnew.B_Cu, [(100.5,100.5),(147.4,100.5),(147.4,155.4),(132.2,155.4),(132.2,199.5),(100.5,199.5)])
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
 pcbnew.SaveBoard(sys.argv[1], b)
 tr=[t for t in b.GetTracks()]

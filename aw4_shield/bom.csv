@@ -1,21 +1,24 @@
 Ref,Qty,Value,Footprint,Poznámka
 C1,1,470uF 25V,Capacitor_SMD:CP_Elec_10x10.5,"SMD elektrolyt, pájí se ručně"
-C2 C5 C6 C7 C8 C9,6,100nF,Capacitor_SMD:C_0805_2012Metric,
+C2 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14,11,100nF,Capacitor_SMD:C_0805_2012Metric,
 C3,1,10uF 25V,Capacitor_SMD:C_0805_2012Metric,
 C4,1,100uF 6.3V,Capacitor_SMD:C_1206_3216Metric,
 D1 D11 D13 D15,4,MMSZ5245B,Diode_SMD:D_SOD-123,zener 15 V gate-source Q1
 D2,1,SMBJ24A,Diode_SMD:D_SMB,"TVS 600 W (load dump), VBR 26,7-29,5 V; pájí se ručně"
-D3 D4 D5 D6,4,BAV99,Package_TO_SOT_SMD:SOT-23-3,ochranné diody vstupu do 3V3 a GND
+D3 D4 D5 D6 D17 D18 D19 D20,8,BAV99,Package_TO_SOT_SMD:SOT-23-3,ochranné diody vstupu do 3V3 a GND
 D7,1,SS14,Diode_SMD:D_SMA,5 V do modulu přes Schottky – USB modulu a napájení desky se nepřetahují (JP1 už není potřeba)
 D9,1,1N4148W,Diode_SMD:D_SOD-123,flyback cívek
 D10,1,zelená READY,LED_SMD:LED_0805_2012Metric,
 D12 D14 D16,3,M7,Diode_SMD:D_SMA,flyback na straně solenoidu
+D21,1,1N5819WS,Diode_SMD:D_SOD-323,"záporné napětí z indukčního čidla omezí na ~-0,3 V"
+D22,1,1N4148WS,Diode_SMD:D_SOD-323,"kladné napětí omezí na 5,7 V"
 F1,1,5A,Fuse:Fuseholder_TR5_Littelfuse_No560_No460,pojistka TR5 5 A (T) v patici TR5
 J1,1,J1 +12V / PGND,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-2-3.5-H_1x02_P3.50mm_Horizontal",
 J2,1,J2 SOL1-3 / TCU1-3,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-6-3.5-H_1x06_P3.50mm_Horizontal","1-3 k převodovce, 4-6 z původní TCU"
 JP2,1,JP2 zakončení CAN 120R,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,
 J3,1,J3 UP DOWN READY LOCKUP,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-6-3.5-H_1x06_P3.50mm_Horizontal",
 J4,1,J4 CAN-H / CAN-L,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-2-3.5-H_1x02_P3.50mm_Horizontal",
+J5,1,J5 BRZDA / VSS,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-2-3.5-H_1x02_P3.50mm_Horizontal","1 = brzdový spínač (+12 V při brzdění), 2 = signál rychlosti (Hall 5/12 V nebo indukční)"
 J6,1,J6 rezerva GPIO5 / 3V3 / GND,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical,
 J7,1,P1 modulu RP2350-Touch-LCD-2,Connector_PinSocket_2.54mm:PinSocket_1x14_P2.54mm_Vertical,"dutinková lišta 1x14 pro lištu P1 modulu; piny 6, 11, 12 = displej modulu, nezapojovat"
 J8,1,P2 modulu RP2350-Touch-LCD-2,Connector_PinSocket_2.54mm:PinSocket_1x14_P2.54mm_Vertical,dutinková lišta 1x14 pro lištu P2 modulu
@@ -25,18 +28,20 @@ Q1 Q3 Q4 Q5,4,AOD409,Package_TO_SOT_SMD:TO-252-2,"ochrana proti přepólování 
 Q2 Q6,2,MMBT2222A,Package_TO_SOT_SMD:SOT-23-3,spíná cívky K1-K3 (3x 33 mA)
 R1,1,100k,Resistor_SMD:R_0805_2012Metric,
 R2,1,0R,Resistor_SMD:R_0805_2012Metric,hvězda PGND-GND (jediné spojení zemí)
-R3 R5 R7 R9,4,6k8,Resistor_SMD:R_0805_2012Metric,
-R4 R6 R8 R10 R15,5,10k,Resistor_SMD:R_0805_2012Metric,
+R3 R5 R7 R9 R31 R33 R35 R37 R41,9,6k8,Resistor_SMD:R_0805_2012Metric,
+R4 R6 R8 R10 R15 R38 R39 R43,8,10k,Resistor_SMD:R_0805_2012Metric,
 R13,1,330,Resistor_SMD:R_0805_2012Metric,
 R14 R16,2,2k2,Resistor_SMD:R_0805_2012Metric,
 R17 R20 R23,3,470,Resistor_SMD:R_0805_2012Metric,
 R18 R21 R24,3,1k,Resistor_SMD:R_0805_2012Metric,
-R19 R22 R25,3,22k,Resistor_SMD:R_0805_2012Metric,"gate pull-up (22k: optočlen stačí ~0,5 mA i z 3,3 V GPIO)"
+R19 R22 R25 R30 R32 R34 R36,7,22k,Resistor_SMD:R_0805_2012Metric,"gate pull-up (22k: optočlen stačí ~0,5 mA i z 3,3 V GPIO)"
 R26,1,4k7,Resistor_SMD:R_0805_2012Metric,
-R27,1,47k,Resistor_SMD:R_0805_2012Metric,bez modulu drží Q6 zavřený (relé odpadlá)
+R27 R40,2,47k,Resistor_SMD:R_0805_2012Metric,bez modulu drží Q6 zavřený (relé odpadlá)
 R28,1,120,Resistor_SMD:R_0805_2012Metric,"zakončení sběrnice (osadit JP2, jen když je deska na konci sběrnice)"
 R29,1,0R,Resistor_SMD:R_1206_3216Metric,"odbočka +12 V pro cívky relé, měnič a gate (jen kvůli šířkám cest)"
+R42,1,220k,Resistor_SMD:R_0805_2012Metric,hystereze ~90 mV
 U1,1,TSR 1-2450 (12V->5V 1A),Converter_DCDC:Converter_DCDC_TRACO_TSR-1_THT,"spínaný stabilizátor ve formátu 7805, vstup 6,5-36 V"
 U3 U4 U5 U6,4,LTV-817S,Package_DIP:SMDIP-4_W9.53mm,
 U7,1,SN65HVD230DR,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,"CAN budič 3,3 V; VREF (5) nezapojeno"
+U8,1,LM393,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,kanál B nevyužitý (výstup trvale sepnutý)
 MODUL,1,Waveshare RP2350-Touch-LCD-2,(zasunuto do J7/J8),řídicí modul s displejem

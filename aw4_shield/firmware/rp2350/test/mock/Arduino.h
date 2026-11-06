@@ -15,6 +15,8 @@
 #define INPUT_PULLDOWN 3
 #define MSBFIRST 1
 #define SPI_MODE0 0
+#define FALLING 2
+#define digitalPinToInterrupt(p) (p)
 struct Lcd { int dc=0; uint8_t cmd=0; int argn=0; uint8_t args[4]; int x0=0,x1=0,y0=0,y1=0,cx=0,cy=0; uint8_t mad=0; bool inv=false;
   uint16_t fb[320*320]; uint8_t hi; bool half=false;
   int LW(){return (mad&0x20)?320:240;} int LH(){return (mad&0x20)?240:320;}
@@ -30,6 +32,7 @@ static int gpio[32]; static int gpioMode[32]; static unsigned long nowMs=0; stat
 inline void pinMode(int p,int m){ gpioMode[p]=m; }
 inline void digitalWrite(int p,int v){ if(p==16) lcdEmu.dc=v; if(gpioMode[p]==1 && gpio[p]!=(v?1:0)){ char b[24]; snprintf(b,24,"G%d=%d",p,v?1:0); pinLog.push_back(b);} gpio[p]=v?1:0; }
 inline int digitalRead(int p){ return gpio[p]; }
+inline void attachInterrupt(int,void(*)(),int){} inline void noInterrupts(){} inline void interrupts(){}
 inline void analogWriteRange(int){} inline void analogWrite(int,int){}
 inline unsigned long millis(){ return nowMs; } inline void delay(unsigned long ms){ nowMs+=ms; }
 struct SerialT{ std::string in; std::string out; void begin(long){} int available(){return (int)in.size();} int read(){char c=in[0]; in.erase(0,1); return c;}

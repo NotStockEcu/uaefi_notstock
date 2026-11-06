@@ -1,10 +1,12 @@
 # AW4 shield v0.5 – ovladač automatické převodovky Aisin AW4 s modulem RP2350-Touch-LCD-2
 
-Deska **76 × 82 mm**, SMD součástky osadí **JLCPCB** (Economic PCBA), ručně se pájí vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka) a dva SMD díly s velkými pady (C1, D2). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasune **na výšku vlevo nahoře**, všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
+Deska **76 × 90 mm**, SMD součástky osadí **JLCPCB** (Economic PCBA), ručně se pájí vývodové díly (relé, svorkovnice, lišty modulu, měnič, pojistka) a dva SMD díly s velkými pady (C1, D2). Modul **Waveshare RP2350-Touch-LCD-2** (procesor RP2350 + displej 2″ 240×320) se zasouvá **ze spodní strany desky** (displej ven, na výšku, vlevo nahoře) – relé, svorkovnice a měnič jsou na druhé straně, takže displej může být v rovné přední stěně krabičky. Všechny vodiče jdou do svorkovnic **u dolní hrany**. Deska:
 
 * při spínači **READY = vypnuto** nechá původní TCU připojené (převodovka běží jako sériově),
 * při **READY = zapnuto** odpojí 3 vodiče solenoidů od původní TCU a převezme je (S1, S2, S3/lockup),
-* čte spínače **UP, DOWN, READY, LOCKUP** (5 V, na desce převedeno na 3,3 V),
+* čte spínače **UP, DOWN, READY, LOCKUP** (5 V, na desce převedeno na 3,3 V); READY a LOCKUP můžou být přímo v krabičce u displeje (zapojit krátkými vodiči do J3),
+* **čte napětí na vodičích solenoidů** – při READY vyp. ví, jaký stupeň drží původní TCU (po zapnutí READY za jízdy ho převezme), při READY zap. kontroluje vlastní výstupy,
+* má vstup **brzdy** (rozepne lockup) a **rychlosti VSS** (Hall 5/12 V i indukční čidlo, přes komparátor),
 * ukazuje zařazený stupeň na displeji modulu (zelená sedmisegmentovka přes celý displej),
 * má **CAN** (SN65HVD230) pro hodnoty z rusEFI (rychlost, otáčky, TPS …) – firmware se doplní.
 
@@ -81,7 +83,7 @@ LED optočlenu relé (U3) je napájená **přes READY spínač** a do země ji s
 
 ## Modul RP2350-Touch-LCD-2 na desce
 
-Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** do dvou dutinkových lišt: **J7 = lišta P1 (vlevo)**, **J8 = lišta P2 (vpravo)**, rozteč 30,48 mm, pin 1 dole. Pod modulem jsou jen nízké SMD součástky. Sklo displeje přesahuje modul ~10 mm dolů, ale je ~16 mm nad deskou.
+Modul se zasouvá **ze spodní strany desky, displejem ven, na výšku, USB-C k horní hraně** do dvou dutinkových lišt J7 (P1) a J8 (P2), rozteč 30,48 mm, pin 1 dole. Lišty se osazují zespodu a pájí se shora. Při pohledu na displej je P1 vlevo, při pohledu shora na desku je J7 (P1) vpravo. Sklo displeje přesahuje modul ~10 mm dolů a je ~16 mm od spodní strany desky; na spodní straně nejsou žádné součástky.
 
 | Lišta P1 (J7) | GPIO | Signál |
 |---|---|---|
@@ -96,7 +98,13 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 |---|---|---|
 | 1 / 2, 13 | – | 3V3 (napájí CAN budič) / GND |
 | 8 / 10 | 1 / 0 | CAN TX / CAN RX (U7 SN65HVD230) |
+| 7 / 9 / 11 | 2 / 3 / 4 | čtení napětí na vodičích SOL1 / SOL2 / SOL3 (dělič 22k/6k8: 12 V → 2,8 V) |
+| 3 | 28 | brzda (dělič 22k/6k8; na modulu je to i měření baterie, pro pomalý signál nevadí) |
+| 12 | 10 | VSS – výstup komparátoru U8 (LM393, práh ~0,6 V s hysterezí) |
+| 4, 5, 6 | 29, 13, 12 | dotyk / I2C modulu – **nezapojeno** |
 | ostatní | – | nezapojeno |
+
+**Vstupy J5:** 1 = brzdový spínač (+12 V při sešlápnutí, např. z brzdových světel), 2 = signál rychlosti (VSS). Hallovo čidlo s otevřeným kolektorem potřebuje pull-up – když se signál bere z existujícího vodiče k ECU/PCM, pull-up už tam je.
 
 **Programování přes USB jde i při zapojené desce** – 5 V do modulu jde přes Schottkyho diodu D7, takže se napájení z USB a z desky nepřetahují (propojka JP1 z v0.4 už není).
 
@@ -108,7 +116,9 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 | K1, K2, K3 | Omron G5LE-1 DC12 | přepnutí solenoidu mezi původní TCU a desku | ručně |
 | U1 | Traco TSR 1-2450 | spínaný stabilizátor 12 → 5 V / 1 A | ručně |
 | F1 | patice TR5 + pojistka 5 A | pojistka | ručně |
-| J1–J4 | Phoenix PT 1,5 (3,5 mm) | +12 V/GND, SOL/TCU, spínače, CAN | ručně |
+| J1–J5 | Phoenix PT 1,5 (3,5 mm) | +12 V/GND, SOL/TCU, spínače, CAN, brzda/VSS | ručně |
+| R30–R37, D17–D20 | 22k + 6k8, BAV99 | čtení SOL1–3 a brzdy | JLC |
+| U8 + R38–R43, D21, D22 | LM393, 1N5819WS, 1N4148WS | vstup rychlosti VSS (komparátor s hysterezí) | JLC |
 | Q1, Q3–Q5 | AOD409 (P-MOSFET −60 V, 40 mΩ, D-PAK) | přepólování / high-side spínače solenoidů | JLC |
 | Q2, Q6 | MMBT2222A | cívky relé / LED optočlenu relé z GPIO21 | JLC |
 | U3 / U4–U6 | LTV-817S (PC817 v SMD) | optočlen relé / optočleny solenoidů | JLC |
@@ -123,7 +133,7 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 
 ## Deska plošných spojů
 
-* **76 × 82 mm, 2 vrstvy, 1,6 mm, měď 1 oz**, 3× díra M3.
+* **76 × 90 mm, 2 vrstvy, 1,6 mm, měď 1 oz**, 3× díra M3. Součástky jen na horní straně, spodní strana patří modulu s displejem.
 * Šířky cest: +12 V **1,5 mm** (k MOSFETům), solenoidy/TCU **1,0 mm**, +12V_AUX/+5V/GND/PGND **0,6 mm**, signály 0,3 mm. Spodní vrstva: rozlitá měď PGND (výkonová část vpravo) a GND (logika vlevo), spojené jen přes R2. Při 2,6 A se cesta +12 V ohřeje o ~6 °C, cesta solenoidu (1,3 A) o ~3 °C. Výkonové sítě přecházejí mezi vrstvami jen přes prokovy 0,7–0,8 mm (průřez pokovení větší než průřez cesty).
 * Na potisku jsou u ručně pájených dílů označení a hodnoty, u svorkovnic názvy svorek, obrys modulu; SMD díly jsou v osazovacím výkresu.
 * Rozvedeno autorouterem (Freerouting). **KiCad 10.0.6: DRC 0 chyb, 0 nepropojených, 0 rozdílů proti schématu, ERC 0 chyb / 0 varování.**
@@ -141,11 +151,11 @@ Modul se zasouvá **displejem nahoru, na výšku, USB-C k horní hraně desky** 
 * **Relé:** Q6 (MMBT2222A) z GPIO21 (0,5 mA) sepne LED U3 (9,6 mA), Q2 sepne cívky (0,2 V); při GPIO21 = 0 nebo vyjmutém modulu relé spolehlivě odpadnou.
 * **Napájení 5 V:** modul s displejem + optočleny ≪ 1 A z TSR; CAN budič bere 3,3 V z modulu.
 
-Co je potřeba ověřit na autě: polarita solenoidů (+12 V na drát), dobrá zem J1 na kostru, READY zapínat ve stoje (firmware začíná 1. stupněm), původní TCU po přepnutí zpět může jet v nouzovém režimu do dalšího otočení klíčkem. Deska zatím nemá rychlost vozidla – po zapojení CANu z rusEFI ji firmware použije k blokování podřazení.
+Co je potřeba ověřit na autě: polarita solenoidů (+12 V na drát), dobrá zem J1 na kostru, převzetí stupně při zapnutí READY za jízdy (nejdřív vyzkoušet pomalu), že čtení solenoidů odpovídá stupni původní TCU, VSS pulzy, původní TCU po přepnutí zpět může jet v nouzovém režimu do dalšího otočení klíčkem. Blokování podřazení podle rychlosti se doplní po kalibraci VSS.
 
 ## Firmware (RP2350)
 
-`firmware/rp2350/uf2/aw4_rp2350.uf2` (pro auto) a `aw4_rp2350_sim.uf2` (simulátor na stole, ovládání ze Serial Monitoru). Nahrání: podržet BOOT, připojit USB, přetáhnout `.uf2` na disk RP2350. Piny jsou stejné jako u v0.4, firmware se nemění. Zdrojáky v `firmware/rp2350/aw4_rp2350/`, test logiky + emulátor displeje v `firmware/rp2350/test/`. Menu (podsvícení, lockup, otočení) a CAN se doplní.
+`firmware/rp2350/uf2/aw4_rp2350.uf2` (pro auto) a `aw4_rp2350_sim.uf2` (simulátor na stole, ovládání ze Serial Monitoru). Nahrání: podržet BOOT, připojit USB, přetáhnout `.uf2` na disk RP2350. Firmware v0.5 navíc: po zapnutí READY za jízdy převezme stupeň, který právě drží původní TCU (ve stoje začíná 1. stupněm); při READY vyp. ukazuje šedě stupeň původní TCU; brzda vždy rozepne lockup; zpětným čtením hlídá výstupy (při nesouladu červeně „CHYBA S1/S2/S3“, zatím jen hlášení). Simulátor má navíc příkazy t (stupeň TCU), b (brzda), v (jede/stojí). Zdrojáky v `firmware/rp2350/aw4_rp2350/`, test logiky + emulátor displeje v `firmware/rp2350/test/`. Menu (podsvícení, lockup, otočení), CAN a měření rychlosti (kalibrace pulzů na km/h) se doplní.
 
 ## Původní TCU
 Po odpojení (READY zapnuto) vidí původní TCU rozpojený obvod a může si zapsat chybu. Atrapu zátěže na straně TCU nepoužívejte (NC kontakt je v klidu trvale na solenoidu).

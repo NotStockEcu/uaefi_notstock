@@ -61,6 +61,7 @@ assert not missing, f"SMD díly chybí v pozicích: {missing}"
 HAND = {  # value -> (popis, výrobce, MPN, poznámka k osazení, krok)
  "J1 +12V / PGND": ("Svorkovnice 2 pól, rozteč 3,5 mm", "Phoenix Contact", "1984617", "PT 1,5/2-3,5-H; otvory pro vodiče ven z desky", 4),
  "J4 CAN-H / CAN-L": ("Svorkovnice 2 pól, rozteč 3,5 mm", "Phoenix Contact", "1984617", "PT 1,5/2-3,5-H; otvory pro vodiče ven z desky", 4),
+ "J5 BRZDA / VSS": ("Svorkovnice 2 pól, rozteč 3,5 mm", "Phoenix Contact", "1984617", "PT 1,5/2-3,5-H; otvory pro vodiče ven z desky", 4),
  "J2 SOL1-3 / TCU1-3": ("Svorkovnice 6 pól, rozteč 3,5 mm", "Phoenix Contact", "1984659", "PT 1,5/6-3,5-H; otvory pro vodiče ven z desky", 4),
  "J3 UP DOWN READY LOCKUP": ("Svorkovnice 6 pól, rozteč 3,5 mm", "Phoenix Contact", "1984659", "PT 1,5/6-3,5-H; otvory pro vodiče ven z desky", 4),
  "P1 modulu RP2350-Touch-LCD-2": ("Dutinková lišta 1×14, 2,54 mm", "Sullins", "PPTC141LFBN-RC", "osadit kolmo, nejlépe se zasunutým modulem", 2),
@@ -76,7 +77,7 @@ HAND = {  # value -> (popis, výrobce, MPN, poznámka k osazení, krok)
 EXTRA = [  # (popis, výrobce, MPN, ks/desku, poznámka)
  ("Pojistka TR5 5 A (T)", "Littelfuse", "37215000411", 1, "do patice F1"),
  ("Zkratovací propojka 2,54 mm", "Sullins", "SPC02SYAN", 1, "pro JP2"),
- ("Modul RP2350-Touch-LCD-2", "Waveshare", "RP2350-Touch-LCD-2", 1, "zasouvá se do J7/J8 displejem nahoru, USB-C k horní hraně"),
+ ("Modul RP2350-Touch-LCD-2", "Waveshare", "RP2350-Touch-LCD-2", 1, "zasouvá se zespodu do J7/J8 displejem ven, USB-C k horní hraně"),
 ]
 hgrp = collections.OrderedDict()
 for p in sorted(hand, key=lambda p: (HAND[p["val"]][4], refkey(p["ref"]))):
@@ -142,12 +143,12 @@ ws3 = wb.create_sheet("Postup")
 steps = ["Desku objednat v režimu Economic PCBA. Ručně se pájí i dva SMD díly s velkými pady: C1 (470 µF) a D2 (SMBJ24A) – krok 3.",
          "Desku objednat v JLCPCB s osazením (PCBA, horní strana): gerbery + jlc_bom.csv + jlc_cpl.csv; v náhledu zkontrolovat natočení polarizovaných dílů.",
          "Krok 1 – kolíkové lišty J6 a JP2 (nízké, pájí se první).",
-         "Krok 2 – dutinkové lišty J7, J8 pro modul: nejlépe zasunout do modulu, nasadit na desku a teprve pak připájet, ať jsou rovnoběžné.",
+         "Krok 2 – dutinkové lišty J7, J8 pro modul se osazují ZE SPODNÍ STRANY desky (pájí se shora). Nejlépe zasunout do modulu, nasadit zespodu na desku a teprve pak připájet, ať jsou rovnoběžné.",
          "Krok 3 – měnič TSR 1-2450 (U1) a patice pojistky F1.",
          "Krok 4 – svorkovnice J1–J4 (otvory pro vodiče ven z desky).",
          "Krok 5 – relé K1–K3 (nejvyšší díly, nakonec).",
          "Kontrola před zapnutím: multimetrem odpor +12 V proti PGND (nesmí být zkrat), pak napájet z laboratorního zdroje s omezením proudu (~0,3 A) a změřit +5 V na J3.",
-         "Modul zasunout displejem nahoru, USB-C k horní hraně desky. Programovat přes USB jde i při napájení desky (5 V do modulu jde přes Schottkyho diodu D7)."]
+         "Modul zasunout ze spodní strany desky displejem ven, USB-C k horní hraně desky. Programovat přes USB jde i při napájení desky (5 V do modulu jde přes Schottkyho diodu D7)."]
 for i, t in enumerate(steps, 1):
     c = ws3.cell(row=i, column=1, value=t); c.font = Font(name=F, size=11); c.alignment = Alignment(wrap_text=True, vertical="top")
 ws3.column_dimensions["A"].width = 120
