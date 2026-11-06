@@ -107,7 +107,7 @@ Seznam k objednání i s počty: `bom_objednavka.xlsx`, pro DigiKey `digikey_bom
 
 ## Deska plošných spojů
 
-* **100 × 100 mm, 2 vrstvy, 1,6 mm**, 3× díra M3. Doporučeno **měď 2 oz**.
+* **100 × 100 mm, 2 vrstvy, 1,6 mm**, 3× díra M3. **Měď 1 oz (35 µm) stačí** – při max. 2 solenoidech najednou (~2,6 A) se cesta +12 V 1,5 mm ohřeje o ~6 °C, cesta solenoidu 1,0 mm (1,3 A) o ~3 °C (IPC-2221); výkonové cesty nevedou přes žádný prokov.
 * Na potisku je u každé součástky hodnota (10k, 6k8, 3V6, 4007, PC817 …), u konektorů názvy pinů, obrys modulu; označení součástek je v osazovacím výkresu.
 * Šířky cest: +12 V a PGND **1,5 mm**, solenoidy/TCU **1,0 mm**, +5V/GND **0,6 mm**, signály 0,3 mm. Spodní vrstva: rozlitá měď PGND (výkonová část) a GND (logika), spojené jen přes R2.
 * Rozvedeno autorouterem (Freerouting). **KiCad 10.0.6: DRC 0 chyb, 0 nepropojených, 0 rozdílů proti schématu, ERC 0 chyb / 0 varování.**
