@@ -147,7 +147,10 @@ void updateDisplay(bool force = false) {
     shown.mode = mode; shown.fault = solFault;
     char t[16] = "CHYBA S";
     if (solFault) { int n = strlen(t); for (int i = 0; i < 3; i++) if (solFault >> i & 1) t[n++] = '1' + i; t[n] = 0; }
-    textBox(4, 1, 150, solFault ? t : ready ? "MANUAL" : "TCU", fontSmall, solFault ? RED : ready ? GREEN : GREY, BLACK);
+    // štítek režimu: zelený MANUAL, šedý TCU, červená chyba
+    if (solFault) pill(4, 3, 124, 26, t, fontMid, WHITE, RED, RED, BLACK);
+    else if (ready) pill(4, 3, 124, 26, "MANUAL", fontMid, BLACK, GREEN, GREEN, BLACK);
+    else pill(4, 3, 124, 26, "TCU", fontMid, UI_VALUE, UI_BTN, UI_BTN, BLACK);
   }
   // READY vyp.: šedě stupeň, který právě drží původní TCU (podle napětí na solenoidech)
   uint8_t mask = segMask(ready ? gear : tcuGear());
@@ -160,19 +163,30 @@ void updateDisplay(bool force = false) {
   // vpravo nahoře otáčky z rusEFI (zaokrouhlené na 50), v simulátoru žlutě
   int r = canData() ? (ecu.rpm + 25) / 50 * 50 : -1;
   if (force || r != shown.rpm) {
-    shown.rpm = r; char b[12];
-    if (r < 0) strcpy(b, SIM ? "SIM" : ""); else snprintf(b, sizeof b, "%d", r);
-    textBox(156, 1, 80, b, fontSmall, SIM ? YELLOW : (r > cfg.downMaxRpm ? RED : GREY), BLACK);
+    shown.rpm = r;
+    fillRect(132, 0, W - 132, 32, BLACK);
+    if (r < 0) { if (SIM) pill(W - 60, 3, 56, 26, "SIM", fontMid, BLACK, YELLOW, YELLOW, BLACK); }
+    else {   // otáčky: číslo + malé „rpm“
+      char b[12]; snprintf(b, sizeof b, "%d", r);
+      int tw = textWidth(fontSmall, b), uw = textWidth(fontTiny, "rpm"), x0 = W - 6 - uw - 4 - tw;
+      text(x0, 4, b, fontSmall, r > cfg.downMaxRpm ? RED : WHITE, BLACK);
+      text(x0 + tw + 4, 4 + fontSmall.height - fontTiny.height - 2, "rpm", fontTiny, UI_MUTED, BLACK);
+    }
   }
   int lk = ready ? lockup : sensed(2);
   if (force || lk != shown.lock) {
     shown.lock = lk;
-    textBox(4, 292, 110, "LOCKUP", fontSmall, lk ? ORANGE : DKGREY, BLACK);
+    if (lk) pill(4, 290, 104, 28, "LOCKUP", fontMid, BLACK, ORANGE, ORANGE, BLACK);
+    else pill(4, 290, 104, 28, "LOCKUP", fontMid, 0x4208, BLACK, UI_BTN, BLACK);
   }
   const char *sl[3] = {"S1", "S2", "S3"};
   for (int i = 0; i < 3; i++) {
     int on = ready ? solOut(i) : sensed(i);
-    if (force || on != shown.sol[i]) { shown.sol[i] = on; textBox(132 + i * 36, 292, 34, sl[i], fontSmall, on ? GREEN : DKGREY, BLACK); }
+    if (force || on != shown.sol[i]) {
+      shown.sol[i] = on;
+      if (on) pill(116 + i * 41, 290, 38, 28, sl[i], fontMid, BLACK, GREEN, GREEN, BLACK);
+      else pill(116 + i * 41, 290, 38, 28, sl[i], fontMid, 0x4208, BLACK, UI_BTN, BLACK);
+    }
   }
 }
 

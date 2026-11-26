@@ -29,7 +29,7 @@ inline bool touchRead(int &x, int &y) {
 }
 
 // ---- položky menu ----
-const int MENU_N = 7, ROW_Y0 = 30, ROW_H = 32, BTN_Y = 262;
+const int MENU_N = 7, ROW_Y0 = 38, ROW_H = 31, BTN_Y = 258;
 const char *const MENU_LABEL[MENU_N] = {"Lockup od st.", "Lockup od", "Lockup plyn", "Max ot. dolu", "Jas", "Otocit 180", "CAN rusEFI"};
 
 inline void menuValue(int i, char *b, size_t n) {
@@ -60,24 +60,35 @@ inline bool menuChange(int i, int dir) {
 }
 
 using namespace lcd;
+// barvy vzhledu (RGB565)
+const uint16_t UI_CARD = 0x18E3, UI_CARD_SEL = 0x0240, UI_MUTED = 0x7BEF, UI_VALUE = 0xC618, UI_BTN = 0x2945;
+
 inline void menuDrawRow(int i) {
   int y = ROW_Y0 + i * ROW_H;
-  uint16_t bg = i == menuSel ? 0x0320 : BLACK;
-  fillRect(0, y, W, ROW_H - 2, bg);
-  text(4, y + 3, MENU_LABEL[i], fontSmall, WHITE, bg);
+  bool sel = i == menuSel;
+  uint16_t card = sel ? UI_CARD_SEL : UI_CARD;
+  fillRect(0, y, W, ROW_H - 3, BLACK);
+  if (sel) roundBox(4, y, W - 8, ROW_H - 3, 8, 2, GREEN, card); else fillRoundRect(4, y, W - 8, ROW_H - 3, 8, card);
+  int ty = y + (ROW_H - 3 - fontMid.height) / 2;
+  text(12, ty, MENU_LABEL[i], fontMid, WHITE, card);
   char v[16]; menuValue(i, v, sizeof v);
-  text(W - 4 - textWidth(fontSmall, v), y + 3, v, fontSmall, i == menuSel ? GREEN : YELLOW, bg);
+  text(W - 12 - textWidth(fontMid, v), ty, v, fontMid, sel ? GREEN : UI_VALUE, card);
 }
-inline void menuButton(int x, int w, const char *t, uint16_t c) {
-  frame(x, BTN_Y, w, H - BTN_Y, 2, c);
-  fillRect(x + 2, BTN_Y + 2, w - 4, H - BTN_Y - 4, BLACK);
-  text(x + (w - textWidth(fontSmall, t)) / 2, BTN_Y + (H - BTN_Y - fontSmall.height) / 2, t, fontSmall, c, BLACK);
+inline void menuButtons() {
+  const int y = BTN_Y + 4, h = H - y - 4, w = 74, cy = y + h / 2;
+  fillRect(0, BTN_Y, W, H - BTN_Y, BLACK);
+  fillRoundRect(4, y, w, h, 12, UI_CARD_SEL);  fillRect(4 + w / 2 - 14, cy - 3, 28, 6, GREEN);            // −
+  fillRoundRect(162, y, w, h, 12, UI_CARD_SEL); fillRect(162 + w / 2 - 14, cy - 3, 28, 6, GREEN);         // +
+  fillRect(162 + w / 2 - 3, cy - 14, 6, 28, GREEN);
+  fillRoundRect(83, y, w, h, 12, UI_BTN);
+  text(83 + (w - textWidth(fontSmall, "ZPET")) / 2, cy - fontSmall.height / 2, "ZPET", fontSmall, WHITE, UI_BTN);
 }
 inline void menuDraw() {
   fillRect(0, 0, W, H, BLACK);
-  text((W - textWidth(fontSmall, "NASTAVENI")) / 2, 2, "NASTAVENI", fontSmall, CYAN, BLACK);
+  text(12, 4, "NASTAVENI", fontSmall, WHITE, BLACK);
+  fillRect(12, 31, W - 24, 2, GREEN);
   for (int i = 0; i < MENU_N; i++) menuDrawRow(i);
-  menuButton(0, 78, "-", GREEN); menuButton(81, 78, "ZPET", WHITE); menuButton(162, 78, "+", GREEN);
+  menuButtons();
 }
 inline void menuOpenNow(uint32_t now) { menuOpen = true; menuSel = 0; menuDirty = false; menuLastMs = now; menuDraw(); }
 // Zavře menu (uloží změny). Hlavní obrazovku překreslí volající.

@@ -126,6 +126,36 @@ inline void textBox(int x, int y, int w, const char *s, const AwFont &f, uint16_
   fillRect(tx + drawn, y, x + w - (tx + drawn), f.height, bg);
 }
 
+// ---- zaoblené tvary (styl UI) ----
+// Odsazení řádku r (0..h-1) u zaobleného obdélníku s poloměrem rad.
+inline int roundInset(int r, int h, int rad) {
+  int d = r < rad ? rad - 1 - r : (r > h - rad ? r - (h - rad) : -1);
+  if (d < 0) return 0;
+  int k = 0; while ((k + 1) * (k + 1) + d * d <= rad * rad) k++;   // k = sqrt(rad^2 - d^2)
+  return rad - k;
+}
+inline void fillRoundRect(int x, int y, int w, int h, int rad, uint16_t c) {
+  if (rad * 2 > h) rad = h / 2; if (rad * 2 > w) rad = w / 2;
+  fillRect(x, y + rad, w, h - 2 * rad, c);
+  for (int r = 0; r < rad; r++) {
+    int in = roundInset(r, h, rad);
+    fillRect(x + in, y + r, w - 2 * in, 1, c);
+    fillRect(x + in, y + h - 1 - r, w - 2 * in, 1, c);
+  }
+}
+// Zaoblený rámeček tloušťky t s výplní fill.
+inline void roundBox(int x, int y, int w, int h, int rad, int t, uint16_t border, uint16_t fill) {
+  fillRoundRect(x, y, w, h, rad, border);
+  fillRoundRect(x + t, y + t, w - 2 * t, h - 2 * t, rad > t ? rad - t : 0, fill);
+}
+// Štítek s textem uprostřed.
+inline void pill(int x, int y, int w, int h, const char *s, const AwFont &f, uint16_t fg, uint16_t fill, uint16_t border, uint16_t bg) {
+  fillRect(x, y, w, h, bg);
+  if (border != fill) roundBox(x, y, w, h, h / 2, 2, border, fill); else fillRoundRect(x, y, w, h, h / 2, fill);
+  int tw = textWidth(f, s);
+  text(x + (w - tw) / 2, y + (h - f.height) / 2, s, f, fg, fill);
+}
+
 // ---- sedmisegmentová číslice ----
 // Segment s „zkosenými" konci (šestiúhelník), kreslený po řádcích.
 inline void segH(int x, int y, int len, int th, uint16_t c) {   // vodorovný
