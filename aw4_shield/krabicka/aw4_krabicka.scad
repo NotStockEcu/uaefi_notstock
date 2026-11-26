@@ -14,11 +14,12 @@ DISP_Z = 17.35;       // povrch skla displeje pod spodní stranou desky (změře
 REAR_IN = 22;         // vnitřní hloubka zadního krytu nad deskou (relé 15,7 mm + pojistkové pouzdro)
 R_OUT = 4;            // zaoblení rohů
 
-// Sklo displeje 37,1 x 58,8 mm (na výšku). PŘEDPOKLAD: horní hrana skla lícuje s horní hranou desky (strana USB-C)
-// a sklo je vystředěné na modulu. Ověřte změřením a případně upravte GLASS_X0 / GLASS_Y1.
+// Sklo displeje 37,1 x 58,8 mm (na výšku). Změřeno: sklo přečnívá horní hranu desky (strana USB-C) o 6,7 mm.
+// Do strany je sklo vystředěné na modulu (předpoklad).
 GLASS_W = 37.1; GLASS_H = 58.8;
+GLASS_OVER = 6.7;                 // přesah skla přes horní hranu desky
 GLASS_X0 = 18.0 - GLASS_W / 2;    // střed modulu X = 18
-GLASS_Y1 = 100;                   // horní hrana skla
+GLASS_Y1 = 100 + GLASS_OVER;      // horní hrana skla
 GLASS_CLR = 0.3;                  // vůle okna kolem skla
 
 // Montážní díry desky (M3): H1, H2, H3
@@ -27,8 +28,8 @@ SCREW_HOLE = 2.6;     // do sloupků v předním dílu – M3 samořezný šroub
 SCREW_CLR = 3.4;      // průchozí díra v zadním krytu
 HEAD_D = 6.2;         // zahloubení hlavy šroubu
 
-// USB-C modulu u horní hrany (Y = 100), střed X = 18
-USB_W = 14; USB_Z0 = -16; USB_Z1 = -7;
+// USB-C modulu u horní hrany, střed X = 18 (výřez velký, aby prošel i plastový konec kabelu až k modulu)
+USB_W = 15; USB_Z0 = -16.5; USB_Z1 = -5.5;
 
 // Tlačítka v čele vedle displeje (z předního pohledu vlevo od displeje, displej je vpravo nahoře).
 // Za čelem je do desky jen ~13 mm (vývody na spodní straně desky) – spínače musí být krátké!
@@ -38,7 +39,7 @@ BTN_TXT = ["READY", "LOCKUP"];
 
 // Závitové vložky na zatavení v zádech (držák): M4 – díra Ø5,6 hloubka 6 (upravte podle vložek)
 INSERT_D = 5.6; INSERT_DEPTH = 6.0; INSERT_BOSS = 10;
-INSERTS = [[10, 10], [90, 10], [10, 90], [90, 90]];   // rozteč 80 x 80 mm
+INSERTS = [[10, 13], [90, 13], [10, 93], [90, 93]];   // rozteč 80 x 80 mm (vystředěno na krabičce)
 
 // Pojistkové pouzdro Ø12 v pravé boční stěně zadního krytu (vevnitř 25 mm, prochází nad patici F1 – F1 neosazovat, propojit)
 FUSE_D = 12; FUSE_Y = 28; FUSE_Z = PCB_T + 12;
@@ -46,8 +47,9 @@ FUSE_D = 12; FUSE_Y = 28; FUSE_Z = PCB_T + 12;
 // Výřezy pro vodiče u svorkovnic (dolní hrana, Y = 0): J3/J5/J4 a J2/J1
 SLOT = [[0, 40], [59, 95]]; SLOT_H = 10;
 
-IN0 = -GAP; IN1 = BOARD + GAP;            // vnitřní prostor X/Y
-O0 = IN0 - WALL; O1 = IN1 + WALL;         // vnější obrys X/Y
+IN0 = -GAP; IN1 = BOARD + GAP;            // vnitřní prostor X (a Y dole)
+IN1Y = max(IN1, GLASS_Y1 + 0.6);          // nahoře místo pro přesah skla
+O0 = IN0 - WALL; O1 = IN1 + WALL; O1Y = IN1Y + WALL;   // vnější obrys
 Z_FRONT = -DISP_Z;                        // vnější čelo (sklo lícuje s čelem)
 Z_SPLIT = PCB_T;                          // dělicí rovina = horní plocha desky
 Z_TOP = PCB_T + REAR_IN + WALL;           // vnější záda
@@ -60,8 +62,8 @@ module predni() {
   difference() {
     union() {
       difference() {
-        rbox(O0, O0, Z_FRONT, O1, O1, Z_SPLIT, R_OUT);
-        rbox(IN0, IN0, Z_FRONT + FACE, IN1, IN1, Z_SPLIT + 1, R_OUT - WALL > 0.5 ? R_OUT - WALL : 0.5);
+        rbox(O0, O0, Z_FRONT, O1, O1Y, Z_SPLIT, R_OUT);
+        rbox(IN0, IN0, Z_FRONT + FACE, IN1, IN1Y, Z_SPLIT + 1, R_OUT - WALL > 0.5 ? R_OUT - WALL : 0.5);
       }
       // sloupky pod H1 a H3 (H2 je pod přesahem skla – tam drží deska jen shora)
       for (h = [H1, H3]) translate([h[0], h[1], Z_FRONT + FACE - 0.01]) cylinder(d = 7, h = DISP_Z - FACE + 0.01);
@@ -75,7 +77,7 @@ module predni() {
     // otvory pro šrouby ve sloupcích
     for (h = [H1, H3]) translate([h[0], h[1], Z_FRONT + FACE - 0.5]) cylinder(d = SCREW_HOLE, h = DISP_Z);
     // USB-C
-    translate([18 - USB_W / 2, IN1 - 1, USB_Z0]) cube([USB_W, WALL + 3, USB_Z1 - USB_Z0]);
+    translate([18 - USB_W / 2, IN1Y - 1, USB_Z0]) cube([USB_W, WALL + 3, USB_Z1 - USB_Z0]);
     // tlačítka READY / LOCKUP
     for (b = BTN) translate([b[0], b[1], Z_FRONT - 1]) cylinder(d = BTN_D, h = FACE + 2);
     // vyryté popisky pod tlačítky (čtou se zepředu)
@@ -88,13 +90,13 @@ module zadni() {
   difference() {
     union() {
       difference() {
-        rbox(O0, O0, Z_SPLIT, O1, O1, Z_TOP, R_OUT);
-        rbox(IN0, IN0, Z_SPLIT - 1, IN1, IN1, Z_TOP - WALL, R_OUT - WALL > 0.5 ? R_OUT - WALL : 0.5);
+        rbox(O0, O0, Z_SPLIT, O1, O1Y, Z_TOP, R_OUT);
+        rbox(IN0, IN0, Z_SPLIT - 1, IN1, IN1Y, Z_TOP - WALL, R_OUT - WALL > 0.5 ? R_OUT - WALL : 0.5);
       }
       // středicí límec – zasune se do předního dílu mezi stěnu a desku
       difference() {
-        rbox(IN0 + 0.15, IN0 + 0.15, -PCB_T + 0.2 + PCB_T - 1.4, IN1 - 0.15, IN1 - 0.15, Z_SPLIT + 0.01, 0.5);
-        rbox(IN0 + 0.95, IN0 + 0.95, -5, IN1 - 0.95, IN1 - 0.95, Z_SPLIT + 1, 0.5);
+        rbox(IN0 + 0.15, IN0 + 0.15, -1.2, IN1 - 0.15, IN1Y - 0.15, Z_SPLIT + 0.01, 0.5);
+        rbox(IN0 + 0.95, IN0 + 0.95, -5, IN1 - 0.95, IN1Y - 0.95, Z_SPLIT + 1, 0.5);
       }
       // sloupky, které tlačí desku: H1, H3 (se šroubem) a H2
       for (h = [H1, H2, H3]) translate([h[0], h[1], Z_SPLIT]) cylinder(d = 7, h = REAR_IN + 0.01);
