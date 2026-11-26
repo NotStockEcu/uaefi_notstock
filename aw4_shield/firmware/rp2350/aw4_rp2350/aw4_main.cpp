@@ -17,6 +17,8 @@
 #include "lcd_st7789.h"
 #include "aw4_fonts.h"
 #include "aw4_can.h"
+#include "aw4_settings.h"
+#include "aw4_menu.h"
 
 const uint8_t PIN_UP = 7, PIN_DOWN = 9, PIN_READY = 8, PIN_LOCKUP = 22;
 const uint8_t PIN_RELAYS = 21, PIN_SOL1 = 23, PIN_SOL2 = 11, PIN_SOL3 = 6;
@@ -32,12 +34,9 @@ const bool GEAR_TABLE[4][2] = {
   {false, true},   // 3.
   {false, false},  // 4.
 };
-const uint8_t LOCKUP_MIN_GEAR = 3;
-// Pravidla podle dat z rusEFI (platí jen když chodí CAN; bez CANu se chová jako dřív)
-const uint8_t LOCKUP_MIN_KMH = 45;       // lockup až od této rychlosti
-const float LOCKUP_MAX_TPS = 80.0f;      // nad tímto plynem lockup rozepnout
-const uint16_t DOWNSHIFT_MAX_RPM = 5000; // nepodřadit, když by otáčky po podřazení přesáhly limit
+// Lockup od stupně, limity rychlosti / plynu / otáček: v menu (struct Settings v aw4_settings.h)
 const float RATIO[4] = {2.80f, 1.53f, 1.00f, 0.705f};   // převody AW4
+inline bool canData() { return cfg.canOn && ecuValid(millis()); }   // data z rusEFI platná a zapnutá
 // Po zapnutí READY: když auto stojí, začíná se 1. stupněm; za jízdy se převezme stupeň, který právě drží původní TCU.
 const uint8_t INITIAL_GEAR = 1;
 const uint32_t DEBOUNCE_MS = 30;
@@ -67,7 +66,7 @@ uint32_t outChangedMs = 0;
 volatile uint32_t vssCount = 0, vssLastMs = 0;
 void vssIsr() { vssCount++; vssLastMs = millis(); }
 bool vehicleStopped() {
-  if (ecuValid(millis())) return ecu.kph < 2;          // rychlost z rusEFI má přednost
+  if (canData()) return ecu.kph < 2;          // rychlost z rusEFI má přednost
   if (SIM) return !simMoving;
   noInterrupts(); uint32_t n = vssCount, t = vssLastMs; interrupts();
   return n == 0 || millis() - t > VSS_STOP_MS;
@@ -159,11 +158,11 @@ void updateDisplay(bool force = false) {
     shown.mask = mask; forceDigit = false;
   }
   // vpravo nahoře otáčky z rusEFI (zaokrouhlené na 50), v simulátoru žlutě
-  int r = ecuValid(millis()) ? (ecu.rpm + 25) / 50 * 50 : -1;
+  int r = canData() ? (ecu.rpm + 25) / 50 * 50 : -1;
   if (force || r != shown.rpm) {
     shown.rpm = r; char b[12];
     if (r < 0) strcpy(b, SIM ? "SIM" : ""); else snprintf(b, sizeof b, "%d", r);
-    textBox(156, 1, 80, b, fontSmall, SIM ? YELLOW : (r > DOWNSHIFT_MAX_RPM ? RED : GREY), BLACK);
+    textBox(156, 1, 80, b, fontSmall, SIM ? YELLOW : (r > cfg.downMaxRpm ? RED : GREY), BLACK);
   }
   int lk = ready ? lockup : sensed(2);
   if (force || lk != shown.lock) {
@@ -184,7 +183,7 @@ void printState(const char *what) {
                 ready ? "PRITAZENA (ridi AW4)" : "odpadla (ridi TCU)", solOut(0), solOut(1), solOut(2),
                 sensed(0), sensed(1), sensed(2), char('0' + tcuGear()), brake, vehicleStopped() ? "stoji" : "jede",
                 solFault ? " CHYBA VYSTUPU" : "");
-  if (ecuValid(millis())) Serial.printf("                   | rusEFI: %u ot/min, %u km/h, TPS %.0f %%, CLT %.0f C, %.1f V, brzda %d\n",
+  if (canData()) Serial.printf("                   | rusEFI: %u ot/min, %u km/h, TPS %.0f %%, CLT %.0f C, %.1f V, brzda %d\n",
                                         ecu.rpm, ecu.kph, ecu.tps, ecu.clt, ecu.vbat, ecu.brake);
   else Serial.println("                   | rusEFI: zadna data (CAN)");
 }
@@ -199,12 +198,17 @@ void help() {
   } else {
     Serial.println("Verze pro auto: ridi se spinaci UP/DOWN/READY/LOCKUP. s = stav, h = napoveda.");
   }
+  {
+    Serial.println("m = menu otevrit/zavrit, x = zrcadlit dotyk (kdyby tukani nesedelo s obrazem)");
+  }
 }
 
 void serialCommands() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == 's' || c == 'S') printState("STAV");
+    else if (c == 'm' || c == 'M') { if (menuOpen) { menuClose(); drawStatic(); updateDisplay(true); } else menuOpenNow(millis()); }
+    else if (c == 'x' || c == 'X') { cfg.touchInv = !cfg.touchInv; cfgSave(); Serial.println(cfg.touchInv ? "dotyk zrcadleny" : "dotyk normalni"); }
     else if (c == 'h' || c == 'H' || c == '?') help();
     else if (SIM) {
       if (c == 'r' || c == 'R') simReady = !simReady;
@@ -245,10 +249,13 @@ void setup() {
   pinMode(PIN_VSS, INPUT);                              // výstup komparátoru s pull-upem na desce
   if (!SIM) { attachInterrupt(digitalPinToInterrupt(PIN_VSS), vssIsr, FALLING); canBegin(); }
   Serial.begin(115200);
+  cfgLoad();
+  lcd::setFlip(cfg.flip);
   lcd::begin();
+  touchBegin();
   drawStatic();
   updateDisplay(true);
-  lcd::backlight(100);
+  lcd::backlight(cfg.bright);
   help();
 }
 
@@ -264,7 +271,7 @@ void loop() {
   serialCommands();
   canPoll();
   if (SIM) simEcu();
-  bool can = ecuValid(millis());
+  bool can = canData();
   if (SIM && autoDemo) demoStep();
 
   bool up, down, readyIn, lockIn;
@@ -290,12 +297,12 @@ void loop() {
     if (up && gear < 4) { gear++; what = "NAHORU"; }
     if (down && gear > 1) {
       // ochrana: otáčky po podřazení podle dat z rusEFI
-      if (can && ecu.rpm * RATIO[gear - 2] / RATIO[gear - 1] > DOWNSHIFT_MAX_RPM) what = "PODRAZENI ZAKAZANO";
+      if (can && ecu.rpm * RATIO[gear - 2] / RATIO[gear - 1] > cfg.downMaxRpm) what = "PODRAZENI ZAKAZANO";
       else { gear--; what = "DOLU"; }
     }
   }
-  bool canLockOk = !can || (ecu.kph >= LOCKUP_MIN_KMH && ecu.tps <= LOCKUP_MAX_TPS);
-  bool newLockup = ready && lockIn && gear >= LOCKUP_MIN_GEAR && !brake && canLockOk;   // brzda lockup vždy rozepne
+  bool canLockOk = !can || (ecu.kph >= cfg.lockMinKmh && ecu.tps <= cfg.lockMaxTps);
+  bool newLockup = ready && lockIn && gear >= cfg.lockMinGear && !brake && canLockOk;   // brzda lockup vždy rozepne
   if (newLockup != lockup) { lockup = newLockup; if (!what) what = lockup ? "LOCKUP zap" : "LOCKUP vyp"; }
   for (uint8_t i = 0; i < 3; i++) if (solOut(i) != before[i]) outChangedMs = millis();
 
@@ -307,7 +314,24 @@ void loop() {
     for (uint8_t i = 0; i < 3; i++) if (sensed(i) != solOut(i)) f |= 1 << i;
     if (f != solFault) { solFault = f; if (!what) what = f ? "CHYBA VYSTUPU" : "vystupy OK"; }
   }
-  updateDisplay();  // kreslí jen to, co se změnilo
+  // dotyk: ťuknutí otevře menu, v menu vybírá a mění položky
+  static uint32_t lastTouch = 0; static bool wasDown = false;
+  bool closeMenu = false;
+  if (millis() - lastTouch >= 20) {
+    lastTouch = millis();
+    int tx, ty; bool down = touchRead(tx, ty);
+    if (down && !wasDown) {
+      if (menuOpen) closeMenu = menuTap(tx, ty, millis());
+      else menuOpenNow(millis());
+    }
+    wasDown = down;
+  }
+  if (menuOpen && millis() - menuLastMs > MENU_TIMEOUT_MS) closeMenu = true;
+  // důležitá událost (řazení, READY, chyba) menu zavře, aby byl hned vidět stupeň
+  if (menuOpen && what && strcmp(what, "LOCKUP zap") && strcmp(what, "LOCKUP vyp")) closeMenu = true;
+  if (menuOpen && closeMenu) { menuClose(); drawStatic(); updateDisplay(true); }
+
+  if (!menuOpen) updateDisplay();  // kreslí jen to, co se změnilo
   if (what) printState(what);
 
   static uint32_t lastRegs = 0;

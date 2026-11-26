@@ -71,6 +71,19 @@ int main(){
   shot("s6_can.ppm");
   gpio[PIN_LOCKUP]=0; gpio[PIN_READY]=0; runF(60,800,0,5);
   nowMs+=1000; run(10); expect(!ecuValid(nowMs),"CAN timeout");
+  // ---- dotykové menu ----
+  auto tap=[&](int x,int y){ touchSim.x=x; touchSim.y=y; touchSim.down=true; run(40); touchSim.down=false; run(40); };
+  expect(cfg.lockMinKmh==45 && cfg.bright==100,"default settings");
+  tap(120,160); expect(menuOpen,"tap opens menu"); shot("s7_menu.ppm");
+  tap(120,ROW_Y0+1*ROW_H+10); expect(menuSel==1,"select row 'Lockup od'");
+  tap(200,290); tap(200,290); expect(cfg.lockMinKmh==55,"+ twice -> 55 km/h");
+  tap(20,290); expect(cfg.lockMinKmh==50,"- -> 50 km/h");
+  tap(120,ROW_Y0+3*ROW_H+10); tap(20,290); expect(cfg.downMaxRpm==4900,"max rpm 4900");
+  int commits=EEPROM.commits; tap(120,290); expect(!menuOpen && EEPROM.commits==commits+1,"ZPET closes and saves");
+  { Settings saved=cfg; cfg=Settings(); cfgLoad(); expect(cfg.lockMinKmh==50 && cfg.downMaxRpm==4900 && saved.sum==cfg.sum,"settings reload from flash"); }
+  tap(120,160); expect(menuOpen,"menu again"); nowMs+=MENU_TIMEOUT_MS+10; run(30); expect(!menuOpen,"menu auto-close");
+  tap(120,160); gpio[PIN_READY]=1; run(60); expect(!menuOpen && ready,"READY closes menu"); gpio[PIN_READY]=0; run(60);
+  shot("s8_after_menu.ppm");
   printf("%s", Serial.out.c_str());
   printf(fails?"\n%d FAILED\n":"\nALL CHECKS PASSED\n",fails); return fails;
 }
