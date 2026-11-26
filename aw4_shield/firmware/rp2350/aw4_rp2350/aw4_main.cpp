@@ -16,6 +16,7 @@
 #include <Arduino.h>
 #include "lcd_st7789.h"
 #include "aw4_fonts.h"
+#include "aw4_can.h"
 
 const uint8_t PIN_UP = 7, PIN_DOWN = 9, PIN_READY = 8, PIN_LOCKUP = 22;
 const uint8_t PIN_RELAYS = 21, PIN_SOL1 = 23, PIN_SOL2 = 11, PIN_SOL3 = 6;
@@ -32,6 +33,11 @@ const bool GEAR_TABLE[4][2] = {
   {false, false},  // 4.
 };
 const uint8_t LOCKUP_MIN_GEAR = 3;
+// Pravidla podle dat z rusEFI (platí jen když chodí CAN; bez CANu se chová jako dřív)
+const uint8_t LOCKUP_MIN_KMH = 45;       // lockup až od této rychlosti
+const float LOCKUP_MAX_TPS = 80.0f;      // nad tímto plynem lockup rozepnout
+const uint16_t DOWNSHIFT_MAX_RPM = 5000; // nepodřadit, když by otáčky po podřazení přesáhly limit
+const float RATIO[4] = {2.80f, 1.53f, 1.00f, 0.705f};   // převody AW4
 // Po zapnutí READY: když auto stojí, začíná se 1. stupněm; za jízdy se převezme stupeň, který právě drží původní TCU.
 const uint8_t INITIAL_GEAR = 1;
 const uint32_t DEBOUNCE_MS = 30;
@@ -52,6 +58,7 @@ uint8_t gear = INITIAL_GEAR;
 bool ready = false, lockup = false;
 bool simReady = false, simLockup = false, simUp = false, simDown = false, autoDemo = false;
 uint8_t simTcuGear = 1; bool simBrake = false, simMoving = false;
+uint8_t simKph = 0; bool simCan = false, simTps = false;
 bool brake = false;
 uint8_t solFault = 0;          // bit i = výstup i nesouhlasí se zpětným čtením
 uint32_t outChangedMs = 0;
@@ -60,6 +67,7 @@ uint32_t outChangedMs = 0;
 volatile uint32_t vssCount = 0, vssLastMs = 0;
 void vssIsr() { vssCount++; vssLastMs = millis(); }
 bool vehicleStopped() {
+  if (ecuValid(millis())) return ecu.kph < 2;          // rychlost z rusEFI má přednost
   if (SIM) return !simMoving;
   noInterrupts(); uint32_t n = vssCount, t = vssLastMs; interrupts();
   return n == 0 || millis() - t > VSS_STOP_MS;
@@ -124,12 +132,11 @@ using namespace lcd;
 const int DG_X = 18, DG_Y = 34, DG_W = 204, DG_H = 248, DG_TH = 34;
 const uint16_t SEG_ON = GREEN, SEG_TCU = GREY, SEG_OFF = 0x00E0;   // svítí (MANUAL) / stupeň původní TCU / nesvítí
 
-struct Shown { int mode = -1; uint8_t mask = 0; int sol[3] = {-1, -1, -1}; int lock = -1; int fault = -1; } shown;
+struct Shown { int mode = -1; uint8_t mask = 0; int sol[3] = {-1, -1, -1}; int lock = -1; int fault = -1; int rpm = -2; } shown;
 bool forceDigit = true;
 
 void drawStatic() {
   fillRect(0, 0, W, H, BLACK);
-  if (SIM) text(W - 6 - textWidth(fontSmall, "SIM"), 1, "SIM", fontSmall, YELLOW, BLACK);
   shown = Shown();
   forceDigit = true;
 }
@@ -151,6 +158,13 @@ void updateDisplay(bool force = false) {
     sevenSeg(DG_X, DG_Y, DG_W, DG_H, DG_TH, mask, shown.mask, ready ? SEG_ON : SEG_TCU, SEG_OFF, all);
     shown.mask = mask; forceDigit = false;
   }
+  // vpravo nahoře otáčky z rusEFI (zaokrouhlené na 50), v simulátoru žlutě
+  int r = ecuValid(millis()) ? (ecu.rpm + 25) / 50 * 50 : -1;
+  if (force || r != shown.rpm) {
+    shown.rpm = r; char b[12];
+    if (r < 0) strcpy(b, SIM ? "SIM" : ""); else snprintf(b, sizeof b, "%d", r);
+    textBox(156, 1, 80, b, fontSmall, SIM ? YELLOW : (r > DOWNSHIFT_MAX_RPM ? RED : GREY), BLACK);
+  }
   int lk = ready ? lockup : sensed(2);
   if (force || lk != shown.lock) {
     shown.lock = lk;
@@ -170,6 +184,9 @@ void printState(const char *what) {
                 ready ? "PRITAZENA (ridi AW4)" : "odpadla (ridi TCU)", solOut(0), solOut(1), solOut(2),
                 sensed(0), sensed(1), sensed(2), char('0' + tcuGear()), brake, vehicleStopped() ? "stoji" : "jede",
                 solFault ? " CHYBA VYSTUPU" : "");
+  if (ecuValid(millis())) Serial.printf("                   | rusEFI: %u ot/min, %u km/h, TPS %.0f %%, CLT %.0f C, %.1f V, brzda %d\n",
+                                        ecu.rpm, ecu.kph, ecu.tps, ecu.clt, ecu.vbat, ecu.brake);
+  else Serial.println("                   | rusEFI: zadna data (CAN)");
 }
 
 void help() {
@@ -177,6 +194,7 @@ void help() {
   if (SIM) {
     Serial.println("SIMULATOR: r = READY, u/+ = nahoru, d/- = dolu, l = LOCKUP spinac, a = ukazka, s = stav, h = napoveda");
     Serial.println("           t = stupen puvodni TCU (1-4), b = brzda, v = auto jede / stoji");
+    Serial.println("           CAN simulace: k = rychlost +30 km/h, p = plyn 10/90 %, c = CAN zap/vyp");
     Serial.println("Spinace na pinech se v simulatoru NEctou.");
   } else {
     Serial.println("Verze pro auto: ridi se spinaci UP/DOWN/READY/LOCKUP. s = stav, h = napoveda.");
@@ -197,6 +215,9 @@ void serialCommands() {
       else if (c == 't' || c == 'T') { simTcuGear = simTcuGear % 4 + 1; printState("TCU stupen"); }
       else if (c == 'b' || c == 'B') { simBrake = !simBrake; }
       else if (c == 'v' || c == 'V') { simMoving = !simMoving; printState(simMoving ? "auto jede" : "auto stoji"); }
+      else if (c == 'k' || c == 'K') { simCan = true; simKph = simKph >= 120 ? 0 : simKph + 30; printState("CAN rychlost"); }
+      else if (c == 'p' || c == 'P') { simCan = true; simTps = !simTps; printState(simTps ? "CAN plyn 90 %" : "CAN plyn 10 %"); }
+      else if (c == 'c' || c == 'C') { simCan = !simCan; printState(simCan ? "CAN sim ZAP" : "CAN sim VYP"); }
     }
   }
 }
@@ -222,7 +243,7 @@ void setup() {
   for (uint8_t p : PIN_SNS) pinMode(p, INPUT);          // dělič 22k/6k8 na desce
   pinMode(PIN_BRAKE, INPUT);
   pinMode(PIN_VSS, INPUT);                              // výstup komparátoru s pull-upem na desce
-  if (!SIM) attachInterrupt(digitalPinToInterrupt(PIN_VSS), vssIsr, FALLING);
+  if (!SIM) { attachInterrupt(digitalPinToInterrupt(PIN_VSS), vssIsr, FALLING); canBegin(); }
   Serial.begin(115200);
   lcd::begin();
   drawStatic();
@@ -231,8 +252,19 @@ void setup() {
   help();
 }
 
+void simEcu() {   // simulátor: data „z rusEFI“ podle zvoleného stupně a rychlosti
+  if (!simCan) return;
+  uint8_t g = ready ? gear : tcuGear();
+  ecu.kph = simKph; ecu.tps = simTps ? 90 : 10; ecu.clt = 85; ecu.vbat = 14.1f; ecu.brake = simBrake;
+  uint16_t rr = uint16_t(simKph * 26.0f * RATIO[g - 1]); ecu.rpm = rr < 800 ? 800 : rr;
+  ecu.lastMs = millis(); ecu.frames++;
+}
+
 void loop() {
   serialCommands();
+  canPoll();
+  if (SIM) simEcu();
+  bool can = ecuValid(millis());
   if (SIM && autoDemo) demoStep();
 
   bool up, down, readyIn, lockIn;
@@ -245,7 +277,7 @@ void loop() {
     readyIn = btns[B_READY].state; lockIn = btns[B_LOCKUP].state;
   }
 
-  brake = SIM ? simBrake : digitalRead(PIN_BRAKE) == HIGH;
+  brake = (SIM ? simBrake : digitalRead(PIN_BRAKE) == HIGH) || (can && ecu.brake);
 
   const char *what = nullptr;
   bool before[3] = {solOut(0), solOut(1), solOut(2)};
@@ -256,9 +288,14 @@ void loop() {
   }
   if (ready) {
     if (up && gear < 4) { gear++; what = "NAHORU"; }
-    if (down && gear > 1) { gear--; what = "DOLU"; }
+    if (down && gear > 1) {
+      // ochrana: otáčky po podřazení podle dat z rusEFI
+      if (can && ecu.rpm * RATIO[gear - 2] / RATIO[gear - 1] > DOWNSHIFT_MAX_RPM) what = "PODRAZENI ZAKAZANO";
+      else { gear--; what = "DOLU"; }
+    }
   }
-  bool newLockup = ready && lockIn && gear >= LOCKUP_MIN_GEAR && !brake;   // brzda lockup vždy rozepne
+  bool canLockOk = !can || (ecu.kph >= LOCKUP_MIN_KMH && ecu.tps <= LOCKUP_MAX_TPS);
+  bool newLockup = ready && lockIn && gear >= LOCKUP_MIN_GEAR && !brake && canLockOk;   // brzda lockup vždy rozepne
   if (newLockup != lockup) { lockup = newLockup; if (!what) what = lockup ? "LOCKUP zap" : "LOCKUP vyp"; }
   for (uint8_t i = 0; i < 3; i++) if (solOut(i) != before[i]) outChangedMs = millis();
 
